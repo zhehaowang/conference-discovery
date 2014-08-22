@@ -1,4 +1,5 @@
-#include "test-conference-discovery-exfil.h"
+#ifndef __test_memory_content_cache__
+#define __test_memory_content_cache__
 
 #include <ndn-cpp/interest.hpp>
 #include <ndn-cpp/data.hpp>
@@ -13,9 +14,32 @@
 #include <ndn-cpp/encoding/binary-xml-wire-format.hpp>
 #include <ndn-cpp/util/memory-content-cache.hpp>
 
-#include <openssl/rand.h>
+#endif
 
 using namespace ndn;
+using namespace std;
+
+class Callbacks
+{
+public:
+  Callbacks() {};
+  
+  ~Callbacks() {};
+  
+  void onDataNotFound
+    (const ptr_lib::shared_ptr<const Name>& prefix,
+     const ptr_lib::shared_ptr<const Interest>& inst, Transport& transport,
+     uint64_t registeredPrefixId) {
+    cout << "Data not found callback called." << endl;
+  };
+  
+  void onRegisterFailed
+    (const ptr_lib::shared_ptr<const Name>& prefix) {
+    cout << "Memory content cache prefix registration failed." << endl;
+  };
+private:
+  
+};
 
 static uint8_t DEFAULT_RSA_PUBLIC_KEY_DER[] = {
   0x30, 0x82, 0x01, 0x22, 0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48, 0x86, 0xf7, 0x0d, 0x01, 0x01,
@@ -117,21 +141,6 @@ static uint8_t DEFAULT_RSA_PRIVATE_KEY_DER[] = {
   0x3f, 0xb9, 0xfe, 0xbc, 0x8d, 0xda, 0xcb, 0xea, 0x8f
 };
 
-std::string getRandomString()
-{
-	string seed("qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM0123456789");
-	string result;
-	uint8_t random[10];
-	RAND_bytes(random, sizeof(random));
-	for (int i = 0; i < 10; ++i) {
-		// Using % means the distribution isn't uniform, but that's OK.
-		size_t pos = (size_t)random[i] % seed.size();
-		result += seed[pos];
-	}
-
-	return result;
-}
-
 int main()
 {
 	Face face("localhost");
@@ -151,15 +160,14 @@ int main()
        sizeof(DEFAULT_RSA_PUBLIC_KEY_DER), DEFAULT_RSA_PRIVATE_KEY_DER,
        sizeof(DEFAULT_RSA_PRIVATE_KEY_DER));
        
-	ndnrtc::chrono_chat::ConferenceDiscovery confDis(Name("/ndn/broadcast/ndnrtc/conferencelist/"), face, keyChain, certificateName);
-	confDis.startExcludeUpdate();
+    Callbacks callbacks;
+	MemoryContentCache contentCache(&face);
+	contentCache.registerPrefix
+	  (Name("/ndn/testmemcontentcache/"), 
+	   boost::bind(&Callbacks::onRegisterFailed, callbacks, _1), 
+	   boost::bind(&Callbacks::onDataNotFound, callbacks, _1, _2, _3, _4));
 	
-	std::vector<std::string> participants;
-	participants.push_back(getRandomString());
-	
-	ndnrtc::chrono_chat::ConferenceDescription cDes("info", participants);
-	
-	//confDis.publishConference(getRandomString(), cDes);
+	cout << "ContentCache registered prefix" << endl;
 	
 	while (1)
 	{

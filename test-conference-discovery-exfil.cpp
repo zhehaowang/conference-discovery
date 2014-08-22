@@ -26,6 +26,7 @@ ConferenceDiscovery::onInterest
    const ptr_lib::shared_ptr<const Interest>& inst, Transport& transport,
    uint64_t registeredPrefixId)
 {
+  // The onDataNotFound callback for MemoryContentCache register prefix does not seem to work as expected.
   cout << "Got interest " << inst->getName().toUri() << " that can't be answered by content cache." << endl;
   // whenever data's not found, we push this interest to pendingInterestTable_.
   // Double check: do we need to know the pending interest's existence in app-PIT?

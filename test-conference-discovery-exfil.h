@@ -23,6 +23,8 @@
 // We are going to discuss the protocol specification later anyways, so I
 // won't use protobuf for now.
 
+// TODO: three parties does not work for now. Individual test with memory content cache to be carried out.
+
 #ifndef __test_conference_discovery_exfil__
 #define __test_conference_discovery_exfil__
 

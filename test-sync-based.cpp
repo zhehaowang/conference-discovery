@@ -1,4 +1,4 @@
-#include "test-conference-discovery-exfil.h"
+#include "test-conference-discovery-sync.h"
 
 #include <ndn-cpp/interest.hpp>
 #include <ndn-cpp/data.hpp>
@@ -132,6 +132,31 @@ std::string getRandomString()
 	return result;
 }
 
+class ConferenceDiscovery
+{
+public:
+  
+  ConferenceDiscovery
+    (Face& face, KeyChain& keyChain, Name certificateName)
+  :  face_(face), keyChain_(keyChain), certificateName_(certificateName)
+  {
+    
+  };
+  
+  ~ConferenceDiscovery();
+  
+  void onReceivedSyncData
+    (const std::vector<std::string>& syncData, bool isRecovery)
+  {
+    
+  };
+  
+private:
+  Face& face_;
+  KeyChain& keyChain_;
+  Name certificateName_;
+};
+
 int main()
 {
 	Face face("localhost");
@@ -151,15 +176,7 @@ int main()
        sizeof(DEFAULT_RSA_PUBLIC_KEY_DER), DEFAULT_RSA_PRIVATE_KEY_DER,
        sizeof(DEFAULT_RSA_PRIVATE_KEY_DER));
        
-	ndnrtc::chrono_chat::ConferenceDiscovery confDis(Name("/ndn/broadcast/ndnrtc/conferencelist/"), face, keyChain, certificateName);
-	confDis.startExcludeUpdate();
-	
-	std::vector<std::string> participants;
-	participants.push_back(getRandomString());
-	
-	ndnrtc::chrono_chat::ConferenceDescription cDes("info", participants);
-	
-	//confDis.publishConference(getRandomString(), cDes);
+	//conference_discovery::SyncBasedDiscovery discovery(Name("/ndn/broadcast/ndnrtc/conferencelist/"), face, keyChain, certificateName);
 	
 	while (1)
 	{
