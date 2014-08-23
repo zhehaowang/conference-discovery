@@ -103,33 +103,24 @@ SyncBasedDiscovery::onRegisterFailed
 }
 
 void
-SyncBasedDiscovery::updateHash()
+SyncBasedDiscovery::recomputeDigest()
 {
-// TODO: hash implementation
-/*
   SHA256_CTX sha256;
-
   SHA256_Init(&sha256);
-  uint8_t number[4];
-  int32ToLittleEndian(seqno_session_, number);
-  SHA256_Update(&sha256, number, sizeof(number));
-  int32ToLittleEndian(seqno_seq_, number);
-  SHA256_Update(&sha256, number, sizeof(number));
-  uint8_t digest_seq[SHA256_DIGEST_LENGTH];
-  SHA256_Final(digest_seq, &sha256);
+  
+  for (std::vector<std::string>::iterator it = objects_.begin(); it != objects_.end(); ++it)
+    SHA256_Update(&sha256, &it[0], it->size());
+    
+  uint8_t currentDigest[SHA256_DIGEST_LENGTH];
+  SHA256_Final(&currentDigest[0], &sha256);
+  
+  currentDigest_ = toHex(currentDigest, sizeof(currentDigest));
+}
 
-  SHA256_Init(&sha256);
-  SHA256_Update(&sha256, &dataPrefix_[0], dataPrefix_.size());
-  uint8_t digest_name[SHA256_DIGEST_LENGTH];
-  SHA256_Final(digest_name, &sha256);
+void
+SyncBasedDiscovery::stringHash()
+{
 
-  SHA256_Init(&sha256);
-  SHA256_Update(&sha256, digest_name, sizeof(digest_name));
-  SHA256_Update(&sha256, digest_seq, sizeof(digest_seq));
-  uint8_t digest_node[SHA256_DIGEST_LENGTH];
-  SHA256_Final(digest_node, &sha256);
-  digest_ = toHex(digest_node, sizeof(digest_node));
-*/
 }
 
 void
@@ -148,7 +139,7 @@ SyncBasedDiscovery::publishObject(std::string name)
     keyChain_.sign(data, certificateName_);
     contentCacheAdd(data);
     
-    updateHash();
+    recomputeDigest();
     
     Name interestName = Name(broadcastPrefix_).append(currentDigest_);
     Interest interest(interestName);

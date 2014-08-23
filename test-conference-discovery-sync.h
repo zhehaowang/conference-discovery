@@ -132,7 +132,8 @@ namespace conference_discovery
     /**
      * Updates the currentDigest_ according to the list of objects
      */
-    void updateHash();
+    void stringHash();
+    void recomputeDigest();
     
 	const std::string newComerDigest_;
 	const Milliseconds defaultDataFreshnessPeriod_;
