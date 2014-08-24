@@ -176,13 +176,15 @@ public:
     for (size_t j = 0; j < syncData.size(); ++j) {
       cout << syncData[j] << endl;
       
-      interest.reset(new Interest(syncData[j]));
-      interest->setInterestLifetimeMilliseconds(defaultInterestLifetime_);
+      if (syncData[j] != conferenceName_.toUri()) {
+        interest.reset(new Interest(syncData[j]));
+        interest->setInterestLifetimeMilliseconds(defaultInterestLifetime_);
       
-      // Using bind vs not?
-      face_.expressInterest
-        (*(interest.get()), bind(&ConferenceDiscovery::onData, this, _1, _2),
-         bind(&ConferenceDiscovery::onTimeout, this, _1));
+        // Using bind vs not?
+        face_.expressInterest
+          (*(interest.get()), bind(&ConferenceDiscovery::onData, this, _1, _2),
+           bind(&ConferenceDiscovery::onTimeout, this, _1));
+      }
     }
     
   };
@@ -270,8 +272,8 @@ public:
       (conferenceList_.begin(), conferenceList_.end(), interest->getName().toUri());
     
     // judgment to be tested
-    if (item == conferenceList_.end() && *item == "") {
-       conferenceList_.push_back(*item);
+    if (item == conferenceList_.end() && conferenceName != "") {
+       conferenceList_.push_back(interest->getName().toUri());
        std::sort(conferenceList_.begin(), conferenceList_.end());
        
        // Probably need lock for adding/removing objects in SyncBasedDiscovery class.
@@ -279,7 +281,7 @@ public:
        
        // Expect this to be equal with 0 several times. 
        // Because new digest does not get updated immediately
-       if (syncBasedDiscovery_->addObject(*item, true) == 0) {
+       if (syncBasedDiscovery_->addObject(interest->getName().toUri(), true) == 0) {
          cout << "Did not add to the conferenceList_ in syncBasedDiscovery_" << endl;
        }
     }
@@ -356,7 +358,7 @@ int main()
        sizeof(DEFAULT_RSA_PRIVATE_KEY_DER));
        
 	ConferenceDiscovery discovery(face, keyChain, certificateName);
-	// publish a conference here
+	discovery.publishConference(getRandomString(), Name("/ndn/edu/ucla/remap/"));
 	
 	while (1)
 	{

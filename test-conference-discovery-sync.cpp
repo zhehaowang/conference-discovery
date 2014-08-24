@@ -37,6 +37,18 @@ SyncBasedDiscovery::onData
      std::back_inserter(setDifferences));
   
   onReceivedSyncData_(setDifferences, false);
+  
+  // Express interest again immediately may not be the best idea...
+  
+  Name name(broadcastPrefix_);
+  name.append(currentDigest_);
+  
+  Interest newInterest(name);
+  newInterest.setInterestLifetimeMilliseconds(defaultInterestLifetime_);
+  
+  face_.expressInterest
+    (newInterest, bind(&SyncBasedDiscovery::onData, this, _1, _2),
+     bind(&SyncBasedDiscovery::onTimeout, this, _1));
 }
 
 void 
@@ -109,10 +121,10 @@ SyncBasedDiscovery::recomputeDigest()
   SHA256_CTX sha256;
   SHA256_Init(&sha256);
   
-  for (std::vector<std::string>::iterator it = objects_.begin(); it != objects_.end(); ++it)
-    // TODO: it being an iterator, this is highly likely to be wrong
-    SHA256_Update(&sha256, &it[0], it->size());
-    
+  for (std::vector<std::string>::iterator it = objects_.begin(); it != objects_.end(); ++it) {
+    SHA256_Update(&sha256, &((*it)[0]), it->size());
+  }
+  
   uint8_t currentDigest[SHA256_DIGEST_LENGTH];
   SHA256_Final(&currentDigest[0], &sha256);
   

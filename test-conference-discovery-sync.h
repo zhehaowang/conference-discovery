@@ -155,6 +155,7 @@ namespace conference_discovery
         // Update the currentDigest_ 
         if (updateDigest) {
           recomputeDigest();
+          cout << "The new digest is " << currentDigest_ << endl;
         }
         return 1;
       }
@@ -269,7 +270,9 @@ namespace conference_discovery
     
     // This serves as the rootDigest in ChronoSync.
     std::string currentDigest_;
-    // This serves as the list of objects to be synchronized, for now.
+    
+    // This serves as the list of objects to be synchronized. 
+    // For now, it's the list of full conference names (prefix + conferenceName)
     // Could be replaced with a Protobuf class or a class later.
     std::vector<std::string> objects_;
     
