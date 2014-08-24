@@ -132,29 +132,208 @@ std::string getRandomString()
 	return result;
 }
 
+// TODO: for now, once the conference is discovered(onData called), it cannot be removed;
+// Modify this logic: for this part, should I query its existence periodically, if onData is received initially?
+// TODO: test current functions first.
+
+/**
+ * Each instance of conference discovery allows you to publish/host at most one conference.
+ * And tries to keep the conference name data set synchronized when initialized
+ * This works very much like the DiscoveryInstance class of game discovery
+ */
 class ConferenceDiscovery
 {
 public:
-  
   ConferenceDiscovery
     (Face& face, KeyChain& keyChain, Name certificateName)
-  :  face_(face), keyChain_(keyChain), certificateName_(certificateName)
+  :  face_(face), keyChain_(keyChain), certificateName_(certificateName), 
+     isHostingConference_(false), defaultDataFreshnessPeriod_(2000),
+     defaultInterestLifetime_(2000)
   {
-    
+    syncBasedDiscovery_.reset(new conference_discovery::SyncBasedDiscovery
+      ("/ndn/broadcast/conflist/", bind(&ConferenceDiscovery::onReceivedSyncData, this, _1, _2), 
+       face_, keyChain_, certificateName_));
   };
   
-  ~ConferenceDiscovery();
+  ~ConferenceDiscovery() {
   
-  void onReceivedSyncData
+  };
+  
+  /**
+   * onReceivedSyncData is passed into syncBasedDiscovery, and called whenever 
+   * syncData is received in syncBasedDiscovery.
+   */
+  void 
+  onReceivedSyncData
     (const std::vector<std::string>& syncData, bool isRecovery)
   {
+    cout << "Data received: " << endl;
+    
+    ptr_lib::shared_ptr<Interest> interest;
+    
+    // For every name received from sync, express interest to ask if they are valid;
+    // Could try answer_origin_kind for this, but not scalable.
+    for (size_t j = 0; j < syncData.size(); ++j) {
+      cout << syncData[j] << endl;
+      
+      interest.reset(new Interest(syncData[j]));
+      interest->setInterestLifetimeMilliseconds(defaultInterestLifetime_);
+      
+      // Using bind vs not?
+      face_.expressInterest
+        (*(interest.get()), bind(&ConferenceDiscovery::onData, this, _1, _2),
+         bind(&ConferenceDiscovery::onTimeout, this, _1));
+    }
     
   };
   
+  /**
+   * Publish conference registers prefix for the intended conference name, 
+   * if local peer's not publishing before
+   */
+  void 
+  publishConference(std::string conferenceName, Name localPrefix) 
+  {
+  	if (!isHostingConference_) {
+  	  // Hope this works...
+  	  conferenceName_ = Name(localPrefix).append(conferenceName);
+      registeredPrefixId_ = face_.registerPrefix
+        (conferenceName_, 
+         bind(&ConferenceDiscovery::onInterest, this, _1, _2, _3, _4), 
+         bind(&ConferenceDiscovery::onRegisterFailed, this, _1));
+      // TODO: do I use to escaped string or toUri here?
+      // should test in onReceivedSyncData, and see if the interest is constructed correctly
+      syncBasedDiscovery_->publishObject(conferenceName_.toUri());
+    }
+    else {
+      cout << "Already hosting a conference." << endl;
+    }
+  };
+  
+  /**
+   * Stop publishing removes the registered prefix by its ID.
+   * Note that interest with matching name could still arrive, but will not trigger
+   * onInterest.
+   */
+  void
+  stopPublishingConference()
+  {
+    if (isHostingConference_) {
+      face_.removeRegisteredPrefix(registeredPrefixId_);
+      isHostingConference_ = true;
+    }
+    else {
+      cout << "Not hosting any conferences." << endl;
+    }
+  }
+  
+  /**
+   * When receiving interest about the conference hosted locally, 
+   * respond with a string that tells the interest issuer that this conference is ongoing
+   */
+  void 
+  onInterest
+    (const ptr_lib::shared_ptr<const Name>& prefix,
+     const ptr_lib::shared_ptr<const Interest>& interest, Transport& transport,
+     uint64_t registerPrefixId)
+  {
+    Data data(interest->getName());
+    
+    // Should be replaced with conference description later
+    std::string content = "ongoing";
+    
+    data.setContent((const uint8_t *)&content[0], content.size());
+    data.getMetaInfo().setTimestampMilliseconds(time(NULL) * 1000.0);
+    data.getMetaInfo().setFreshnessPeriod(defaultDataFreshnessPeriod_);
+    
+    keyChain_.sign(data, certificateName_);
+    Blob encodedData = data.wireEncode();
+
+    transport.send(*encodedData);
+  };
+  
+  /**
+   * Handles the ondata event for conference querying interest
+   * For now, whenever data is received means the conference in question is ongoing.
+   * The content should be conference description for later uses.
+   */
+  void 
+  onData
+    (const ptr_lib::shared_ptr<const Interest>& interest,
+     const ptr_lib::shared_ptr<Data>& data)
+  {
+    std::string conferenceName = interest->getName().get
+      (-1).toEscapedString();
+    cout << "Conference " << conferenceName << " discovered." << endl;
+    
+    std::vector<std::string>::iterator item = std::find
+      (conferenceList_.begin(), conferenceList_.end(), interest->getName().toUri());
+    
+    // judgment to be tested
+    if (item == conferenceList_.end() && *item == "") {
+       conferenceList_.push_back(*item);
+       std::sort(conferenceList_.begin(), conferenceList_.end());
+       
+       // Probably need lock for adding/removing objects in SyncBasedDiscovery class.
+       // Here we update hash as well as adding object; The next interest will carry the new digest
+       
+       // Expect this to be equal with 0 several times. 
+       // Because new digest does not get updated immediately
+       if (syncBasedDiscovery_->addObject(*item, true) == 0) {
+         cout << "Did not add to the conferenceList_ in syncBasedDiscovery_" << endl;
+       }
+    }
+  };
+  
+  /**
+   * Handles the timeout event for unicast conference querying interest:
+   * For now, receiving one timeout means the conference being queried is over.
+   * This strategy is immature and should be replaced.
+   */
+  void
+  onTimeout
+    (const ptr_lib::shared_ptr<const Interest>& interest)
+  {
+    // the last component should be the name of the conference itself
+    std::string conferenceName = interest->getName().get
+      (-1).toEscapedString();
+    cout << "Conference " << conferenceName << " times out." << endl;
+    
+    std::vector<std::string>::iterator item = std::find
+      (conferenceList_.begin(), conferenceList_.end(), interest->getName().toUri());
+    if (item != conferenceList_.end()) {
+       conferenceList_.erase(item);
+       // Probably need lock for adding/removing objects in SyncBasedDiscovery class.
+       // Here we update hash as well as removing object; The next interest will carry the new digest
+       
+       // Expect this to be equal with 0 several times.
+       if (syncBasedDiscovery_->removeObject(*item, true) == 0) {
+         cout << "Did not remove from the conferenceList_ in syncBasedDiscovery_" << endl;
+       }
+    }
+    
+  };
+  
+  void
+  onRegisterFailed
+    (const ptr_lib::shared_ptr<const Name>& prefix)
+  {
+    cout << "Prefix " << prefix->toUri() << " registration failed." << endl;
+  };
+
 private:
   Face& face_;
   KeyChain& keyChain_;
   Name certificateName_;
+  
+  bool isHostingConference_;
+  Name conferenceName_;
+  uint64_t registeredPrefixId_;
+  const Milliseconds defaultDataFreshnessPeriod_;
+  const Milliseconds defaultInterestLifetime_;
+  
+  vector<std::string> conferenceList_;
+  ptr_lib::shared_ptr<conference_discovery::SyncBasedDiscovery> syncBasedDiscovery_;
 };
 
 int main()
@@ -176,7 +355,8 @@ int main()
        sizeof(DEFAULT_RSA_PUBLIC_KEY_DER), DEFAULT_RSA_PRIVATE_KEY_DER,
        sizeof(DEFAULT_RSA_PRIVATE_KEY_DER));
        
-	//conference_discovery::SyncBasedDiscovery discovery(Name("/ndn/broadcast/ndnrtc/conferencelist/"), face, keyChain, certificateName);
+	ConferenceDiscovery discovery(face, keyChain, certificateName);
+	// publish a conference here
 	
 	while (1)
 	{

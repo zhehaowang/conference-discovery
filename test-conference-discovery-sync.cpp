@@ -29,12 +29,12 @@ SyncBasedDiscovery::onData
 
   std::vector<std::string> setDifferences;
 
-  std::set_symmetric_difference(
-    objects.begin(),
-    objects.end(),
-    objects_.begin(),
-    objects_.end(),
-    std::back_inserter(setDifferences));
+  std::set_symmetric_difference
+    (objects.begin(),
+     objects.end(),
+     objects_.begin(),
+     objects_.end(),
+     std::back_inserter(setDifferences));
   
   onReceivedSyncData_(setDifferences, false);
 }
@@ -102,6 +102,7 @@ SyncBasedDiscovery::onRegisterFailed
   cout << "Prefix registration for name " << prefix->toUri() << " failed." << endl;
 }
 
+// Digest methods are not yet tested
 void
 SyncBasedDiscovery::recomputeDigest()
 {
@@ -109,6 +110,7 @@ SyncBasedDiscovery::recomputeDigest()
   SHA256_Init(&sha256);
   
   for (std::vector<std::string>::iterator it = objects_.begin(); it != objects_.end(); ++it)
+    // TODO: it being an iterator, this is highly likely to be wrong
     SHA256_Update(&sha256, &it[0], it->size());
     
   uint8_t currentDigest[SHA256_DIGEST_LENGTH];
@@ -127,7 +129,11 @@ void
 SyncBasedDiscovery::publishObject(std::string name)
 {
   // addObject sorts the objects array
-  if (addObject(name)) {
+  // Here using addObject without updating hash immediately, because we want the content cache
+  // to store the data {name: old digest, content: the new dataset}
+  // We update hash and express interest about the new hash after 
+  // storing the above mentioned stuff in the content cache
+  if (addObject(name, false)) {
     Name dataName = Name(broadcastPrefix_).append(currentDigest_);
     Data data(dataName);
     

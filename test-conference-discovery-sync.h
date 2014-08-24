@@ -68,7 +68,7 @@ namespace conference_discovery
      : broadcastPrefix_(broadcastPrefix), onReceivedSyncData_(onReceivedSyncData), 
        face_(face), keyChain_(keyChain), certificateName_(certificateName), 
        contentCache_(&face), newComerDigest_("00"), currentDigest_(newComerDigest_),
-       defaultDataFreshnessPeriod_(4000), defaultInterestLifetime_(2500)
+       defaultDataFreshnessPeriod_(4000), defaultInterestLifetime_(2000)
     {
       // Storing it in contentCache, the idea is that a set of strings maps to a digest
       contentCache_.registerPrefix
@@ -77,7 +77,7 @@ namespace conference_discovery
       
       Interest interest(broadcastPrefix);
       interest.getName().append(newComerDigest_);
-      interest.setInterestLifetimeMilliseconds(1000);
+      interest.setInterestLifetimeMilliseconds(defaultInterestLifetime_);
       interest.setAnswerOriginKind(ndn_Interest_ANSWER_NO_CONTENT_STORE);
   
       face_.expressInterest
@@ -146,13 +146,16 @@ namespace conference_discovery
     std::vector<std::string> getObjects() { return objects_; };
     
     // addObject does not necessarily call updateHash
-    int addObject(std::string object) {
+    int addObject(std::string object, bool updateDigest) {
       std::vector<std::string>::iterator item = std::find(objects_.begin(), objects_.end(), object);
       if (item == objects_.end() && object != "") {
         objects_.push_back(object);
         // Using default comparison '<' here
         std::sort(objects_.begin(), objects_.end()); 
         // Update the currentDigest_ 
+        if (updateDigest) {
+          recomputeDigest();
+        }
         return 1;
       }
       else {
@@ -162,12 +165,15 @@ namespace conference_discovery
     };
     
     // removeObject does not necessarily call updateHash
-    int removeObject(std::string object) {
+    int removeObject(std::string object, bool updateDigest) {
       std::vector<std::string>::iterator item = std::find(objects_.begin(), objects_.end(), object);
       if (item != objects_.end()) {
         // I should not need to sort the thing again, if it's just erase. Remains to be tested
         objects_.erase(item);
         // Update the currentDigest_
+        if (updateDigest) {
+          recomputeDigest();
+        }
         return 1;
       }
       else {
