@@ -68,7 +68,8 @@ namespace conference_discovery
      : broadcastPrefix_(broadcastPrefix), onReceivedSyncData_(onReceivedSyncData), 
        face_(face), keyChain_(keyChain), certificateName_(certificateName), 
        contentCache_(&face), newComerDigest_("00"), currentDigest_(newComerDigest_),
-       defaultDataFreshnessPeriod_(4000), defaultInterestLifetime_(2000)
+       defaultDataFreshnessPeriod_(4000), defaultInterestLifetime_(2000), 
+       defaultInterval_(500)
     {
       // Storing it in contentCache, the idea is that a set of strings maps to a digest
       contentCache_.registerPrefix
@@ -100,6 +101,13 @@ namespace conference_discovery
        const ptr_lib::shared_ptr<Data>& data);
       
     void onTimeout
+      (const ptr_lib::shared_ptr<const Interest>& interest);
+      
+    void dummyOnData
+      (const ptr_lib::shared_ptr<const Interest>& interest,
+       const ptr_lib::shared_ptr<Data>& data);
+       
+    void expressBroadcastInterest
       (const ptr_lib::shared_ptr<const Interest>& interest);
     
     void onInterest
@@ -138,6 +146,7 @@ namespace conference_discovery
 	const std::string newComerDigest_;
 	const Milliseconds defaultDataFreshnessPeriod_;
 	const Milliseconds defaultInterestLifetime_;
+	const Milliseconds defaultInterval_;
     
     /**
      * These functions should be replaced, once we replace objects with something more

@@ -39,16 +39,42 @@ SyncBasedDiscovery::onData
   onReceivedSyncData_(setDifferences, false);
   
   // Express interest again immediately may not be the best idea...
+  // Try expressing in a given timeout period: 
+  // Why it does not work as expected, without this interval?
   
+  Interest timeout("/timeout");
+  timeout.setInterestLifetimeMilliseconds(defaultInterval_);
+  
+  // express broadcast interest after .5 seconds of sleep
+  face_.expressInterest
+    (timeout, bind(&SyncBasedDiscovery::dummyOnData, this, _1, _2),
+     bind(&SyncBasedDiscovery::expressBroadcastInterest, this, _1));
+  return;
+}
+
+void
+SyncBasedDiscovery::expressBroadcastInterest
+  (const ptr_lib::shared_ptr<const Interest>& interest)
+{
   Name name(broadcastPrefix_);
   name.append(currentDigest_);
-  
+
   Interest newInterest(name);
   newInterest.setInterestLifetimeMilliseconds(defaultInterestLifetime_);
   
   face_.expressInterest
     (newInterest, bind(&SyncBasedDiscovery::onData, this, _1, _2),
      bind(&SyncBasedDiscovery::onTimeout, this, _1));
+  return;
+}
+
+void 
+SyncBasedDiscovery::dummyOnData
+  (const ptr_lib::shared_ptr<const Interest>& interest,
+   const ptr_lib::shared_ptr<Data>& data)
+{
+  cout << "Dummy onData called." << endl;
+  return;
 }
 
 void 
@@ -145,17 +171,23 @@ SyncBasedDiscovery::publishObject(std::string name)
   // to store the data {name: old digest, content: the new dataset}
   // We update hash and express interest about the new hash after 
   // storing the above mentioned stuff in the content cache
+  
   if (addObject(name, false)) {
-    Name dataName = Name(broadcastPrefix_).append(currentDigest_);
-    Data data(dataName);
+  
+    // Do not add itself to contentCache if its currentDigest is "00".
+    if (currentDigest_ != newComerDigest_) {
+      Name dataName = Name(broadcastPrefix_).append(currentDigest_);
+      Data data(dataName);
     
-    std::string content = objectsToString();
-    data.setContent((const uint8_t *)&content[0], content.size());
-    data.getMetaInfo().setTimestampMilliseconds(time(NULL) * 1000.0);
-    data.getMetaInfo().setFreshnessPeriod(defaultDataFreshnessPeriod_);
+      std::string content = objectsToString();
+      data.setContent((const uint8_t *)&content[0], content.size());
+      data.getMetaInfo().setTimestampMilliseconds(time(NULL) * 1000.0);
+      data.getMetaInfo().setFreshnessPeriod(defaultDataFreshnessPeriod_);
     
-    keyChain_.sign(data, certificateName_);
-    contentCacheAdd(data);
+      keyChain_.sign(data, certificateName_);
+    
+      contentCacheAdd(data);
+    }
     
     recomputeDigest();
     
