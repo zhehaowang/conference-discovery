@@ -148,7 +148,7 @@ public:
     (Face& face, KeyChain& keyChain, Name certificateName)
   :  face_(face), keyChain_(keyChain), certificateName_(certificateName), 
      isHostingConference_(false), defaultDataFreshnessPeriod_(2000),
-     defaultInterestLifetime_(2000)
+     defaultInterestLifetime_(2000), defaultInterval_(2000)
   {
     syncBasedDiscovery_.reset(new conference_discovery::SyncBasedDiscovery
       ("/ndn/broadcast/conflist/", bind(&ConferenceDiscovery::onReceivedSyncData, this, _1, _2), 
@@ -271,7 +271,6 @@ public:
     std::vector<std::string>::iterator item = std::find
       (conferenceList_.begin(), conferenceList_.end(), interest->getName().toUri());
     
-    // judgment to be tested
     if (item == conferenceList_.end() && conferenceName != "") {
        conferenceList_.push_back(interest->getName().toUri());
        std::sort(conferenceList_.begin(), conferenceList_.end());
@@ -281,10 +280,63 @@ public:
        
        // Expect this to be equal with 0 several times. 
        // Because new digest does not get updated immediately
-       if (syncBasedDiscovery_->addObject(interest->getName().toUri(), true) == 0) {
-         cout << "Did not add to the conferenceList_ in syncBasedDiscovery_" << endl;
-       }
+      if (syncBasedDiscovery_->addObject(interest->getName().toUri(), true) == 0) {
+        cout << "Did not add to the conferenceList_ in syncBasedDiscovery_" << endl;
+      }
+      
+      // Express interest periodically to know if the conference is still going on.
+      // Uses timeout mechanism to handle the sleep period
+      Interest timeout("/timeout");
+      timeout.setInterestLifetimeMilliseconds(defaultInterval_);
+  
+      // express broadcast interest after 2 seconds of sleep
+      face_.expressInterest
+        (timeout, bind(&ConferenceDiscovery::dummyOnData, this, _1, _2),
+         bind(&ConferenceDiscovery::expressHeartbeatInterest, this, _1, interest));
     }
+  };
+  
+  /**
+   * expressHeartbeatInterest expresses the interest for certain conference again,
+   * to learn if the conference is still going on. This is done like heartbeat with a 2 seconds
+   * default interval. Should switch to more efficient mechanism.
+   */
+  void
+  expressHeartbeatInterest
+    (const ptr_lib::shared_ptr<const Interest>& interest,
+     const ptr_lib::shared_ptr<const Interest>& conferenceInterest)
+  {
+    cout << "Conference interest " << conferenceInterest->getName().toUri() << " expressed." << endl;
+    face_.expressInterest
+      (*(conferenceInterest.get()),
+       bind(&ConferenceDiscovery::onHeartbeatData, this, _1, _2), 
+       bind(&ConferenceDiscovery::onTimeout, this, _1));
+  };
+  
+  /**
+   * This works as expressHeartbeatInterest's onData callback.
+   * Should switch to more efficient mechanism.
+   */
+  void
+  onHeartbeatData
+    (const ptr_lib::shared_ptr<const Interest>& interest,
+     const ptr_lib::shared_ptr<Data>& data)
+  {
+    Interest timeout("/timeout");
+    timeout.setInterestLifetimeMilliseconds(defaultInterval_);
+  
+      // express broadcast interest after 2 seconds of sleep
+    face_.expressInterest
+      (timeout, bind(&ConferenceDiscovery::dummyOnData, this, _1, _2),
+       bind(&ConferenceDiscovery::expressHeartbeatInterest, this, _1, interest));
+  };
+  
+  void 
+  dummyOnData
+    (const ptr_lib::shared_ptr<const Interest>& interest,
+     const ptr_lib::shared_ptr<Data>& data)
+  {
+    cout << "Dummy onData called by ConferenceDiscovery." << endl;
   };
   
   /**
@@ -304,16 +356,18 @@ public:
     std::vector<std::string>::iterator item = std::find
       (conferenceList_.begin(), conferenceList_.end(), interest->getName().toUri());
     if (item != conferenceList_.end()) {
-       conferenceList_.erase(item);
-       // Probably need lock for adding/removing objects in SyncBasedDiscovery class.
-       // Here we update hash as well as removing object; The next interest will carry the new digest
        
-       // Expect this to be equal with 0 several times.
+       // Probably need lock for adding/removing objects in SyncBasedDiscovery class.
        if (syncBasedDiscovery_->removeObject(*item, true) == 0) {
          cout << "Did not remove from the conferenceList_ in syncBasedDiscovery_" << endl;
        }
+       
+       // erase the item after it's removed in removeObject, or removeObject would remove the
+       // wrong element: iterator is actually representing a position index, and the two vectors
+       // should be exactly the same: (does it make sense for them to be shared, 
+       // and mutex-locked correspondingly?)
+       conferenceList_.erase(item);
     }
-    
   };
   
   void
@@ -331,8 +385,10 @@ private:
   bool isHostingConference_;
   Name conferenceName_;
   uint64_t registeredPrefixId_;
+  
   const Milliseconds defaultDataFreshnessPeriod_;
   const Milliseconds defaultInterestLifetime_;
+  const Milliseconds defaultInterval_;
   
   vector<std::string> conferenceList_;
   ptr_lib::shared_ptr<conference_discovery::SyncBasedDiscovery> syncBasedDiscovery_;

@@ -118,6 +118,7 @@ SyncBasedDiscovery::onInterest
     std::string content = objectsToString();
     data.setContent((const uint8_t *)&content[0], content.size());
     data.getMetaInfo().setTimestampMilliseconds(time(NULL) * 1000.0);
+    
     data.getMetaInfo().setFreshnessPeriod(defaultDataFreshnessPeriod_);
     
     keyChain_.sign(data, certificateName_);
@@ -148,6 +149,7 @@ SyncBasedDiscovery::recomputeDigest()
   SHA256_Init(&sha256);
   
   for (std::vector<std::string>::iterator it = objects_.begin(); it != objects_.end(); ++it) {
+    cout << "Object to be hashed: " << *it << endl;
     SHA256_Update(&sha256, &((*it)[0]), it->size());
   }
   
