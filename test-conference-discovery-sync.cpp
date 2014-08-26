@@ -207,6 +207,17 @@ SyncBasedDiscovery::publishObject(std::string name)
 }
 
 void
+SyncBasedDiscovery::stopPublishingObject(std::string name)
+{
+  if (removeObject(name, true)) {
+    
+  }
+  else {
+    cout << "Did not remove self when stop publishing." << endl;
+  }
+}
+
+void
 SyncBasedDiscovery::contentCacheAdd(const Data& data)
 {
   contentCache_.add(data);

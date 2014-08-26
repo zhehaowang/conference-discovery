@@ -206,6 +206,8 @@ public:
       // TODO: do I use to escaped string or toUri here?
       // should test in onReceivedSyncData, and see if the interest is constructed correctly
       syncBasedDiscovery_->publishObject(conferenceName_.toUri());
+      
+      isHostingConference_ = true;
     }
     else {
       cout << "Already hosting a conference." << endl;
@@ -222,7 +224,7 @@ public:
   {
     if (isHostingConference_) {
       face_.removeRegisteredPrefix(registeredPrefixId_);
-      isHostingConference_ = true;
+      isHostingConference_ = false;
     }
     else {
       cout << "Not hosting any conferences." << endl;

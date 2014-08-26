@@ -138,6 +138,11 @@ namespace conference_discovery
     void publishObject(std::string name);
     
     /**
+     * Called when stopConferencePublishing
+     */
+    void stopPublishingObject(std::string name);
+    
+    /**
      * Updates the currentDigest_ according to the list of objects
      */
     void stringHash();
