@@ -344,7 +344,9 @@ namespace chrono_chat
 	};
   
     /**
-	 * Publish conference registers prefix for the intended conference name, 
+	 * Publish conference publishes conference to be discovered by the broadcastPrefix in 
+	 * the constructor.
+	 * It registers prefix for the intended conference name, 
 	 * if local peer's not publishing before
 	 * @param conferenceName string name of the conference.
 	 * @param localPrefix name prefix of the conference.
