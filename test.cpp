@@ -161,12 +161,6 @@ int main()
     cout << e.what() << '\n';
   }
   
-  // This example is not thread-safe; 
-  // And it's not so good as the polling approach in Jeff T's
-  // test-chrono-chat, using this only for test for now.
-  //pthread_t chatThread;
-  //pthread_create(&chatThread, NULL, readChatMsg, NULL);
-  
   std::string msgString = "";
   while (1) {
     // If using stdin as input, and stdout as output; 

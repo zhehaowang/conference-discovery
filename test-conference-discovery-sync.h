@@ -31,6 +31,11 @@ using namespace func_lib::placeholders;
 
 namespace chrono_chat
 {
+
+  typedef func_lib::function<void
+	(const std::vector<std::string>& syncData)>
+	  OnReceivedSyncData;
+
   static MillisecondsSince1970 
   ndn_getNowMilliseconds()
   {
@@ -53,21 +58,16 @@ namespace chrono_chat
   
   /**
    * This class, upon instantiation, will register a broadcast prefix and 
-   * will handle all the logics going on in that broadcast namespace,
+   * handle all that's going on in the broadcast namespace,
    * Namely periodical broadcast of sync digest, maintenance of outstanding interest, etc
    *
-   * Its idea and implementations are pretty similar with ChronoSync, but instead of 
-   * modifying ChronoSync source, I decided to re-implement this.
+   * Its idea and implementations are pretty similar with ChronoSync, but does not have
+   * a dependency upon a not-shrinking digest tree (whose nodes are names and sequence 
+   * numbers) and log.
    */
   class SyncBasedDiscovery
   {
   public:
-    // For now, recovery mechanism in Chronos is still in there, but not used, 
-    // because we don't have a digest log implementation to judge recovery yet.
-    // cpp way of passing function pointers
-    typedef func_lib::function<void
-      (const std::vector<std::string>& syncData, bool isRecovery)>
-        OnReceivedSyncData;
   
     // Double check: does "const int& something" make sense?
     // Does initiation part in constructor implementation do a copy, or merely a reference?
@@ -75,7 +75,15 @@ namespace chrono_chat
     // seems to be the former, which means, it copies, unless the variable being initialized is a reference member
     // Double check: the thing with cpp initialization sequence in constructor
     
-    // This class does not own the face. Their relationships are aggregation
+    /**
+     * Constructor.
+     * @param broadcastPrefix The name prefix for broadcast. Hashes of discovered 
+     * and published objects will be appended directly after broadcast prefix
+     * @param onReceivedSyncData The callback for the action after receiving sync data.
+     * @param face The broadcast face.
+     * @param keyChain The keychain to sign things with.
+     * @param certificateName The certificate name for locating the certificate.
+     */
     SyncBasedDiscovery
       (Name broadcastPrefix, const OnReceivedSyncData& onReceivedSyncData, 
        Face& face, KeyChain& keyChain, Name certificateName)
@@ -108,7 +116,7 @@ namespace chrono_chat
     /**
      * onData sorts both the object(string) array received, 
      * and the string array belonging to this object.
-     * I think I need a lock for objects_ member...
+     * A lock for objects_ member?
      */
     void onData
       (const ptr_lib::shared_ptr<const Interest>& interest,
@@ -313,6 +321,15 @@ namespace chrono_chat
   class ConferenceDiscovery
   {
   public:
+    /**
+     * Constructor
+     * @param broadcastPrefix broadcastPrefix The name prefix for broadcast. Hashes of discovered 
+     * and published objects will be appended directly after broadcast prefix
+     * @param observer The observer class for receiving and displaying conference discovery messages.
+     * @param face The face for broadcast sync and multicast fetch interest.
+     * @param keyChain The keychain to sign things with.
+     * @certificateName The certificate name for locating the certificate.
+     */
 	ConferenceDiscovery
 	  (std::string broadcastPrefix, ExternalObserver *observer, Face& face, 
 	   KeyChain& keyChain, Name certificateName)
@@ -322,43 +339,17 @@ namespace chrono_chat
 	   certificateName_(certificateName)
 	{
 	  syncBasedDiscovery_.reset(new SyncBasedDiscovery
-		(broadcastPrefix, bind(&ConferenceDiscovery::onReceivedSyncData, this, _1, _2), 
+		(broadcastPrefix, bind(&ConferenceDiscovery::onReceivedSyncData, this, _1), 
 		 faceProcessor_, keyChain_, certificateName_));
 	};
   
-	~ConferenceDiscovery() {
-  
-	};
-	
-	/**
-	 * onReceivedSyncData is passed into syncBasedDiscovery, and called whenever 
-	 * syncData is received in syncBasedDiscovery.
-	 */
-	void 
-	onReceivedSyncData
-	  (const std::vector<std::string>& syncData, bool isRecovery)
-	{
-	  ptr_lib::shared_ptr<Interest> interest;
-	
-	  // For every name received from sync, express interest to ask if they are valid;
-	  // Could try answer_origin_kind for this, but not scalable.
-	  for (size_t j = 0; j < syncData.size(); ++j) {
-		if (syncData[j] != conferenceName_.toUri()) {
-		  interest.reset(new Interest(syncData[j]));
-		  interest->setInterestLifetimeMilliseconds(defaultInterestLifetime_);
-	  
-		  // Using bind vs not?
-		  faceProcessor_.expressInterest
-			(*(interest.get()), bind(&ConferenceDiscovery::onData, this, _1, _2),
-			 bind(&ConferenceDiscovery::onTimeout, this, _1));
-		}
-	  }
-	
-	};
-  
-	/**
+    /**
 	 * Publish conference registers prefix for the intended conference name, 
 	 * if local peer's not publishing before
+	 * @param conferenceName string name of the conference.
+	 * @param localPrefix name prefix of the conference.
+	 *
+	 * TODO: should publish conference description for the conference as well.
 	 */
 	void 
 	publishConference(std::string conferenceName, Name localPrefix) 
@@ -381,12 +372,11 @@ namespace chrono_chat
 	  }
 	};
   
-	/**
-	 * Stop publishing removes the registered prefix by its ID.
+    /**
+	 * Stop publishing the conference of this instance. 
+	 * Also removes the registered prefix by its ID.
 	 * Note that interest with matching name could still arrive, but will not trigger
 	 * onInterest.
-	 *
-	 * Ah, faceWrapper does not have this...let's go for the longer way for now...
 	 */
 	void
 	stopPublishingConference()
@@ -403,6 +393,36 @@ namespace chrono_chat
 		cout << "Not hosting any conferences." << endl;
 	  }
 	}
+  
+	~ConferenceDiscovery() {
+  
+	};
+	
+	/**
+	 * onReceivedSyncData is passed into syncBasedDiscovery, and called whenever 
+	 * syncData is received in syncBasedDiscovery.
+	 */
+	void 
+	onReceivedSyncData
+	  (const std::vector<std::string>& syncData)
+	{
+	  ptr_lib::shared_ptr<Interest> interest;
+	
+	  // For every name received from sync, express interest to ask if they are valid;
+	  // Could try answer_origin_kind for this, but not scalable.
+	  for (size_t j = 0; j < syncData.size(); ++j) {
+		if (syncData[j] != conferenceName_.toUri()) {
+		  interest.reset(new Interest(syncData[j]));
+		  interest->setInterestLifetimeMilliseconds(defaultInterestLifetime_);
+	  
+		  // Using bind vs not?
+		  faceProcessor_.expressInterest
+			(*(interest.get()), bind(&ConferenceDiscovery::onData, this, _1, _2),
+			 bind(&ConferenceDiscovery::onTimeout, this, _1));
+		}
+	  }
+	
+	};
   
 	/**
 	 * When receiving interest about the conference hosted locally, 

@@ -37,7 +37,7 @@ SyncBasedDiscovery::onData
      objects_.end(),
      std::back_inserter(setDifferences));
   
-  onReceivedSyncData_(setDifferences, false);
+  onReceivedSyncData_(setDifferences);
   
   // Express interest again immediately may not be the best idea...
   // Try expressing in a given timeout period: 

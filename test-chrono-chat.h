@@ -66,6 +66,17 @@ namespace chrono_chat
   class Chat
   {
   public:
+    /**
+     * Constructor
+     * @param broadcastPrefix The prefix for broadcast digest-tree sync namespace.
+     * @param screenName The name string of this participant in the chatroom.
+     * @param chatRoom The name string of chatroom.
+     * @param hubPrefix The chat prefix of this participant in the chatroom.
+     * @param observer The class that receives and displays chat messages.
+     * @param face The face for broadcast sync and multicast chat interests.
+     * @param keyChain The keychain to sign things with.
+     * @param certificateName The name to locate the certificate.
+     */
 	Chat
 	  (const Name& broadcastPrefix,
 	   const std::string& screenName, const std::string& chatRoom,
@@ -99,13 +110,19 @@ namespace chrono_chat
 	  
 	}
 	
-	// Send a chat message.
+	/**
+	 * Sends a chat message.
+	 * @param chatmsg The message to be sent.
+	 */
 	void
 	sendMessage(const std::string& chatmsg);
 
-	// Send leave message and leave.
+	/**
+	 * Sends leave message and leave.
+	 */
 	void
 	leave();
+	
 
 	/**
 	 * Use gettimeofday to return the current time in milliseconds.
