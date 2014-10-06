@@ -3,6 +3,7 @@
 #include <openssl/rand.h>
 
 using namespace chrono_chat;
+using namespace std;
 
 ptr_lib::shared_ptr<Chat> chat;
 ptr_lib::shared_ptr<ConferenceDiscovery> discovery;

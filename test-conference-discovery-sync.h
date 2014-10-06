@@ -6,6 +6,8 @@
 #ifndef __ndnrtc__addon__conference__discovery__
 #define __ndnrtc__addon__conference__discovery__
 
+#include <ndn-cpp/ndn-cpp-config.h>
+
 #include <ndn-cpp/util/memory-content-cache.hpp>
 
 #include <ndn-cpp/security/identity/memory-identity-storage.hpp>
@@ -15,12 +17,17 @@
 
 #include <boost/algorithm/string.hpp>
 #include <sys/time.h>
+#include <iostream>
 
 #include "external-observer.h"
 
 using namespace std;
-using namespace ndn::func_lib;
 using namespace ndn;
+using namespace ndn::func_lib;
+#if NDN_CPP_HAVE_STD_FUNCTION && NDN_CPP_WITH_STD_FUNCTION
+// In the std library, the placeholders are in a different namespace than boost.
+using namespace func_lib::placeholders;
+#endif
 
 namespace chrono_chat
 {
@@ -32,6 +39,17 @@ namespace chrono_chat
     gettimeofday(&t, 0);
     return t.tv_sec * 1000.0 + t.tv_usec / 1000.0;
   }
+  
+  /**
+   * Class interface for the discover object
+   */
+  class DiscoveryObject
+  {
+  public:
+    
+  private:
+    
+  };
   
   /**
    * This class, upon instantiation, will register a broadcast prefix and 

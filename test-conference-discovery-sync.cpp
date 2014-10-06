@@ -1,10 +1,16 @@
 #include "test-conference-discovery-sync.h"
 #include <sys/time.h>
 #include <openssl/ssl.h>
+#include <iostream>
 
-using namespace ndn;
 using namespace std;
+using namespace ndn;
+using namespace ndn::func_lib;
 using namespace chrono_chat;
+
+#if NDN_CPP_HAVE_STD_FUNCTION && NDN_CPP_WITH_STD_FUNCTION
+using namespace func_lib::placeholders;
+#endif
 
 void 
 SyncBasedDiscovery::onData
