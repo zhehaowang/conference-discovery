@@ -4,7 +4,7 @@
  * Not following Yingdi's latest chrono-chat with digest-tree reset yet
  */
 
-#include "test-chrono-chat.h"
+#include "chrono-chat.h"
 
 using namespace std;
 using namespace ndn;
@@ -221,7 +221,7 @@ Chat::sendMessage(const string& chatmsg)
 		//faceCs_.Leave();
 
 		messageCacheAppend(SyncDemo::ChatMessage_ChatMessageType_CHAT, chatmsg);
-		notifyObserver(MessageTypes::CHAT, "", "", 0);
+		notifyObserver(MessageTypes::CHAT, screen_name_.c_str(), chatmsg.c_str(), 0);
 	}
 }
 
@@ -299,6 +299,23 @@ Chat::dummyOnData
  const ptr_lib::shared_ptr<Data>& data)
 {
 
+}
+
+int 
+Chat::notifyObserver(MessageTypes type, const char *name, const char *msg, double timestamp)
+{
+  if (observer_)
+	observer_->onStateChanged(type, name, msg, timestamp);
+  else {
+	string state = "";
+	switch (type) {
+	  case (MessageTypes::JOIN):	state = "Join"; break;
+	  case (MessageTypes::CHAT):	state = "Chat"; break;
+	  case (MessageTypes::LEAVE):	state = "Leave"; break;
+	}
+	cout << state << "\t" << timestamp << " " << name << " : " << msg << endl;
+  }
+  return 1;
 }
 
 static const char *WHITESPACE_CHARS = " \n\r\t";

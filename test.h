@@ -2,8 +2,8 @@
 #define __ndnrtc__addon__test__
 
 #include "external-observer.h"
-#include "test-chrono-chat.h"
-#include "test-conference-discovery-sync.h"
+#include "chrono-chat.h"
+#include "conference-discovery-sync.h"
 
 using namespace ndn;
 using namespace chrono_chat;

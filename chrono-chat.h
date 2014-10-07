@@ -124,6 +124,7 @@ namespace chrono_chat
 	leave();
 	
 
+  private:
 	/**
 	 * Use gettimeofday to return the current time in milliseconds.
 	 * @return The current time in milliseconds since 1/1/1970, including fractions
@@ -132,23 +133,9 @@ namespace chrono_chat
 	static MillisecondsSince1970
 	getNowMilliseconds();
 
-	int notifyObserver(MessageTypes type, const char *name, const char *msg, double timestamp)
-	{
-	  if (observer_)
-		observer_->onStateChanged(type, name, msg, timestamp);
-	  else {
-	    string state = "";
-	    switch (type) {
-	      case (MessageTypes::JOIN):	state = "Join"; break;
-	      case (MessageTypes::CHAT):	state = "Chat"; break;
-	      case (MessageTypes::LEAVE):	state = "Leave"; break;
-	    }
-		cout << state << "\t" << timestamp << " " << name << msg << endl;
-	  }
-	  return 1;
-	}
+	int 
+	notifyObserver(MessageTypes type, const char *name, const char *msg, double timestamp);
 
-  private:
 	// Initialization: push the JOIN message in to the msgcache, update roster and start heartbeat.
 	void
 	initial();
