@@ -132,11 +132,17 @@ namespace chrono_chat
 	static MillisecondsSince1970
 	getNowMilliseconds();
 
-	int notifyObserver(const char *state, const char *name, const char *msg, double timestamp)
+	int notifyObserver(MessageTypes type, const char *name, const char *msg, double timestamp)
 	{
 	  if (observer_)
-		observer_->onStateChanged(state, name, msg, timestamp);
+		observer_->onStateChanged(type, name, msg, timestamp);
 	  else {
+	    string state = "";
+	    switch (type) {
+	      case (MessageTypes::JOIN):	state = "Join"; break;
+	      case (MessageTypes::CHAT):	state = "Chat"; break;
+	      case (MessageTypes::LEAVE):	state = "Leave"; break;
+	    }
 		cout << state << "\t" << timestamp << " " << name << msg << endl;
 	  }
 	  return 1;

@@ -367,7 +367,7 @@ namespace conference_discovery
 		syncBasedDiscovery_->publishObject(conferenceName_.toUri());
 		isHostingConference_ = true;
 		
-		notifyObserver("start", conferenceName.c_str(), 0);
+		notifyObserver(MessageTypes::START, conferenceName.c_str(), 0);
 	  }
 	  else {
 		cout << "Already hosting a conference." << endl;
@@ -389,7 +389,7 @@ namespace conference_discovery
 		
 		// TODO: I should add a stopPublishingConference method to this
 		syncBasedDiscovery_->stopPublishingObject(conferenceName_.toUri());
-		notifyObserver("stop", conferenceName_.toUri().c_str(), 0);
+		notifyObserver(MessageTypes::STOP, conferenceName_.toUri().c_str(), 0);
 	  }
 	  else {
 		cout << "Not hosting any conferences." << endl;
@@ -494,7 +494,7 @@ namespace conference_discovery
 		  cout << "Did not add to the conferenceList_ in syncBasedDiscovery_" << endl;
 		}
 		
-	    notifyObserver("discovery", conferenceName.c_str(), 0);
+	    notifyObserver(MessageTypes::ADD, conferenceName.c_str(), 0);
 	    
 		// Express interest periodically to know if the conference is still going on.
 		// Uses timeout mechanism to handle the sleep period
@@ -578,7 +578,7 @@ namespace conference_discovery
 		 // and mutex-locked correspondingly?)
 		 conferenceList_.erase(item);
 		 
-	     notifyObserver("leave", conferenceName.c_str(), 0);
+	     notifyObserver(MessageTypes::STOP, conferenceName.c_str(), 0);
 	  }
 	};
   
@@ -589,11 +589,21 @@ namespace conference_discovery
 	  cout << "Prefix " << prefix->toUri() << " registration failed." << endl;
 	};
 	
-	void notifyObserver(const char *state, const char *msg, double timestamp) const
+	void notifyObserver(MessageTypes type, const char *msg, double timestamp) const
 	{
-	  if (observer_)
-		observer_->onStateChanged(state, msg, timestamp);
+	  if (observer_) {
+		observer_->onStateChanged(type, msg, timestamp);
+	  }
 	  else {
+	    string state = "";
+	    switch (type) {
+	      case MessageTypes::ADD: 		state = "Add"; break;
+	      case MessageTypes::REMOVE:	state = "Remove"; break;
+	      case MessageTypes::SET:		state = "Set"; break;
+	      case MessageTypes::START:		state = "Start"; break;
+	      case MessageTypes::STOP:		state = "Stop"; break;
+	      default:		state = "Unknown"; break;
+	    }
 		cout << state << " " << timestamp << "\t" << msg << endl;
 	  }
 	}

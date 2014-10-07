@@ -29,7 +29,7 @@ Chat::initial()
 
 	if (find(roster_.begin(), roster_.end(), usrname_) == roster_.end()) {
 		roster_.push_back(usrname_);
-		notifyObserver("join", screen_name_.c_str(), "", 0);
+		notifyObserver(MessageTypes::JOIN, screen_name_.c_str(), "", 0);
 		
 		messageCacheAppend(SyncDemo::ChatMessage_ChatMessageType_JOIN, "xxx");
 	}
@@ -155,7 +155,7 @@ Chat::onData
 
 		if (l == roster_.size()) {
 			roster_.push_back(nameAndSession);
-			notifyObserver("join", name.c_str(), "", 0);
+			notifyObserver(MessageTypes::JOIN, name.c_str(), "", 0);
 		}
 
 		// Set the alive timeout using the Interest timeout mechanism.
@@ -170,14 +170,14 @@ Chat::onData
 		// TODO: If isRecoverySyncState_ changed, this assumes that we won't get
 		//   data from an interest sent before it changed.
 		if (content.type() == 0 && !isRecoverySyncState_ && content.from() != screen_name_) {
-		    notifyObserver("chat", content.from().c_str(), content.data().c_str(), 0);
+		    notifyObserver(MessageTypes::CHAT, content.from().c_str(), content.data().c_str(), 0);
 		}
 		else if (content.type() == 2) {
 			// leave message
 			vector<string>::iterator n = find(roster_.begin(), roster_.end(), nameAndSession);
 			if (n != roster_.end() && name != screen_name_) {
 				roster_.erase(n);
-				notifyObserver("leave", name.c_str(), "", 0);
+				notifyObserver(MessageTypes::LEAVE, name.c_str(), "", 0);
 			}
 		}
 	}
@@ -221,7 +221,7 @@ Chat::sendMessage(const string& chatmsg)
 		//faceCs_.Leave();
 
 		messageCacheAppend(SyncDemo::ChatMessage_ChatMessageType_CHAT, chatmsg);
-		notifyObserver("chat", "", "", 0);
+		notifyObserver(MessageTypes::CHAT, "", "", 0);
 	}
 }
 
@@ -248,7 +248,7 @@ Chat::alive
 	if (seq != -1 && n != roster_.end()) {
 		if (temp_seq == seq){
 			roster_.erase(n);
-			notifyObserver("leave", name.c_str(), "", 0);
+			notifyObserver(MessageTypes::LEAVE, name.c_str(), "", 0);
 		}
 	}
 }
