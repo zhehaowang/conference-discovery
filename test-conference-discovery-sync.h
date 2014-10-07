@@ -29,7 +29,7 @@ using namespace ndn::func_lib;
 using namespace func_lib::placeholders;
 #endif
 
-namespace chrono_chat
+namespace conference_discovery
 {
 
   typedef func_lib::function<void
@@ -328,10 +328,10 @@ namespace chrono_chat
      * @param observer The observer class for receiving and displaying conference discovery messages.
      * @param face The face for broadcast sync and multicast fetch interest.
      * @param keyChain The keychain to sign things with.
-     * @certificateName The certificate name for locating the certificate.
+     * @param certificateName The certificate name for locating the certificate.
      */
 	ConferenceDiscovery
-	  (std::string broadcastPrefix, ExternalObserver *observer, Face& face, 
+	  (std::string broadcastPrefix, ConferenceDiscoveryObserver *observer, Face& face, 
 	   KeyChain& keyChain, Name certificateName)
 	:  isHostingConference_(false), defaultDataFreshnessPeriod_(2000),
 	   defaultInterestLifetime_(2000), defaultInterval_(2000),
@@ -367,7 +367,7 @@ namespace chrono_chat
 		syncBasedDiscovery_->publishObject(conferenceName_.toUri());
 		isHostingConference_ = true;
 		
-		notifyObserverWithDiscovery(conferencesToString().c_str());
+		notifyObserver("start", conferenceName.c_str(), 0);
 	  }
 	  else {
 		cout << "Already hosting a conference." << endl;
@@ -389,7 +389,7 @@ namespace chrono_chat
 		
 		// TODO: I should add a stopPublishingConference method to this
 		syncBasedDiscovery_->stopPublishingObject(conferenceName_.toUri());
-		notifyObserverWithDiscovery(conferencesToString().c_str());
+		notifyObserver("stop", conferenceName_.toUri().c_str(), 0);
 	  }
 	  else {
 		cout << "Not hosting any conferences." << endl;
@@ -494,7 +494,7 @@ namespace chrono_chat
 		  cout << "Did not add to the conferenceList_ in syncBasedDiscovery_" << endl;
 		}
 		
-	    notifyObserverWithDiscovery(conferencesToString().c_str());
+	    notifyObserver("discovery", conferenceName.c_str(), 0);
 	    
 		// Express interest periodically to know if the conference is still going on.
 		// Uses timeout mechanism to handle the sleep period
@@ -578,7 +578,7 @@ namespace chrono_chat
 		 // and mutex-locked correspondingly?)
 		 conferenceList_.erase(item);
 		 
-	     notifyObserverWithDiscovery(conferencesToString().c_str());
+	     notifyObserver("leave", conferenceName.c_str(), 0);
 	  }
 	};
   
@@ -588,30 +588,13 @@ namespace chrono_chat
 	{
 	  cout << "Prefix " << prefix->toUri() << " registration failed." << endl;
 	};
-    
-    /*** Methods for printing discovered speakers ***/
-    
-	int notifyObserverWithDiscovery(const char *format, ...) const
-	{
-	  va_list args;
-  
-	  static char msg[256];
-  
-	  va_start(args, format);
-	  vsprintf(msg, format, args);
-	  va_end(args);
-  
-	  notifyObserver("discovery", msg);
-	  
-	  return 1;
-	}
 	
-	void notifyObserver(const char *state, const char *args) const
+	void notifyObserver(const char *state, const char *msg, double timestamp) const
 	{
 	  if (observer_)
-		observer_->onStateChanged(state, args);
+		observer_->onStateChanged(state, msg, timestamp);
 	  else {
-		cout << "discovery - " << args;
+		cout << state << " " << timestamp << "\t" << msg << endl;
 	  }
 	}
     
@@ -632,7 +615,7 @@ namespace chrono_chat
 	vector<std::string> conferenceList_;
 	ptr_lib::shared_ptr<SyncBasedDiscovery> syncBasedDiscovery_;
 	
-	ExternalObserver *observer_;
+	ConferenceDiscoveryObserver *observer_;
   };
 }
 

@@ -6,22 +6,39 @@
 #include "test-conference-discovery-sync.h"
 
 using namespace ndn;
+using namespace chrono_chat;
+using namespace conference_discovery;
 
-namespace chrono_chat
+namespace test
 {
-  class Observer : public ExternalObserver
+  class TestChatObserver : public ChatObserver
   {
   public:
-    Observer()
+    TestChatObserver()
     {
     
     }
-    void onStateChanged(const char *state, const char *args)
+    
+    void onStateChanged(const char *state, const char *userName, const char *msg, double timestamp)
     {
-      cout << "State changed: " << state << args << endl;
+      cout << state << " " << timestamp << "\t" << userName << " : " << msg << endl;
     }
   private:
   
+  };
+  
+  class TestConferenceDiscoveryObserver : public ConferenceDiscoveryObserver
+  {
+  public:
+    TestConferenceDiscoveryObserver()
+    {
+    
+    }
+    
+    void onStateChanged(const char *state, const char *msg, double timestamp)
+    {
+      cout << state << " " << timestamp << "\t" << msg << endl;
+    }
   };
   
   class Test

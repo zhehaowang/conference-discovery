@@ -3,7 +3,10 @@
 #include <openssl/rand.h>
 
 using namespace chrono_chat;
+using namespace conference_discovery;
 using namespace std;
+
+using namespace test;
 
 ptr_lib::shared_ptr<Chat> chat;
 ptr_lib::shared_ptr<ConferenceDiscovery> discovery;
@@ -139,7 +142,6 @@ int main()
   Name hubPrefix("/ndn/edu/ucla/remap");
   Name chatBroadcastPrefix("/ndn/broadcast/chrono-chat0.3/");
   std::string conferenceDiscoveryBdcastPrefix = "/ndn/broadcast/discovery";
-  Observer observer;
   
   Face face;
   // Using default keyChain in ndn-cpp

@@ -80,7 +80,7 @@ namespace chrono_chat
 	Chat
 	  (const Name& broadcastPrefix,
 	   const std::string& screenName, const std::string& chatRoom,
-	   const Name& hubPrefix, ExternalObserver *observer, Face& face, KeyChain& keyChain,
+	   const Name& hubPrefix, ChatObserver *observer, Face& face, KeyChain& keyChain,
 	   Name certificateName)
 	  : screen_name_(screenName), chatroom_(chatRoom), maxmsgcachelength_(100),
 		isRecoverySyncState_(true), sync_lifetime_(5000.0), observer_(observer),
@@ -132,22 +132,12 @@ namespace chrono_chat
 	static MillisecondsSince1970
 	getNowMilliseconds();
 
-	/*** Methods for printing chat messages ***/
-	
-	int notifyObserverWithChat(const char *format, ...) const
+	int notifyObserver(const char *state, const char *name, const char *msg, double timestamp)
 	{
-	  va_list args;
-  
-	  static char msg[256];
-  
-	  va_start(args, format);
-	  vsprintf(msg, format, args);
-	  va_end(args);
-  
 	  if (observer_)
-		observer_->onStateChanged("chat - ", msg);
+		observer_->onStateChanged(state, name, msg, timestamp);
 	  else {
-		cout << "chat - " << msg << endl;
+		cout << state << "\t" << timestamp << " " << name << msg << endl;
 	  }
 	  return 1;
 	}
@@ -270,7 +260,7 @@ namespace chrono_chat
 	KeyChain& keyChain_;
 	Name certificateName_;
 	
-	ExternalObserver *observer_;
+	ChatObserver *observer_;
   };
 }
 

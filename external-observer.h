@@ -5,11 +5,26 @@
 
 namespace chrono_chat
 {
-  class ExternalObserver
+  class ChatObserver
   {
   public:
-    virtual void onStateChanged(const char *state, const char *args) = 0;
-  }; 
+    /**
+     * The timestamp is considered as a double, which is the base type for ndn_Milliseconds in common.h
+     */
+    virtual void onStateChanged(const char *state, const char *userName, const char *msg, double timestamp) = 0;
+  };
+}
+
+namespace conference_discovery
+{  
+  class ConferenceDiscoveryObserver
+  {
+  public:
+    /**
+     * The timestamp is considered as a double, which is the base type for ndn_Milliseconds in common.h
+     */
+    virtual void onStateChanged(const char *state, const char *msg, double timestamp) = 0;
+  };
 }
 
 #endif
