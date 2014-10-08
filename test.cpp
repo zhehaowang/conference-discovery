@@ -1,6 +1,7 @@
 #include "test.h"
 #include <exception>
 #include <openssl/rand.h>
+#include <stdio.h>
 
 using namespace chrono_chat;
 using namespace conference_discovery;
@@ -153,11 +154,22 @@ int main()
   // This throws an libc++abi.dylib: terminate called throwing an exception
   // which is caused by "socket cannot connect to socket"
   try {
-    chat.reset(new Chat(chatBroadcastPrefix, screenName, chatroom,
-  	   hubPrefix, NULL, face, keyChain, certificateName)); 
-  	discovery.reset(new ConferenceDiscovery(conferenceDiscoveryBdcastPrefix, 
-  	   NULL, face, keyChain, certificateName));
-  	discovery->publishConference(screenName, hubPrefix);
+    chat.reset
+      (new Chat(chatBroadcastPrefix, screenName, chatroom,
+  	   hubPrefix, NULL, face, keyChain, certificateName));
+  	
+  	ConferenceDescription cd;
+  	ConferenceInfoFactory factory(ptr_lib::make_shared<ConferenceDescription>(cd));
+
+  	discovery.reset
+  	  (new ConferenceDiscovery(conferenceDiscoveryBdcastPrefix, 
+  	   NULL, ptr_lib::make_shared<ConferenceInfoFactory>(factory), 
+  	   face, keyChain, certificateName));
+  	   
+  	ConferenceDescription thisConference;
+  	thisConference.setDescription("My stupid conference: " + screenName);
+  	discovery->publishConference
+  	  (screenName, hubPrefix, ptr_lib::make_shared<ConferenceDescription>(thisConference));
   }
   catch (std::exception& e) {
     cout << e.what() << '\n';
@@ -171,10 +183,20 @@ int main()
     if (isStdinReady())
     {
       msgString = stdinReadLine();
-      if (msgString == "leave" || msgString == "exit")
+      if (msgString == "-leave" || msgString == "-exit") {
         // We will send the leave message below.
         break;
-    
+      }
+      if (msgString.find("-show ") != std::string::npos) {
+        ptr_lib::shared_ptr<ConferenceDescription> description = 
+          ptr_lib::dynamic_pointer_cast<ConferenceDescription>
+            (discovery->getConference(msgString.substr(string("-show ").size())));
+        
+        if (description != NULL) {
+          cout << description->getDescription() << endl;
+        }
+        continue;
+      }
       chat->sendMessage(msgString);
     }
     face.processEvents();
@@ -182,5 +204,7 @@ int main()
   }
   chat->leave();
   
+  // Give some time so that others can fetch leave.
+  usleep(2000);
   return 1;
 }

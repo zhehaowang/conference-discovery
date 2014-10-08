@@ -1,5 +1,8 @@
-#ifndef __ndnrtc__addon__external__observer__
-#define __ndnrtc__addon__external__observer__
+#ifndef __ndnrtc__addon__conference__info__
+#define __ndnrtc__addon__conference__info__
+
+#include <ndn-cpp/util/blob.hpp>
+#include <ndn-cpp/ndn-cpp-config.h>
 
 namespace conference_discovery
 {
@@ -11,18 +14,12 @@ namespace conference_discovery
     
     }
     
-    virtual std::string serialize() = 0;
-    virtual void deserialize(std::string srcString) = 0;
+    virtual Blob serialize(const ptr_lib::shared_ptr<ConferenceInfo> &info) = 0;
+    virtual ptr_lib::shared_ptr<ConferenceInfo> deserialize(Blob srcBlob) = 0;
     
-    std::string getString()
-    {
-      return string_;
-    };
+  protected:
     
-  private:
-    std::string string_;
-    
-  }
+  };
 }
 
 #endif

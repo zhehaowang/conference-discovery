@@ -21,6 +21,7 @@
 
 #include "sync-based-discovery.h"
 #include "external-observer.h"
+#include "conference-info-factory.h"
 
 using namespace std;
 using namespace ndn;
@@ -45,11 +46,12 @@ namespace conference_discovery
      * @param certificateName The certificate name for locating the certificate.
      */
 	ConferenceDiscovery
-	  (std::string broadcastPrefix, ConferenceDiscoveryObserver *observer, Face& face, 
-	   KeyChain& keyChain, Name certificateName)
+	  (string broadcastPrefix, ptr_lib::shared_ptr<ConferenceDiscoveryObserver> observer, 
+	   ptr_lib::shared_ptr<ConferenceInfoFactory> factory, Face& face, KeyChain& keyChain, 
+	   Name certificateName)
 	:  isHostingConference_(false), defaultDataFreshnessPeriod_(2000),
 	   defaultInterestLifetime_(2000), defaultInterval_(2000),
-	   observer_(observer), faceProcessor_(face), keyChain_(keyChain), 
+	   observer_(observer), factory_(factory), faceProcessor_(face), keyChain_(keyChain), 
 	   certificateName_(certificateName)
 	{
 	  syncBasedDiscovery_.reset(new SyncBasedDiscovery
@@ -64,11 +66,10 @@ namespace conference_discovery
 	 * if local peer's not publishing before
 	 * @param conferenceName string name of the conference.
 	 * @param localPrefix name prefix of the conference.
-	 *
-	 * TODO: should publish conference description for the conference as well.
+	 * @param conferenceInfo the info of this conference.
 	 */
 	void 
-	publishConference(std::string conferenceName, Name localPrefix);
+	publishConference(std::string conferenceName, Name localPrefix, ptr_lib::shared_ptr<ConferenceInfo> conferenceInfo);
   
     /**
 	 * Stop publishing the conference of this instance. 
@@ -78,8 +79,42 @@ namespace conference_discovery
 	 */
 	void
 	stopPublishingConference();
-
-  
+	
+	/**
+	 * getConferences returns the copy of list of conferences
+	 */
+	std::map<std::string, ptr_lib::shared_ptr<ConferenceInfo>>
+	getConference() { return conferenceList_; };
+    
+    /**
+     * getConference gets the conference info from list of conferences discovered (hosted by others)
+     */
+    ptr_lib::shared_ptr<ConferenceInfo>
+    getConference(std::string conferenceName) {
+      std::map<string, ptr_lib::shared_ptr<ConferenceInfo>>::iterator item = conferenceList_.find
+        (conferenceName);
+	  if (item != conferenceList_.end()) {
+	    return item->second;
+	  }
+	  else {
+	    // TODO: nullptr vs NULL
+	    return NULL;
+	  }
+    };
+    
+    /**
+     * getSelfConference gets the conference hosted by self;
+     */
+    ptr_lib::shared_ptr<ConferenceInfo>
+    getSelfConference() {
+      if (conferenceInfo_ != NULL) {
+        return conferenceInfo_;
+      }
+      else {
+        return NULL;
+      }
+    };
+    
 	~ConferenceDiscovery() {
   
 	};
@@ -175,10 +210,15 @@ namespace conference_discovery
 	const Milliseconds defaultInterestLifetime_;
 	const Milliseconds defaultInterval_;
   
-	vector<std::string> conferenceList_;
-	ptr_lib::shared_ptr<SyncBasedDiscovery> syncBasedDiscovery_;
+	//vector<std::string> conferenceList_;
 	
-	ConferenceDiscoveryObserver *observer_;
+	std::map<std::string, ptr_lib::shared_ptr<ConferenceInfo>> conferenceList_;
+	ptr_lib::shared_ptr<SyncBasedDiscovery> syncBasedDiscovery_;
+	ptr_lib::shared_ptr<ConferenceDiscoveryObserver> observer_;
+	
+	ptr_lib::shared_ptr<ConferenceInfoFactory> factory_;
+	// conferenceInfo_ is the info of the class currently being hosted
+	ptr_lib::shared_ptr<ConferenceInfo> conferenceInfo_;
   };
 }
 

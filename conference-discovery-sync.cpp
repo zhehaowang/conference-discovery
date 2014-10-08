@@ -13,7 +13,8 @@ using namespace func_lib::placeholders;
 #endif
 
 void 
-ConferenceDiscovery::publishConference(std::string conferenceName, Name localPrefix) 
+ConferenceDiscovery::publishConference
+  (std::string conferenceName, Name localPrefix, ptr_lib::shared_ptr<ConferenceInfo> conferenceInfo) 
 {
   if (!isHostingConference_) {
 	conferenceName_ = Name(localPrefix).append(conferenceName);
@@ -21,10 +22,12 @@ ConferenceDiscovery::publishConference(std::string conferenceName, Name localPre
 	  (conferenceName_, 
 	   bind(&ConferenceDiscovery::onInterest, this, _1, _2, _3, _4), 
 	   bind(&ConferenceDiscovery::onRegisterFailed, this, _1));
-	// TODO: do I use to escaped string or toUri here?
-	// should test in onReceivedSyncData, and see if the interest is constructed correctly
+	
 	syncBasedDiscovery_->publishObject(conferenceName_.toUri());
 	isHostingConference_ = true;
+	
+	// this destroys the parent class object.
+	conferenceInfo_ = conferenceInfo;
 	
 	notifyObserver(MessageTypes::START, conferenceName.c_str(), 0);
   }
@@ -77,11 +80,9 @@ ConferenceDiscovery::onInterest
    uint64_t registerPrefixId)
 {
   Data data(interest->getName());
-
-  // Should be replaced with conference description later
-  std::string content = "ongoing";
-
-  data.setContent((const uint8_t *)&content[0], content.size());
+  
+  data.setContent(factory_->serialize(conferenceInfo_));
+  
   data.getMetaInfo().setTimestampMilliseconds(time(NULL) * 1000.0);
   data.getMetaInfo().setFreshnessPeriod(defaultDataFreshnessPeriod_);
 
@@ -98,25 +99,30 @@ ConferenceDiscovery::onData
 {
   std::string conferenceName = interest->getName().get
 	(-1).toEscapedString();
-
-  std::vector<std::string>::iterator item = std::find
-	(conferenceList_.begin(), conferenceList_.end(), interest->getName().toUri());
-
+  
+  std::map<string, ptr_lib::shared_ptr<ConferenceInfo>>::iterator item = conferenceList_.find
+    (interest->getName().toUri());
+  
   if (item == conferenceList_.end() && conferenceName != "") {
-	 conferenceList_.push_back(interest->getName().toUri());
-	 std::sort(conferenceList_.begin(), conferenceList_.end());
-   
-	 // Probably need lock for adding/removing objects in SyncBasedDiscovery class.
-	 // Here we update hash as well as adding object; The next interest will carry the new digest
-   
-	 // Expect this to be equal with 0 several times. 
-	 // Because new digest does not get updated immediately
+    
+    conferenceList_.insert
+      (std::pair<string, ptr_lib::shared_ptr<ConferenceInfo>>(interest->getName().toUri(),
+       factory_->deserialize(data->getContent())));
+	
+	// std::map should be sorted by default
+	//std::sort(conferenceList_.begin(), conferenceList_.end());
+
+	// Probably need lock for adding/removing objects in SyncBasedDiscovery class.
+	// Here we update hash as well as adding object; The next interest will carry the new digest
+
+	// Expect this to be equal with 0 several times. 
+	// Because new digest does not get updated immediately
 	if (syncBasedDiscovery_->addObject(interest->getName().toUri(), true) == 0) {
 	  cout << "Did not add to the conferenceList_ in syncBasedDiscovery_" << endl;
 	}
-	
-	notifyObserver(MessageTypes::ADD, conferenceName.c_str(), 0);
-	
+
+	notifyObserver(MessageTypes::ADD, interest->getName().toUri().c_str(), 0);
+
 	// Express interest periodically to know if the conference is still going on.
 	// Uses timeout mechanism to handle the sleep period
 	Interest timeout("/timeout");
@@ -137,12 +143,12 @@ ConferenceDiscovery::onTimeout
   std::string conferenceName = interest->getName().get
 	(-1).toEscapedString();
   
-  std::vector<std::string>::iterator item = std::find
-	(conferenceList_.begin(), conferenceList_.end(), interest->getName().toUri());
+  std::map<string, ptr_lib::shared_ptr<ConferenceInfo>>::iterator item = conferenceList_.find
+    (interest->getName().toUri());
   if (item != conferenceList_.end()) {
    
 	 // Probably need lock for adding/removing objects in SyncBasedDiscovery class.
-	 if (syncBasedDiscovery_->removeObject(*item, true) == 0) {
+	 if (syncBasedDiscovery_->removeObject(item->first, true) == 0) {
 	   cout << "Did not remove from the conferenceList_ in syncBasedDiscovery_" << endl;
 	 }
    
@@ -195,7 +201,7 @@ ConferenceDiscovery::notifyObserver(MessageTypes type, const char *msg, double t
 	  case MessageTypes::SET:		state = "Set"; break;
 	  case MessageTypes::START:		state = "Start"; break;
 	  case MessageTypes::STOP:		state = "Stop"; break;
-	  default:		state = "Unknown"; break;
+	  default:						state = "Unknown"; break;
 	}
 	cout << state << " " << timestamp << "\t" << msg << endl;
   }
@@ -205,8 +211,8 @@ std::string
 ConferenceDiscovery::conferencesToString()
 {
   std::string result;
-  for(std::vector<std::string>::iterator it = conferenceList_.begin(); it != conferenceList_.end(); ++it) {
-	result += *it;
+  for(std::map<string, ptr_lib::shared_ptr<ConferenceInfo>>::iterator it = conferenceList_.begin(); it != conferenceList_.end(); ++it) {
+	result += it->first;
 	result += "\n";
   }
   if (isHostingConference_) {
