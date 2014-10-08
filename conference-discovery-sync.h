@@ -50,7 +50,7 @@ namespace conference_discovery
 	   ptr_lib::shared_ptr<ConferenceInfoFactory> factory, Face& face, KeyChain& keyChain, 
 	   Name certificateName)
 	:  isHostingConference_(false), defaultDataFreshnessPeriod_(2000),
-	   defaultInterestLifetime_(2000), defaultInterval_(2000),
+	   defaultInterestLifetime_(2000), defaultInterval_(2000), defaultTimeoutReexpressInterval_(300), 
 	   observer_(observer), factory_(factory), faceProcessor_(face), keyChain_(keyChain), 
 	   certificateName_(certificateName)
 	{
@@ -90,7 +90,8 @@ namespace conference_discovery
      * getConference gets the conference info from list of conferences discovered (hosted by others)
      */
     ptr_lib::shared_ptr<ConferenceInfo>
-    getConference(std::string conferenceName) {
+    getConference(std::string conferenceName) 
+    {
       std::map<string, ptr_lib::shared_ptr<ConferenceInfo>>::iterator item = conferenceList_.find
         (conferenceName);
 	  if (item != conferenceList_.end()) {
@@ -106,7 +107,8 @@ namespace conference_discovery
      * getSelfConference gets the conference hosted by self;
      */
     ptr_lib::shared_ptr<ConferenceInfo>
-    getSelfConference() {
+    getSelfConference() 
+    {
       if (conferenceInfo_ != NULL) {
         return conferenceInfo_;
       }
@@ -115,7 +117,8 @@ namespace conference_discovery
       }
     };
     
-	~ConferenceDiscovery() {
+	~ConferenceDiscovery() 
+	{
   
 	};
 	
@@ -209,6 +212,7 @@ namespace conference_discovery
 	const Milliseconds defaultDataFreshnessPeriod_;
 	const Milliseconds defaultInterestLifetime_;
 	const Milliseconds defaultInterval_;
+	const Milliseconds defaultTimeoutReexpressInterval_;
   
 	//vector<std::string> conferenceList_;
 	

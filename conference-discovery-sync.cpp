@@ -103,38 +103,50 @@ ConferenceDiscovery::onData
   std::map<string, ptr_lib::shared_ptr<ConferenceInfo>>::iterator item = conferenceList_.find
     (interest->getName().toUri());
   
-  if (item == conferenceList_.end() && conferenceName != "") {
-    
-    conferenceList_.insert
-      (std::pair<string, ptr_lib::shared_ptr<ConferenceInfo>>(interest->getName().toUri(),
-       factory_->deserialize(data->getContent())));
+  if (item == conferenceList_.end()) {
+    if (conferenceName != "") {
+	  conferenceList_.insert
+		(std::pair<string, ptr_lib::shared_ptr<ConferenceInfo>>(interest->getName().toUri(),
+		 factory_->deserialize(data->getContent())));
 	
-	// std::map should be sorted by default
-	//std::sort(conferenceList_.begin(), conferenceList_.end());
+	  // std::map should be sorted by default
+	  //std::sort(conferenceList_.begin(), conferenceList_.end());
 
-	// Probably need lock for adding/removing objects in SyncBasedDiscovery class.
-	// Here we update hash as well as adding object; The next interest will carry the new digest
+	  // Probably need lock for adding/removing objects in SyncBasedDiscovery class.
+	  // Here we update hash as well as adding object; The next interest will carry the new digest
 
-	// Expect this to be equal with 0 several times. 
-	// Because new digest does not get updated immediately
-	if (syncBasedDiscovery_->addObject(interest->getName().toUri(), true) == 0) {
-	  cout << "Did not add to the conferenceList_ in syncBasedDiscovery_" << endl;
+	  // Expect this to be equal with 0 several times. 
+	  // Because new digest does not get updated immediately
+	  if (syncBasedDiscovery_->addObject(interest->getName().toUri(), true) == 0) {
+		cout << "Did not add to the conferenceList_ in syncBasedDiscovery_" << endl;
+	  }
+
+	  notifyObserver(MessageTypes::ADD, interest->getName().toUri().c_str(), 0);
+
+	  // Express interest periodically to know if the conference is still going on.
+	  // Uses timeout mechanism to handle the sleep period
+	  Interest timeout("/timeout");
+	  timeout.setInterestLifetimeMilliseconds(defaultInterval_);
+
+	  // express broadcast interest after 2 seconds of sleep
+	  faceProcessor_.expressInterest
+		(timeout, bind(&ConferenceDiscovery::dummyOnData, this, _1, _2),
+		 bind(&ConferenceDiscovery::expressHeartbeatInterest, this, _1, interest));
 	}
-
-	notifyObserver(MessageTypes::ADD, interest->getName().toUri().c_str(), 0);
-
-	// Express interest periodically to know if the conference is still going on.
-	// Uses timeout mechanism to handle the sleep period
-	Interest timeout("/timeout");
-	timeout.setInterestLifetimeMilliseconds(defaultInterval_);
-
-	// express broadcast interest after 2 seconds of sleep
-	faceProcessor_.expressInterest
-	  (timeout, bind(&ConferenceDiscovery::dummyOnData, this, _1, _2),
-	   bind(&ConferenceDiscovery::expressHeartbeatInterest, this, _1, interest));
+	else {
+	  cout << "Conference name empty." << endl;
+	}
+  }
+  else {
+    item->second->resetTimeout();
   }
 }
 
+/**
+ * When interest times out, increment the timeout count for that conference;
+ * If timeout count reaches maximum, delete conference;
+ * If not, express interest again.
+ */
 void
 ConferenceDiscovery::onTimeout
   (const ptr_lib::shared_ptr<const Interest>& interest)
@@ -146,19 +158,27 @@ ConferenceDiscovery::onTimeout
   std::map<string, ptr_lib::shared_ptr<ConferenceInfo>>::iterator item = conferenceList_.find
     (interest->getName().toUri());
   if (item != conferenceList_.end()) {
-   
-	 // Probably need lock for adding/removing objects in SyncBasedDiscovery class.
-	 if (syncBasedDiscovery_->removeObject(item->first, true) == 0) {
-	   cout << "Did not remove from the conferenceList_ in syncBasedDiscovery_" << endl;
-	 }
-   
-	 // erase the item after it's removed in removeObject, or removeObject would remove the
-	 // wrong element: iterator is actually representing a position index, and the two vectors
-	 // should be exactly the same: (does it make sense for them to be shared, 
-	 // and mutex-locked correspondingly?)
-	 conferenceList_.erase(item);
-	 
-	 notifyObserver(MessageTypes::STOP, conferenceName.c_str(), 0);
+	if (item->second->incrementTimeout()) {
+	  // Probably need lock for adding/removing objects in SyncBasedDiscovery class.
+	  if (syncBasedDiscovery_->removeObject(item->first, true) == 0) {
+		cout << "Did not remove from the conferenceList_ in syncBasedDiscovery_" << endl;
+	  }
+  
+	  // erase the item after it's removed in removeObject, or removeObject would remove the
+	  // wrong element: iterator is actually representing a position index, and the two vectors
+	  // should be exactly the same: (does it make sense for them to be shared, 
+	  // and mutex-locked correspondingly?)
+	  conferenceList_.erase(item);
+	
+	  notifyObserver(MessageTypes::STOP, conferenceName.c_str(), 0);
+	}
+	else {
+	  Interest timeout("/timeout");
+	  timeout.setInterestLifetimeMilliseconds(defaultTimeoutReexpressInterval_);
+      faceProcessor_.expressInterest
+		(timeout, bind(&ConferenceDiscovery::dummyOnData, this, _1, _2),
+		 bind(&ConferenceDiscovery::expressHeartbeatInterest, this, _1, interest));
+	}
   }
 }
 
