@@ -49,8 +49,8 @@ namespace conference_discovery
 	  (string broadcastPrefix, ptr_lib::shared_ptr<ConferenceDiscoveryObserver> observer, 
 	   ptr_lib::shared_ptr<ConferenceInfoFactory> factory, Face& face, KeyChain& keyChain, 
 	   Name certificateName)
-	:  isHostingConference_(false), defaultDataFreshnessPeriod_(2000),
-	   defaultInterestLifetime_(2000), defaultInterval_(2000), defaultTimeoutReexpressInterval_(300), 
+	:  isHostingConference_(false), defaultDataFreshnessPeriod_(1000),
+	   defaultInterestLifetime_(1000), defaultHeartbeatInterval_(500), defaultTimeoutReexpressInterval_(300), 
 	   observer_(observer), factory_(factory), faceProcessor_(face), keyChain_(keyChain), 
 	   certificateName_(certificateName)
 	{
@@ -160,7 +160,15 @@ namespace conference_discovery
 	expressHeartbeatInterest
 	  (const ptr_lib::shared_ptr<const Interest>& interest,
 	   const ptr_lib::shared_ptr<const Interest>& conferenceInterest);
-  
+    
+    /**
+     * Remove registered prefix happens after a few seconds after stop hosting conference;
+     * So that other peers may fetch "conference over" with heartbeat interest.
+     */
+    void
+    removeRegisteredPrefix
+      (const ptr_lib::shared_ptr<const Interest>& interest);
+    
 	/**
 	 * This works as expressHeartbeatInterest's onData callback.
 	 * Should switch to more efficient mechanism.
@@ -206,12 +214,14 @@ namespace conference_discovery
 	Name certificateName_;
     
 	bool isHostingConference_;
+	string conferenceBeingRemoved_;
+	
 	Name conferenceName_;
 	uint64_t registeredPrefixId_;
   
 	const Milliseconds defaultDataFreshnessPeriod_;
 	const Milliseconds defaultInterestLifetime_;
-	const Milliseconds defaultInterval_;
+	const Milliseconds defaultHeartbeatInterval_;
 	const Milliseconds defaultTimeoutReexpressInterval_;
   
 	//vector<std::string> conferenceList_;

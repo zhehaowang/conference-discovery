@@ -25,6 +25,7 @@ ConferenceDiscovery::publishConference
 	
 	syncBasedDiscovery_->publishObject(conferenceName_.toUri());
 	isHostingConference_ = true;
+	conferenceBeingRemoved_ = "";
 	
 	// this destroys the parent class object.
 	conferenceInfo_ = conferenceInfo;
@@ -37,15 +38,36 @@ ConferenceDiscovery::publishConference
 }
 
 void
+ConferenceDiscovery::removeRegisteredPrefix
+  (const ptr_lib::shared_ptr<const Interest>& interest)
+{
+  faceProcessor_.removeRegisteredPrefix(registeredPrefixId_);
+  conferenceBeingRemoved_ = "";
+}
+
+void
 ConferenceDiscovery::stopPublishingConference()
 {
   if (isHostingConference_) {
-	faceProcessor_.removeRegisteredPrefix(registeredPrefixId_);
-	isHostingConference_ = false;
+    // TODO: Could it go wrong if the peer stops the current conference, and
+    // start one again within the interval? This judgment here shouldn't matter.
+    if (conferenceBeingRemoved_ == "") {
+	  isHostingConference_ = false;
+	  conferenceBeingRemoved_ = conferenceName_.toUri();
 	
-	// TODO: I should add a stopPublishingConference method to this
-	syncBasedDiscovery_->stopPublishingObject(conferenceName_.toUri());
-	notifyObserver(MessageTypes::STOP, conferenceName_.toUri().c_str(), 0);
+	  Interest timeout("/timeout");
+	  timeout.setInterestLifetimeMilliseconds(defaultHeartbeatInterval_);
+
+	  faceProcessor_.expressInterest
+		(timeout, bind(&ConferenceDiscovery::dummyOnData, this, _1, _2),
+		 bind(&ConferenceDiscovery::removeRegisteredPrefix, this, _1));
+	
+	  syncBasedDiscovery_->stopPublishingObject(conferenceName_.toUri());
+	  notifyObserver(MessageTypes::STOP, conferenceName_.toUri().c_str(), 0);
+	}
+	else {
+	  cout << "Last conference " << conferenceBeingRemoved_ << " is still being removed." << endl;
+	}
   }
   else {
 	cout << "Not hosting any conferences." << endl;
@@ -81,7 +103,12 @@ ConferenceDiscovery::onInterest
 {
   Data data(interest->getName());
   
-  data.setContent(factory_->serialize(conferenceInfo_));
+  if (interest->getName().toUri() != conferenceBeingRemoved_) {
+	data.setContent(factory_->serialize(conferenceInfo_));
+  } else {
+    string content = "over";
+    data.setContent((const uint8_t *)&content[0], content.size());
+  }
   
   data.getMetaInfo().setTimestampMilliseconds(time(NULL) * 1000.0);
   data.getMetaInfo().setFreshnessPeriod(defaultDataFreshnessPeriod_);
@@ -105,33 +132,58 @@ ConferenceDiscovery::onData
   
   if (item == conferenceList_.end()) {
     if (conferenceName != "") {
-	  conferenceList_.insert
-		(std::pair<string, ptr_lib::shared_ptr<ConferenceInfo>>(interest->getName().toUri(),
-		 factory_->deserialize(data->getContent())));
+      string content = "";
+      for (size_t i = 0; i < data->getContent().size(); ++i) {
+        content += (*data->getContent())[i];
+      }
+      
+      if (content != "over") {
+		conferenceList_.insert
+		  (std::pair<string, ptr_lib::shared_ptr<ConferenceInfo>>
+			(interest->getName().toUri(), factory_->deserialize(data->getContent())));
 	
-	  // std::map should be sorted by default
-	  //std::sort(conferenceList_.begin(), conferenceList_.end());
+		// std::map should be sorted by default
+		//std::sort(conferenceList_.begin(), conferenceList_.end());
 
-	  // Probably need lock for adding/removing objects in SyncBasedDiscovery class.
-	  // Here we update hash as well as adding object; The next interest will carry the new digest
+		// Probably need lock for adding/removing objects in SyncBasedDiscovery class.
+		// Here we update hash as well as adding object; The next interest will carry the new digest
 
-	  // Expect this to be equal with 0 several times. 
-	  // Because new digest does not get updated immediately
-	  if (syncBasedDiscovery_->addObject(interest->getName().toUri(), true) == 0) {
-		cout << "Did not add to the conferenceList_ in syncBasedDiscovery_" << endl;
+		// Expect this to be equal with 0 several times. 
+		// Because new digest does not get updated immediately
+		if (syncBasedDiscovery_->addObject(interest->getName().toUri(), true) == 0) {
+		  cout << "Did not add to the conferenceList_ in syncBasedDiscovery_" << endl;
+		}
+
+		notifyObserver(MessageTypes::ADD, interest->getName().toUri().c_str(), 0);
+
+		Interest timeout("/timeout");
+		timeout.setInterestLifetimeMilliseconds(defaultHeartbeatInterval_);
+
+		// express heartbeat interest after 2 seconds of sleep
+		faceProcessor_.expressInterest
+		  (timeout, bind(&ConferenceDiscovery::dummyOnData, this, _1, _2),
+		   bind(&ConferenceDiscovery::expressHeartbeatInterest, this, _1, interest));
 	  }
-
-	  notifyObserver(MessageTypes::ADD, interest->getName().toUri().c_str(), 0);
-
-	  // Express interest periodically to know if the conference is still going on.
-	  // Uses timeout mechanism to handle the sleep period
-	  Interest timeout("/timeout");
-	  timeout.setInterestLifetimeMilliseconds(defaultInterval_);
-
-	  // express broadcast interest after 2 seconds of sleep
-	  faceProcessor_.expressInterest
-		(timeout, bind(&ConferenceDiscovery::dummyOnData, this, _1, _2),
-		 bind(&ConferenceDiscovery::expressHeartbeatInterest, this, _1, interest));
+	  else {
+        cout << "received over" << endl;
+	    // TODO: The chance of this happening at the exactly the same time as 
+	    // a row of timeouts happen is small, but that case should still be considered.
+	    
+	    // For now, this part can only happen when the data stored in content cache became stale
+	    
+		// Same code as in timeout, should generalize as removeConference.
+		if (syncBasedDiscovery_->removeObject(item->first, true) == 0) {
+		  cout << "Did not remove from the conferenceList_ in syncBasedDiscovery_" << endl;
+		}
+  
+		// erase the item after it's removed in removeObject, or removeObject would remove the
+		// wrong element: iterator is actually representing a position index, and the two vectors
+		// should be exactly the same: (does it make sense for them to be shared, 
+		// and mutex-locked correspondingly?)
+		conferenceList_.erase(item);
+	
+		notifyObserver(MessageTypes::STOP, conferenceName.c_str(), 0);
+	  }
 	}
 	else {
 	  cout << "Conference name empty." << endl;
@@ -199,9 +251,9 @@ ConferenceDiscovery::onHeartbeatData
    const ptr_lib::shared_ptr<Data>& data)
 {
   Interest timeout("/timeout");
-  timeout.setInterestLifetimeMilliseconds(defaultInterval_);
+  timeout.setInterestLifetimeMilliseconds(defaultHeartbeatInterval_);
 
-	// express broadcast interest after 2 seconds of sleep
+	// express heartbeat interest after 2 seconds of sleep
   faceProcessor_.expressInterest
 	(timeout, bind(&ConferenceDiscovery::dummyOnData, this, _1, _2),
 	 bind(&ConferenceDiscovery::expressHeartbeatInterest, this, _1, interest));

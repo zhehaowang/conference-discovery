@@ -187,6 +187,10 @@ int main()
         // We will send the leave message below.
         break;
       }
+      if (msgString == "-stoppublish") {
+        discovery->stopPublishingConference();
+        continue;
+      }
       if (msgString.find("-show ") != std::string::npos) {
         ptr_lib::shared_ptr<ConferenceDescription> description = 
           ptr_lib::dynamic_pointer_cast<ConferenceDescription>
