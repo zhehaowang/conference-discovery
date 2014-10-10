@@ -87,30 +87,6 @@ namespace test
   private:
     string description_;
   };
-  
-  class Test
-  {
-  public:
-    Test()
-    {
-    
-    }
-    
-    ~Test()
-    {
-    
-    }
-    
-    int startChronoChat();
-    int stopChronoChat();
-    
-    int startDiscovery();
-    int stopDiscovery();
-  private:
-    Face face_;
-    KeyChain keyChain_;
-    Name certificateName_;
-  };
 }
 
 #endif

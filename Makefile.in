@@ -130,7 +130,7 @@ libs_libconference_discovery_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX \
 	$(AM_CXXFLAGS) $(CXXFLAGS) \
 	$(libs_libconference_discovery_la_LDFLAGS) $(LDFLAGS) -o $@
 PROGRAMS = $(noinst_PROGRAMS)
-am_bin_test_both_OBJECTS = tests/bin_test_both-test.$(OBJEXT)
+am_bin_test_both_OBJECTS = tests/bin_test_both-test-both.$(OBJEXT)
 bin_test_both_OBJECTS = $(am_bin_test_both_OBJECTS)
 bin_test_both_DEPENDENCIES = libs/libchrono-chat2013.la \
 	libs/libconference-discovery.la
@@ -353,7 +353,7 @@ top_srcdir = @top_srcdir@
 ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS} -I m4
 AUTOMAKE_OPTIONS = subdir-objects
 noinst_LTLIBRARIES = libs/libchrono-chat2013.la libs/libconference-discovery.la
-bin_test_both_SOURCES = tests/test.cpp 
+bin_test_both_SOURCES = tests/test-both.cpp 
 libs_libchrono_chat2013_la_SOURCES = src/chrono-chat.cpp \
   src/chatbuf.pb.cc
 
@@ -454,7 +454,7 @@ tests/$(am__dirstamp):
 tests/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) tests/$(DEPDIR)
 	@: > tests/$(DEPDIR)/$(am__dirstamp)
-tests/bin_test_both-test.$(OBJEXT): tests/$(am__dirstamp) \
+tests/bin_test_both-test-both.$(OBJEXT): tests/$(am__dirstamp) \
 	tests/$(DEPDIR)/$(am__dirstamp)
 bin/$(am__dirstamp):
 	@$(MKDIR_P) bin
@@ -477,7 +477,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libs_libchrono_chat2013_la-chrono-chat.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libs_libconference_discovery_la-conference-discovery-sync.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libs_libconference_discovery_la-sync-based-discovery.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/bin_test_both-test.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/bin_test_both-test-both.Po@am__quote@
 
 .cc.o:
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
@@ -531,19 +531,19 @@ src/libs_libconference_discovery_la-conference-discovery-sync.lo: src/conference
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libs_libconference_discovery_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/libs_libconference_discovery_la-conference-discovery-sync.lo `test -f 'src/conference-discovery-sync.cpp' || echo '$(srcdir)/'`src/conference-discovery-sync.cpp
 
-tests/bin_test_both-test.o: tests/test.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(bin_test_both_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT tests/bin_test_both-test.o -MD -MP -MF tests/$(DEPDIR)/bin_test_both-test.Tpo -c -o tests/bin_test_both-test.o `test -f 'tests/test.cpp' || echo '$(srcdir)/'`tests/test.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) tests/$(DEPDIR)/bin_test_both-test.Tpo tests/$(DEPDIR)/bin_test_both-test.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='tests/test.cpp' object='tests/bin_test_both-test.o' libtool=no @AMDEPBACKSLASH@
+tests/bin_test_both-test-both.o: tests/test-both.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(bin_test_both_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT tests/bin_test_both-test-both.o -MD -MP -MF tests/$(DEPDIR)/bin_test_both-test-both.Tpo -c -o tests/bin_test_both-test-both.o `test -f 'tests/test-both.cpp' || echo '$(srcdir)/'`tests/test-both.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) tests/$(DEPDIR)/bin_test_both-test-both.Tpo tests/$(DEPDIR)/bin_test_both-test-both.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='tests/test-both.cpp' object='tests/bin_test_both-test-both.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(bin_test_both_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o tests/bin_test_both-test.o `test -f 'tests/test.cpp' || echo '$(srcdir)/'`tests/test.cpp
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(bin_test_both_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o tests/bin_test_both-test-both.o `test -f 'tests/test-both.cpp' || echo '$(srcdir)/'`tests/test-both.cpp
 
-tests/bin_test_both-test.obj: tests/test.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(bin_test_both_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT tests/bin_test_both-test.obj -MD -MP -MF tests/$(DEPDIR)/bin_test_both-test.Tpo -c -o tests/bin_test_both-test.obj `if test -f 'tests/test.cpp'; then $(CYGPATH_W) 'tests/test.cpp'; else $(CYGPATH_W) '$(srcdir)/tests/test.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) tests/$(DEPDIR)/bin_test_both-test.Tpo tests/$(DEPDIR)/bin_test_both-test.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='tests/test.cpp' object='tests/bin_test_both-test.obj' libtool=no @AMDEPBACKSLASH@
+tests/bin_test_both-test-both.obj: tests/test-both.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(bin_test_both_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT tests/bin_test_both-test-both.obj -MD -MP -MF tests/$(DEPDIR)/bin_test_both-test-both.Tpo -c -o tests/bin_test_both-test-both.obj `if test -f 'tests/test-both.cpp'; then $(CYGPATH_W) 'tests/test-both.cpp'; else $(CYGPATH_W) '$(srcdir)/tests/test-both.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) tests/$(DEPDIR)/bin_test_both-test-both.Tpo tests/$(DEPDIR)/bin_test_both-test-both.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='tests/test-both.cpp' object='tests/bin_test_both-test-both.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(bin_test_both_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o tests/bin_test_both-test.obj `if test -f 'tests/test.cpp'; then $(CYGPATH_W) 'tests/test.cpp'; else $(CYGPATH_W) '$(srcdir)/tests/test.cpp'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(bin_test_both_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o tests/bin_test_both-test-both.obj `if test -f 'tests/test-both.cpp'; then $(CYGPATH_W) 'tests/test-both.cpp'; else $(CYGPATH_W) '$(srcdir)/tests/test-both.cpp'; fi`
 
 .cpp.o:
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\

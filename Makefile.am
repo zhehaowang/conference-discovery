@@ -4,7 +4,7 @@ AUTOMAKE_OPTIONS = subdir-objects
 noinst_LTLIBRARIES = libs/libchrono-chat2013.la libs/libconference-discovery.la
 noinst_PROGRAMS = bin/test-both 
 
-bin_test_both_SOURCES = tests/test.cpp 
+bin_test_both_SOURCES = tests/test-both.cpp 
 
 libs_libchrono_chat2013_la_SOURCES = src/chrono-chat.cpp \
   src/chatbuf.pb.cc

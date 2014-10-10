@@ -1,4 +1,4 @@
-#include "test.h"
+#include "test-both.h"
 #include <exception>
 #include <openssl/rand.h>
 #include <stdio.h>
@@ -13,30 +13,6 @@ ptr_lib::shared_ptr<Chat> chat;
 ptr_lib::shared_ptr<ConferenceDiscovery> discovery;
 
 static const char *WHITESPACE_CHARS = " \n\r\t";
-
-int
-Test::startChronoChat()
-{
-  return 1;
-}
-
-int 
-Test::stopChronoChat()
-{
-  return 1;
-}
-
-int 
-Test::startDiscovery()
-{
-  return 1;
-}
-
-int 
-Test::stopDiscovery()
-{
-  return 1;
-}
 
 /**
  * Modify str in place to erase whitespace on the left.
