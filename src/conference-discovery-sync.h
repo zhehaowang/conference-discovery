@@ -15,7 +15,6 @@
 #include <ndn-cpp/security/policy/no-verify-policy-manager.hpp>
 #include <ndn-cpp/transport/tcp-transport.hpp>
 
-#include <boost/algorithm/string.hpp>
 #include <sys/time.h>
 #include <iostream>
 
@@ -30,6 +29,8 @@ using namespace ndn::func_lib;
 // In the std library, the placeholders are in a different namespace than boost.
 using namespace func_lib::placeholders;
 #endif
+
+// TODO: Constantly getting 'add conference' message during a test.
 
 namespace conference_discovery
 {

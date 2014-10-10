@@ -1,6 +1,6 @@
 #include "conference-discovery-sync.h"
 #include <sys/time.h>
-#include <openssl/ssl.h>
+#include <openssl/rand.h>
 #include <iostream>
 
 using namespace std;

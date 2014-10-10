@@ -1,9 +1,41 @@
-*
-!*/
-!*.cc
-!*.cpp
-!*.h
-!*.hpp
-!*.md
-!.gitignore
-!Makefile
+# Compiled files
+*.slo
+*.lo
+*.o
+*.so
+*.dylib
+*.lai
+*.la
+*.a
+*.dSYM
+bin/*
+libs/*
+.libs/*
+
+# Temp files
+*~
+
+# Autoconf files
+/Makefile
+/src/Makefile
+/autom4te.cache
+config.log
+/config.status
+/_configs.sed
+/stamp-h1
+/aclocal.m4
+/libtool
+*.Po
+.deps
+.dirstamp
+*.tar.gz
+
+# Let autoconf automatically copy these files
+/m4/libtool.m4
+/m4/ltoptions.m4
+/m4/ltsugar.m4
+/m4/ltversion.m4
+/m4/lt~obsolete.m4
+
+# Mac OSX
+.DS_Store

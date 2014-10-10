@@ -20,6 +20,21 @@ namespace conference_discovery
     virtual Blob serialize(const ptr_lib::shared_ptr<ConferenceInfo> &info) = 0;
     virtual ptr_lib::shared_ptr<ConferenceInfo> deserialize(Blob srcBlob) = 0;
     
+    /**
+     * This part with aliases as names needs to be better designed...
+     */
+    Blob 
+    serializeName()
+    {
+      
+    }
+    
+    ptr_lib::shared_ptr<ConferenceInfo> 
+    deserializeName()
+    {
+      
+    }
+    
     bool incrementTimeout()
     {
       if (timeoutCount ++ > TIMEOUTCOUNT) {
@@ -32,8 +47,12 @@ namespace conference_discovery
     
     void resetTimeout() { timeoutCount = 0; }
     int getTimeoutCount() { return timeoutCount; }
+    
+    string getConferenceName() { return conferenceName_; }
+    void setConferenceName(string conferenceName) { conferenceName_ = conferenceName; }
   protected:
     int timeoutCount;
+    string conferenceName_;
   };
 }
 
