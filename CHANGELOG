@@ -1,0 +1,14 @@
+Change log Oct 10, 2014
+
+- Chat:
+1. External observer now has MessageType, message, username and timestamp parameters;
+2. Added automake.
+
+- Conference discovery:
+1. External observer now has MessageType, message, and timestamp parameters;
+2. Added conference information (factory) interface (serialization, deserialization interface );
+3. Added automake;
+4. Explicit conference over announcement, by replying to one's heartbeat interest with 'over' message;
+5. Changed to using a row of heartbeat timeouts for detecting conference drop;
+6. (Not yet implemented) Use random string for actual conference name, I'm still thinking about this part's relationship with conference info serialization interface.
+

@@ -143,7 +143,7 @@ int main()
   	   face, keyChain, certificateName));
   	   
   	ConferenceDescription thisConference;
-  	thisConference.setDescription("My stupid conference: " + screenName);
+  	thisConference.setDescription("conference: " + screenName);
   	discovery->publishConference
   	  (screenName, hubPrefix, ptr_lib::make_shared<ConferenceDescription>(thisConference));
   }
@@ -160,7 +160,6 @@ int main()
     {
       msgString = stdinReadLine();
       if (msgString == "-leave" || msgString == "-exit") {
-        // We will send the leave message below.
         break;
       }
       if (msgString == "-stoppublish") {
