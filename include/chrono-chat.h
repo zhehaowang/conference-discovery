@@ -44,7 +44,6 @@
 #include <ndn-cpp/security/policy/no-verify-policy-manager.hpp>
 #include <ndn-cpp/transport/tcp-transport.hpp>
 
-#include "chatbuf.pb.h"
 #include "external-observer.h"
 
 #if NDN_CPP_HAVE_TIME_H

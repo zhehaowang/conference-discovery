@@ -19,21 +19,21 @@
 
 #include "external-observer.h"
 
-using namespace std;
-using namespace ndn;
-using namespace ndn::func_lib;
+// using namespace std;
+// using namespace ndn;
+// using namespace ndn::func_lib;
 #if NDN_CPP_HAVE_STD_FUNCTION && NDN_CPP_WITH_STD_FUNCTION
 // In the std library, the placeholders are in a different namespace than boost.
-using namespace func_lib::placeholders;
+// using namespace ndn::func_lib::placeholders;
 #endif
 
 namespace conference_discovery
 {
-  typedef func_lib::function<void
+  typedef ndn::func_lib::function<void
 	(const std::vector<std::string>& syncData)>
 	  OnReceivedSyncData;
 
-  static MillisecondsSince1970 
+  static ndn::MillisecondsSince1970 
   ndn_getNowMilliseconds()
   {
     struct timeval t;
@@ -82,8 +82,8 @@ namespace conference_discovery
      * @param certificateName The certificate name for locating the certificate.
      */
     SyncBasedDiscovery
-      (Name broadcastPrefix, const OnReceivedSyncData& onReceivedSyncData, 
-       Face& face, KeyChain& keyChain, Name certificateName)
+      (ndn::Name broadcastPrefix, const OnReceivedSyncData& onReceivedSyncData, 
+       ndn::Face& face, ndn::KeyChain& keyChain, ndn::Name certificateName)
      : broadcastPrefix_(broadcastPrefix), onReceivedSyncData_(onReceivedSyncData), 
        face_(face), keyChain_(keyChain), certificateName_(certificateName), 
        contentCache_(&face), newComerDigest_("00"), currentDigest_(newComerDigest_),
@@ -95,7 +95,7 @@ namespace conference_discovery
         (broadcastPrefix, bind(&SyncBasedDiscovery::onRegisterFailed, this, _1), 
          bind(&SyncBasedDiscovery::onInterest, this, _1, _2, _3, _4));
       
-      Interest interest(broadcastPrefix);
+      ndn::Interest interest(broadcastPrefix);
       interest.getName().append(newComerDigest_);
       interest.setInterestLifetimeMilliseconds(defaultInterestLifetime_);
       // setAnswerOriginKind is deprecated
@@ -117,26 +117,26 @@ namespace conference_discovery
      * A lock for objects_ member?
      */
     void onData
-      (const ptr_lib::shared_ptr<const Interest>& interest,
-       const ptr_lib::shared_ptr<Data>& data);
+      (const ndn::ptr_lib::shared_ptr<const ndn::Interest>& interest,
+       const ndn::ptr_lib::shared_ptr<ndn::Data>& data);
       
     void onTimeout
-      (const ptr_lib::shared_ptr<const Interest>& interest);
+      (const ndn::ptr_lib::shared_ptr<const ndn::Interest>& interest);
       
     void dummyOnData
-      (const ptr_lib::shared_ptr<const Interest>& interest,
-       const ptr_lib::shared_ptr<Data>& data);
+      (const ndn::ptr_lib::shared_ptr<const ndn::Interest>& interest,
+       const ndn::ptr_lib::shared_ptr<ndn::Data>& data);
        
     void expressBroadcastInterest
-      (const ptr_lib::shared_ptr<const Interest>& interest);
+      (const ndn::ptr_lib::shared_ptr<const ndn::Interest>& interest);
     
     void onInterest
-      (const ptr_lib::shared_ptr<const Name>& prefix,
-       const ptr_lib::shared_ptr<const Interest>& interest, Transport& transport,
+      (const ndn::ptr_lib::shared_ptr<const ndn::Name>& prefix,
+       const ndn::ptr_lib::shared_ptr<const ndn::Interest>& interest, ndn::Transport& transport,
        uint64_t registerPrefixId);
     
     void onRegisterFailed
-      (const ptr_lib::shared_ptr<const Name>& prefix);
+      (const ndn::ptr_lib::shared_ptr<const ndn::Name>& prefix);
     
     /**
      * contentCacheAdd copied from ChronoSync2013 implementation
@@ -148,7 +148,7 @@ namespace conference_discovery
 	 * and remove from the pendingInterestTable_.
 	 * @param data
 	 */
-    void contentCacheAdd(const Data& data);
+    void contentCacheAdd(const ndn::Data& data);
     
     /**
      * Called when startPublishing, note that this function itself does 
@@ -169,9 +169,9 @@ namespace conference_discovery
     void recomputeDigest();
     
 	const std::string newComerDigest_;
-	const Milliseconds defaultDataFreshnessPeriod_;
-	const Milliseconds defaultInterestLifetime_;
-	const Milliseconds defaultInterval_;
+	const ndn::Milliseconds defaultDataFreshnessPeriod_;
+	const ndn::Milliseconds defaultInterestLifetime_;
+	const ndn::Milliseconds defaultInterval_;
     
     /**
      * These functions should be replaced, once we replace objects with something more
@@ -257,19 +257,19 @@ namespace conference_discovery
 	   * packet to the transport.
 	   */
 	  PendingInterest
-		(const ptr_lib::shared_ptr<const Interest>& interest,
-		 Transport& transport);
+		(const ndn::ptr_lib::shared_ptr<const ndn::Interest>& interest,
+		 ndn::Transport& transport);
 
 	  /**
 	   * Return the interest given to the constructor.
 	   */
-	  const ptr_lib::shared_ptr<const Interest>&
+	  const ndn::ptr_lib::shared_ptr<const ndn::Interest>&
 	  getInterest() { return interest_; }
 
 	  /**
 	   * Return the transport given to the constructor.
 	   */
-	  Transport&
+	  ndn::Transport&
 	  getTransport() { return transport_; }
 
 	  /**
@@ -278,29 +278,29 @@ namespace conference_discovery
 	   * @return true if this interest timed out, otherwise false.
 	   */
 	  bool
-	  isTimedOut(MillisecondsSince1970 nowMilliseconds)
+	  isTimedOut(ndn::MillisecondsSince1970 nowMilliseconds)
 	  {
 		return timeoutTimeMilliseconds_ >= 0.0 && nowMilliseconds >= timeoutTimeMilliseconds_;
 	  }
 
 	private:
-	  ptr_lib::shared_ptr<const Interest> interest_;
-	  Transport& transport_;
-	  MillisecondsSince1970 timeoutTimeMilliseconds_; /**< The time when the
+	  ndn::ptr_lib::shared_ptr<const ndn::Interest> interest_;
+	  ndn::Transport& transport_;
+	  ndn::MillisecondsSince1970 timeoutTimeMilliseconds_; /**< The time when the
 		* interest times out in milliseconds according to ndn_getNowMilliseconds,
 		* or -1 for no timeout. */
 	};
 	
   private:
-    Name broadcastPrefix_;
-    Name certificateName_;
+    ndn::Name broadcastPrefix_;
+    ndn::Name certificateName_;
     
     OnReceivedSyncData onReceivedSyncData_;
     
-    Face& face_;
-    MemoryContentCache contentCache_;
+    ndn::Face& face_;
+    ndn::MemoryContentCache contentCache_;
     
-    KeyChain& keyChain_;
+    ndn::KeyChain& keyChain_;
     
     // This serves as the rootDigest in ChronoSync.
     std::string currentDigest_;
@@ -311,7 +311,7 @@ namespace conference_discovery
     std::vector<std::string> objects_;
     
     // PendingInterestTable for holding outstanding interests.
-    std::vector<ptr_lib::shared_ptr<PendingInterest> > pendingInterestTable_;
+    std::vector<ndn::ptr_lib::shared_ptr<PendingInterest> > pendingInterestTable_;
   };
 }
 

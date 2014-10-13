@@ -1,5 +1,5 @@
 AC_PREREQ([2.61])
-AC_INIT(ndnrtc-addon, 1.0, wangzhehao410305@gmail.com, https://github.com/zhehaowang/ndnrtc-addon)
+AC_INIT([ndnrtc-addon], [1.0], [wangzhehao410305@gmail.com], [ndn-conference-discovery])
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_SRCDIR(src)
