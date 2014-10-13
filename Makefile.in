@@ -93,9 +93,7 @@ DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/config/missing
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_cxx_compile_stdcxx_11.m4 \
-	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/ltoptions.m4 \
-	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
-	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/configure.ac
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
@@ -360,11 +358,11 @@ libs_libchrono_chat2013_la_SOURCES = src/chrono-chat.cpp \
 libs_libconference_discovery_la_SOURCES = src/sync-based-discovery.cpp \
   src/conference-discovery-sync.cpp
 
-libs_libchrono_chat2013_la_CPPFLAGS = -I$(top_srcdir)/include -I@PROTOBUFDIR@ -I@NDNCPPLIB@ -I@CRYPTOLIB@ 
+libs_libchrono_chat2013_la_CPPFLAGS = -I$(top_srcdir)/include -I@PROTOBUFDIR@ -I@NDNCPPDIR@ -I@CRYPTOLIB@ 
 libs_libchrono_chat2013_la_LDFLAGS = -L@PROTOBUFDIR@ -L@NDNCPPLIB@ -L@CRYPTOLIB@ -lndn-cpp -lcrypto -lprotobuf
-libs_libconference_discovery_la_CPPFLAGS = -I$(top_srcdir)/include -I@NDNCPPLIB@ -I@CRYPTOLIB@ 
+libs_libconference_discovery_la_CPPFLAGS = -I$(top_srcdir)/include -I@NDNCPPDIR@ -I@CRYPTOLIB@ 
 libs_libconference_discovery_la_LDFLAGS = -L@NDNCPPLIB@ -L@CRYPTOLIB@ -lndn-cpp -lcrypto
-bin_test_both_CPPFLAGS = -I$(top_srcdir)/include -I@BOOSTDIR@ -I@PROTOBUFDIR@ -I@NDNCPPLIB@ -I@CRYPTOLIB@ 
+bin_test_both_CPPFLAGS = -I$(top_srcdir)/include -I@BOOSTDIR@ -I@PROTOBUFDIR@ -I@NDNCPPDIR@ -I@CRYPTOLIB@ 
 bin_test_both_LDFLAGS = -L@PROTOBUFDIR@ -L@NDNCPPLIB@ -L@CRYPTOLIB@ -lndn-cpp -lprotobuf -lcrypto
 bin_test_both_LDADD = libs/libchrono-chat2013.la libs/libconference-discovery.la
 all: all-am
