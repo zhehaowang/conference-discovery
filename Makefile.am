@@ -1,7 +1,7 @@
 ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS} -I m4
 AUTOMAKE_OPTIONS = subdir-objects
 
-noinst_LTLIBRARIES = libs/libchrono-chat2013.la libs/libconference-discovery.la
+lib_LTLIBRARIES = libs/libchrono-chat2013.la libs/libconference-discovery.la
 noinst_PROGRAMS = bin/test-both bin/test-chat
 
 libs_libchrono_chat2013_la_SOURCES = src/chrono-chat.cpp \
