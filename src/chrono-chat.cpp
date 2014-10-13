@@ -5,7 +5,8 @@
  */
 
 #include "chrono-chat.h"
-
+#include "chatbuf.pb.h"
+ 
 using namespace std;
 using namespace ndn;
 using namespace ndn::func_lib;

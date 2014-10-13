@@ -22,12 +22,12 @@
 #include "external-observer.h"
 #include "conference-info-factory.h"
 
-using namespace std;
-using namespace ndn;
-using namespace ndn::func_lib;
+// using namespace std;
+// using namespace ndn;
+// using namespace ndn::func_lib;
 #if NDN_CPP_HAVE_STD_FUNCTION && NDN_CPP_WITH_STD_FUNCTION
 // In the std library, the placeholders are in a different namespace than boost.
-using namespace func_lib::placeholders;
+// using namespace func_lib::placeholders;
 #endif
 
 // TODO: Constantly getting 'add conference' message during a test.
@@ -47,9 +47,9 @@ namespace conference_discovery
      * @param certificateName The certificate name for locating the certificate.
      */
 	ConferenceDiscovery
-	  (string broadcastPrefix, ptr_lib::shared_ptr<ConferenceDiscoveryObserver> observer, 
-	   ptr_lib::shared_ptr<ConferenceInfoFactory> factory, Face& face, KeyChain& keyChain, 
-	   Name certificateName)
+	  (std::string broadcastPrefix, ndn::ptr_lib::shared_ptr<ConferenceDiscoveryObserver> observer, 
+	   ndn::ptr_lib::shared_ptr<ConferenceInfoFactory> factory, ndn::Face& face, ndn::KeyChain& keyChain, 
+	   ndn::Name certificateName)
 	:  isHostingConference_(false), defaultDataFreshnessPeriod_(1000),
 	   defaultInterestLifetime_(1000), defaultHeartbeatInterval_(500), defaultTimeoutReexpressInterval_(300), 
 	   observer_(observer), factory_(factory), faceProcessor_(face), keyChain_(keyChain), 
@@ -70,7 +70,7 @@ namespace conference_discovery
 	 * @param conferenceInfo the info of this conference.
 	 */
 	void 
-	publishConference(std::string conferenceName, Name localPrefix, ptr_lib::shared_ptr<ConferenceInfo> conferenceInfo);
+	publishConference(std::string conferenceName, ndn::Name localPrefix, ndn::ptr_lib::shared_ptr<ConferenceInfo> conferenceInfo);
   
     /**
 	 * Stop publishing the conference of this instance. 
@@ -84,37 +84,37 @@ namespace conference_discovery
 	/**
 	 * getConferences returns the copy of list of conferences
 	 */
-	std::map<std::string, ptr_lib::shared_ptr<ConferenceInfo>>
+	std::map<std::string, ndn::ptr_lib::shared_ptr<ConferenceInfo>>
 	getConference() { return conferenceList_; };
     
     /**
      * getConference gets the conference info from list of conferences discovered (hosted by others)
      */
-    ptr_lib::shared_ptr<ConferenceInfo>
+    ndn::ptr_lib::shared_ptr<ConferenceInfo>
     getConference(std::string conferenceName) 
     {
-      std::map<string, ptr_lib::shared_ptr<ConferenceInfo>>::iterator item = conferenceList_.find
+      std::map<std::string, ndn::ptr_lib::shared_ptr<ConferenceInfo>>::iterator item = conferenceList_.find
         (conferenceName);
 	  if (item != conferenceList_.end()) {
 	    return item->second;
 	  }
 	  else {
 	    // TODO: nullptr vs NULL
-	    return NULL;
+	    return ndn::ptr_lib::shared_ptr<ConferenceInfo>(NULL);
 	  }
     };
     
     /**
      * getSelfConference gets the conference hosted by self;
      */
-    ptr_lib::shared_ptr<ConferenceInfo>
+    ndn::ptr_lib::shared_ptr<ConferenceInfo>
     getSelfConference() 
     {
       if (conferenceInfo_ != NULL) {
         return conferenceInfo_;
       }
       else {
-        return NULL;
+        return ndn::ptr_lib::shared_ptr<ConferenceInfo>(NULL);
       }
     };
     
@@ -138,8 +138,8 @@ namespace conference_discovery
 	 */
 	void
     onInterest
-	 (const ptr_lib::shared_ptr<const Name>& prefix,
-	  const ptr_lib::shared_ptr<const Interest>& interest, Transport& transport,
+	 (const ndn::ptr_lib::shared_ptr<const ndn::Name>& prefix,
+	  const ndn::ptr_lib::shared_ptr<const ndn::Interest>& interest, ndn::Transport& transport,
 	  uint64_t registerPrefixId);
     
 	/**
@@ -149,8 +149,8 @@ namespace conference_discovery
 	 */
 	void 
 	onData
-	  (const ptr_lib::shared_ptr<const Interest>& interest,
-	   const ptr_lib::shared_ptr<Data>& data);
+	  (const ndn::ptr_lib::shared_ptr<const ndn::Interest>& interest,
+	   const ndn::ptr_lib::shared_ptr<ndn::Data>& data);
   
 	/**
 	 * expressHeartbeatInterest expresses the interest for certain conference again,
@@ -159,8 +159,8 @@ namespace conference_discovery
 	 */
 	void
 	expressHeartbeatInterest
-	  (const ptr_lib::shared_ptr<const Interest>& interest,
-	   const ptr_lib::shared_ptr<const Interest>& conferenceInterest);
+	  (const ndn::ptr_lib::shared_ptr<const ndn::Interest>& interest,
+	   const ndn::ptr_lib::shared_ptr<const ndn::Interest>& conferenceInterest);
     
     /**
      * Remove registered prefix happens after a few seconds after stop hosting conference;
@@ -168,7 +168,7 @@ namespace conference_discovery
      */
     void
     removeRegisteredPrefix
-      (const ptr_lib::shared_ptr<const Interest>& interest);
+      (const ndn::ptr_lib::shared_ptr<const ndn::Interest>& interest);
     
 	/**
 	 * This works as expressHeartbeatInterest's onData callback.
@@ -176,15 +176,15 @@ namespace conference_discovery
 	 */
 	void
 	onHeartbeatData
-	  (const ptr_lib::shared_ptr<const Interest>& interest,
-	   const ptr_lib::shared_ptr<Data>& data);
+	  (const ndn::ptr_lib::shared_ptr<const ndn::Interest>& interest,
+	   const ndn::ptr_lib::shared_ptr<ndn::Data>& data);
   
 	void 
 	dummyOnData
-	  (const ptr_lib::shared_ptr<const Interest>& interest,
-	   const ptr_lib::shared_ptr<Data>& data)
+	  (const ndn::ptr_lib::shared_ptr<const ndn::Interest>& interest,
+	   const ndn::ptr_lib::shared_ptr<ndn::Data>& data)
 	{
-	  cout << "Dummy onData called by ConferenceDiscovery." << endl;
+	  std::cout << "Dummy onData called by ConferenceDiscovery." << std::endl;
 	};
   
 	/**
@@ -194,13 +194,13 @@ namespace conference_discovery
 	 */
 	void
 	onTimeout
-	  (const ptr_lib::shared_ptr<const Interest>& interest);
+	  (const ndn::ptr_lib::shared_ptr<const ndn::Interest>& interest);
   
 	void
 	onRegisterFailed
-	  (const ptr_lib::shared_ptr<const Name>& prefix)
+	  (const ndn::ptr_lib::shared_ptr<const ndn::Name>& prefix)
 	{
-	  cout << "Prefix " << prefix->toUri() << " registration failed." << endl;
+	  std::cout << "Prefix " << prefix->toUri() << " registration failed." << std::endl;
 	};
 	
 	std::string conferencesToString();
@@ -209,31 +209,31 @@ namespace conference_discovery
 	notifyObserver(MessageTypes type, const char *msg, double timestamp);
     
     
-    Face& faceProcessor_;
-	KeyChain& keyChain_;
+    ndn::Face& faceProcessor_;
+	ndn::KeyChain& keyChain_;
 	
-	Name certificateName_;
+	ndn::Name certificateName_;
     
 	bool isHostingConference_;
-	string conferenceBeingRemoved_;
+	std::string conferenceBeingRemoved_;
 	
-	Name conferenceName_;
+	ndn::Name conferenceName_;
 	uint64_t registeredPrefixId_;
   
-	const Milliseconds defaultDataFreshnessPeriod_;
-	const Milliseconds defaultInterestLifetime_;
-	const Milliseconds defaultHeartbeatInterval_;
-	const Milliseconds defaultTimeoutReexpressInterval_;
+	const ndn::Milliseconds defaultDataFreshnessPeriod_;
+	const ndn::Milliseconds defaultInterestLifetime_;
+	const ndn::Milliseconds defaultHeartbeatInterval_;
+	const ndn::Milliseconds defaultTimeoutReexpressInterval_;
   
 	//vector<std::string> conferenceList_;
 	
-	std::map<std::string, ptr_lib::shared_ptr<ConferenceInfo>> conferenceList_;
-	ptr_lib::shared_ptr<SyncBasedDiscovery> syncBasedDiscovery_;
-	ptr_lib::shared_ptr<ConferenceDiscoveryObserver> observer_;
+	std::map<std::string, ndn::ptr_lib::shared_ptr<ConferenceInfo>> conferenceList_;
+	ndn::ptr_lib::shared_ptr<SyncBasedDiscovery> syncBasedDiscovery_;
+	ndn::ptr_lib::shared_ptr<ConferenceDiscoveryObserver> observer_;
 	
-	ptr_lib::shared_ptr<ConferenceInfoFactory> factory_;
+	ndn::ptr_lib::shared_ptr<ConferenceInfoFactory> factory_;
 	// conferenceInfo_ is the info of the class currently being hosted
-	ptr_lib::shared_ptr<ConferenceInfo> conferenceInfo_;
+	ndn::ptr_lib::shared_ptr<ConferenceInfo> conferenceInfo_;
   };
 }
 

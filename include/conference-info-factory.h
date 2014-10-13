@@ -12,36 +12,36 @@ namespace conference_discovery
   class ConferenceInfoFactory
   {
   public:
-    ConferenceInfoFactory(ptr_lib::shared_ptr<ConferenceInfo> conferenceInfo)
+    ConferenceInfoFactory(ndn::ptr_lib::shared_ptr<ConferenceInfo> conferenceInfo)
     {
       conferenceInfo_ = conferenceInfo;
     }
     
-    Blob 
-    serialize(ptr_lib::shared_ptr<ConferenceInfo> conferenceInfo)
+    ndn::Blob 
+    serialize(ndn::ptr_lib::shared_ptr<ConferenceInfo> conferenceInfo)
     {
       try {
         return conferenceInfo_->serialize(conferenceInfo);
       }
       catch (std::exception& e) {
-        cout << e.what() << endl;
+        std::cout << e.what() << std::endl;
       }
-      return Blob();
+      return ndn::Blob();
     }
     
-    ptr_lib::shared_ptr<ConferenceInfo> 
-    deserialize(Blob srcBlob)
+    ndn::ptr_lib::shared_ptr<ConferenceInfo> 
+    deserialize(ndn::Blob srcBlob)
     {
       try {
         return conferenceInfo_->deserialize(srcBlob);
       }
       catch (std::exception& e) {
-        cout << e.what() << endl;
+        std::cout << e.what() << std::endl;
       }
-      return NULL;
+      return ndn::ptr_lib::shared_ptr<ConferenceInfo>(NULL);
     }
   protected:
-    ptr_lib::shared_ptr<ConferenceInfo> conferenceInfo_;
+    ndn::ptr_lib::shared_ptr<ConferenceInfo> conferenceInfo_;
   };
 }
 

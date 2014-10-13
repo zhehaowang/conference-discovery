@@ -15,6 +15,7 @@
 @SET_MAKE@
 
 
+
 VPATH = @srcdir@
 am__is_gnu_make = test -n '$(MAKEFILE_LIST)' && test -n '$(MAKELEVEL)'
 am__make_running_with_option = \
@@ -83,10 +84,10 @@ noinst_PROGRAMS = bin/test-both$(EXEEXT) bin/test-chat$(EXEEXT)
 subdir = .
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
-	$(top_srcdir)/config/depcomp COPYING config/ar-lib \
-	config/compile config/config.guess config/config.sub \
-	config/depcomp config/install-sh config/missing \
-	config/ltmain.sh $(top_srcdir)/config/ar-lib \
+	$(top_srcdir)/config/depcomp $(pkginclude_HEADERS) COPYING \
+	config/ar-lib config/compile config/config.guess \
+	config/config.sub config/depcomp config/install-sh \
+	config/missing config/ltmain.sh $(top_srcdir)/config/ar-lib \
 	$(top_srcdir)/config/compile $(top_srcdir)/config/config.guess \
 	$(top_srcdir)/config/config.sub \
 	$(top_srcdir)/config/install-sh $(top_srcdir)/config/ltmain.sh \
@@ -130,7 +131,7 @@ am__uninstall_files_from_dir = { \
     || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
-am__installdirs = "$(DESTDIR)$(libdir)"
+am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(pkgincludedir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
 libs_libchrono_chat2013_la_LIBADD =
 am__dirstamp = $(am__leading_dot)dirstamp
@@ -218,6 +219,7 @@ am__can_run_installinfo = \
     n|no|NO) false;; \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
+HEADERS = $(pkginclude_HEADERS)
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) $(LISP)
 # Read a list of newline-separated strings from the standard input,
 # and print each of them once, without duplicates.  Input order is
@@ -387,8 +389,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS} -I m4
 AUTOMAKE_OPTIONS = subdir-objects
-
-#noinst_LTLIBRARIES = libs/libchrono-chat2013.la libs/libconference-discovery.la
+pkginclude_HEADERS = include/chrono-chat.h include/external-observer.h include/conference-discovery-sync.h include/conference-info-factory.h include/conference-info.h include/sync-based-discovery.h
 lib_LTLIBRARIES = libs/libchrono-chat2013.la libs/libconference-discovery.la
 libs_libchrono_chat2013_la_SOURCES = src/chrono-chat.cpp \
   src/chatbuf.pb.cc
@@ -666,6 +667,27 @@ clean-libtool:
 
 distclean-libtool:
 	-rm -f libtool config.lt
+install-pkgincludeHEADERS: $(pkginclude_HEADERS)
+	@$(NORMAL_INSTALL)
+	@list='$(pkginclude_HEADERS)'; test -n "$(pkgincludedir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(pkgincludedir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(pkgincludedir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_HEADER) $$files '$(DESTDIR)$(pkgincludedir)'"; \
+	  $(INSTALL_HEADER) $$files "$(DESTDIR)$(pkgincludedir)" || exit $$?; \
+	done
+
+uninstall-pkgincludeHEADERS:
+	@$(NORMAL_UNINSTALL)
+	@list='$(pkginclude_HEADERS)'; test -n "$(pkgincludedir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(pkgincludedir)'; $(am__uninstall_files_from_dir)
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
@@ -891,9 +913,9 @@ distcleancheck: distclean
 	       exit 1; } >&2
 check-am: all-am
 check: check-am
-all-am: Makefile $(LTLIBRARIES) $(PROGRAMS)
+all-am: Makefile $(LTLIBRARIES) $(PROGRAMS) $(HEADERS)
 installdirs:
-	for dir in "$(DESTDIR)$(libdir)"; do \
+	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(pkgincludedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -956,7 +978,7 @@ info: info-am
 
 info-am:
 
-install-data-am:
+install-data-am: install-pkgincludeHEADERS
 
 install-dvi: install-dvi-am
 
@@ -1004,7 +1026,7 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-libLTLIBRARIES
+uninstall-am: uninstall-libLTLIBRARIES uninstall-pkgincludeHEADERS
 
 .MAKE: install-am install-strip
 
@@ -1019,11 +1041,13 @@ uninstall-am: uninstall-libLTLIBRARIES
 	install-data-am install-dvi install-dvi-am install-exec \
 	install-exec-am install-html install-html-am install-info \
 	install-info-am install-libLTLIBRARIES install-man install-pdf \
-	install-pdf-am install-ps install-ps-am install-strip \
-	installcheck installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	tags tags-am uninstall uninstall-am uninstall-libLTLIBRARIES
+	install-pdf-am install-pkgincludeHEADERS install-ps \
+	install-ps-am install-strip installcheck installcheck-am \
+	installdirs maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-compile mostlyclean-generic \
+	mostlyclean-libtool pdf pdf-am ps ps-am tags tags-am uninstall \
+	uninstall-am uninstall-libLTLIBRARIES \
+	uninstall-pkgincludeHEADERS
 
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

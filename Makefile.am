@@ -1,6 +1,8 @@
 ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS} -I m4
 AUTOMAKE_OPTIONS = subdir-objects
 
+pkginclude_HEADERS = include/chrono-chat.h include/external-observer.h include/conference-discovery-sync.h include/conference-info-factory.h include/conference-info.h include/sync-based-discovery.h
+
 lib_LTLIBRARIES = libs/libchrono-chat2013.la libs/libconference-discovery.la
 noinst_PROGRAMS = bin/test-both bin/test-chat
 

@@ -589,7 +589,7 @@ MAKEFLAGS=
 
 # Identity of this package.
 PACKAGE_NAME='ndnrtc-addon'
-PACKAGE_TARNAME='https://github.com/zhehaowang/ndnrtc-addon'
+PACKAGE_TARNAME='ndn-conference-discovery'
 PACKAGE_VERSION='1.0'
 PACKAGE_STRING='ndnrtc-addon 1.0'
 PACKAGE_BUGREPORT='wangzhehao410305@gmail.com'
@@ -1391,7 +1391,7 @@ Fine tuning of the installation directories:
   --localedir=DIR         locale-dependent data [DATAROOTDIR/locale]
   --mandir=DIR            man documentation [DATAROOTDIR/man]
   --docdir=DIR            documentation root
-                          [DATAROOTDIR/doc/https://github.com/zhehaowang/ndnrtc-addon]
+                          [DATAROOTDIR/doc/ndn-conference-discovery]
   --htmldir=DIR           html documentation [DOCDIR]
   --dvidir=DIR            dvi documentation [DOCDIR]
   --pdfdir=DIR            pdf documentation [DOCDIR]
@@ -3187,7 +3187,7 @@ fi
 
 
 # Define the identity of the package.
- PACKAGE='https://github.com/zhehaowang/ndnrtc-addon'
+ PACKAGE='ndn-conference-discovery'
  VERSION='1.0'
 
 

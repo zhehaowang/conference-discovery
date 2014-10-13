@@ -17,23 +17,19 @@ namespace conference_discovery
       timeoutCount = 0;
     }
     
-    virtual Blob serialize(const ptr_lib::shared_ptr<ConferenceInfo> &info) = 0;
-    virtual ptr_lib::shared_ptr<ConferenceInfo> deserialize(Blob srcBlob) = 0;
+    virtual ndn::Blob serialize(const ndn::ptr_lib::shared_ptr<ConferenceInfo> &info) = 0;
+    virtual ndn::ptr_lib::shared_ptr<ConferenceInfo> deserialize(ndn::Blob srcBlob) = 0;
     
     /**
      * This part with aliases as names needs to be better designed...
      */
-    Blob 
+    virtual ndn::Blob 
     serializeName()
-    {
-      
-    }
+    { return ndn::Blob(); }
     
-    ptr_lib::shared_ptr<ConferenceInfo> 
+    virtual ndn::ptr_lib::shared_ptr<ConferenceInfo> 
     deserializeName()
-    {
-      
-    }
+    { return ndn::ptr_lib::shared_ptr<ConferenceInfo>(NULL); }
     
     bool incrementTimeout()
     {
@@ -48,11 +44,11 @@ namespace conference_discovery
     void resetTimeout() { timeoutCount = 0; }
     int getTimeoutCount() { return timeoutCount; }
     
-    string getConferenceName() { return conferenceName_; }
-    void setConferenceName(string conferenceName) { conferenceName_ = conferenceName; }
+    std::string getConferenceName() { return conferenceName_; }
+    void setConferenceName(std::string conferenceName) { conferenceName_ = conferenceName; }
   protected:
     int timeoutCount;
-    string conferenceName_;
+    std::string conferenceName_;
   };
 }
 
