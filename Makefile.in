@@ -79,7 +79,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-noinst_PROGRAMS = bin/test-both$(EXEEXT)
+noinst_PROGRAMS = bin/test-both$(EXEEXT) bin/test-chat$(EXEEXT)
 subdir = .
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
@@ -138,6 +138,13 @@ bin_test_both_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CXXLD) \
 	$(AM_CXXFLAGS) $(CXXFLAGS) $(bin_test_both_LDFLAGS) $(LDFLAGS) \
 	-o $@
+am_bin_test_chat_OBJECTS = tests/bin_test_chat-test-chat.$(OBJEXT)
+bin_test_chat_OBJECTS = $(am_bin_test_chat_OBJECTS)
+bin_test_chat_DEPENDENCIES = libs/libchrono-chat2013.la
+bin_test_chat_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CXXLD) \
+	$(AM_CXXFLAGS) $(CXXFLAGS) $(bin_test_chat_LDFLAGS) $(LDFLAGS) \
+	-o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -174,10 +181,10 @@ am__v_CXXLD_0 = @echo "  CXXLD   " $@;
 am__v_CXXLD_1 = 
 SOURCES = $(libs_libchrono_chat2013_la_SOURCES) \
 	$(libs_libconference_discovery_la_SOURCES) \
-	$(bin_test_both_SOURCES)
+	$(bin_test_both_SOURCES) $(bin_test_chat_SOURCES)
 DIST_SOURCES = $(libs_libchrono_chat2013_la_SOURCES) \
 	$(libs_libconference_discovery_la_SOURCES) \
-	$(bin_test_both_SOURCES)
+	$(bin_test_both_SOURCES) $(bin_test_chat_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -353,7 +360,6 @@ top_srcdir = @top_srcdir@
 ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS} -I m4
 AUTOMAKE_OPTIONS = subdir-objects
 noinst_LTLIBRARIES = libs/libchrono-chat2013.la libs/libconference-discovery.la
-bin_test_both_SOURCES = tests/test-both.cpp 
 libs_libchrono_chat2013_la_SOURCES = src/chrono-chat.cpp \
   src/chatbuf.pb.cc
 
@@ -364,9 +370,14 @@ libs_libchrono_chat2013_la_CPPFLAGS = -I$(top_srcdir)/include -I@PROTOBUFDIR@ -I
 libs_libchrono_chat2013_la_LDFLAGS = -L@PROTOBUFDIR@ -L@NDNCPPLIB@ -L@CRYPTOLIB@ -lndn-cpp -lcrypto -lprotobuf
 libs_libconference_discovery_la_CPPFLAGS = -I$(top_srcdir)/include -I@NDNCPPLIB@ -I@CRYPTOLIB@ 
 libs_libconference_discovery_la_LDFLAGS = -L@NDNCPPLIB@ -L@CRYPTOLIB@ -lndn-cpp -lcrypto
+bin_test_both_SOURCES = tests/test-both.cpp 
 bin_test_both_CPPFLAGS = -I$(top_srcdir)/include -I@BOOSTDIR@ -I@PROTOBUFDIR@ -I@NDNCPPLIB@ -I@CRYPTOLIB@ 
 bin_test_both_LDFLAGS = -L@PROTOBUFDIR@ -L@NDNCPPLIB@ -L@CRYPTOLIB@ -lndn-cpp -lprotobuf -lcrypto
 bin_test_both_LDADD = libs/libchrono-chat2013.la libs/libconference-discovery.la
+bin_test_chat_SOURCES = tests/test-chat.cpp
+bin_test_chat_CPPFLAGS = -I$(top_srcdir)/include -I@BOOSTDIR@ -I@PROTOBUFDIR@ -I@NDNCPPLIB@ -I@CRYPTOLIB@ 
+bin_test_chat_LDFLAGS = -L@PROTOBUFDIR@ -L@NDNCPPLIB@ -L@CRYPTOLIB@ -lndn-cpp -lprotobuf -lcrypto
+bin_test_chat_LDADD = libs/libchrono-chat2013.la
 all: all-am
 
 .SUFFIXES:
@@ -463,6 +474,12 @@ bin/$(am__dirstamp):
 bin/test-both$(EXEEXT): $(bin_test_both_OBJECTS) $(bin_test_both_DEPENDENCIES) $(EXTRA_bin_test_both_DEPENDENCIES) bin/$(am__dirstamp)
 	@rm -f bin/test-both$(EXEEXT)
 	$(AM_V_CXXLD)$(bin_test_both_LINK) $(bin_test_both_OBJECTS) $(bin_test_both_LDADD) $(LIBS)
+tests/bin_test_chat-test-chat.$(OBJEXT): tests/$(am__dirstamp) \
+	tests/$(DEPDIR)/$(am__dirstamp)
+
+bin/test-chat$(EXEEXT): $(bin_test_chat_OBJECTS) $(bin_test_chat_DEPENDENCIES) $(EXTRA_bin_test_chat_DEPENDENCIES) bin/$(am__dirstamp)
+	@rm -f bin/test-chat$(EXEEXT)
+	$(AM_V_CXXLD)$(bin_test_chat_LINK) $(bin_test_chat_OBJECTS) $(bin_test_chat_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -478,6 +495,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libs_libconference_discovery_la-conference-discovery-sync.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libs_libconference_discovery_la-sync-based-discovery.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/bin_test_both-test-both.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/bin_test_chat-test-chat.Po@am__quote@
 
 .cc.o:
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
@@ -544,6 +562,20 @@ tests/bin_test_both-test-both.obj: tests/test-both.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='tests/test-both.cpp' object='tests/bin_test_both-test-both.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(bin_test_both_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o tests/bin_test_both-test-both.obj `if test -f 'tests/test-both.cpp'; then $(CYGPATH_W) 'tests/test-both.cpp'; else $(CYGPATH_W) '$(srcdir)/tests/test-both.cpp'; fi`
+
+tests/bin_test_chat-test-chat.o: tests/test-chat.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(bin_test_chat_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT tests/bin_test_chat-test-chat.o -MD -MP -MF tests/$(DEPDIR)/bin_test_chat-test-chat.Tpo -c -o tests/bin_test_chat-test-chat.o `test -f 'tests/test-chat.cpp' || echo '$(srcdir)/'`tests/test-chat.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) tests/$(DEPDIR)/bin_test_chat-test-chat.Tpo tests/$(DEPDIR)/bin_test_chat-test-chat.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='tests/test-chat.cpp' object='tests/bin_test_chat-test-chat.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(bin_test_chat_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o tests/bin_test_chat-test-chat.o `test -f 'tests/test-chat.cpp' || echo '$(srcdir)/'`tests/test-chat.cpp
+
+tests/bin_test_chat-test-chat.obj: tests/test-chat.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(bin_test_chat_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT tests/bin_test_chat-test-chat.obj -MD -MP -MF tests/$(DEPDIR)/bin_test_chat-test-chat.Tpo -c -o tests/bin_test_chat-test-chat.obj `if test -f 'tests/test-chat.cpp'; then $(CYGPATH_W) 'tests/test-chat.cpp'; else $(CYGPATH_W) '$(srcdir)/tests/test-chat.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) tests/$(DEPDIR)/bin_test_chat-test-chat.Tpo tests/$(DEPDIR)/bin_test_chat-test-chat.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='tests/test-chat.cpp' object='tests/bin_test_chat-test-chat.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(bin_test_chat_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o tests/bin_test_chat-test-chat.obj `if test -f 'tests/test-chat.cpp'; then $(CYGPATH_W) 'tests/test-chat.cpp'; else $(CYGPATH_W) '$(srcdir)/tests/test-chat.cpp'; fi`
 
 .cpp.o:
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\

@@ -80,7 +80,7 @@ namespace chrono_chat
 	Chat
 	  (const Name& broadcastPrefix,
 	   const std::string& screenName, const std::string& chatRoom,
-	   const Name& hubPrefix, ChatObserver *observer, Face& face, KeyChain& keyChain,
+	   const Name& hubPrefix, ptr_lib::shared_ptr<ChatObserver> observer, Face& face, KeyChain& keyChain,
 	   Name certificateName)
 	  : screen_name_(screenName), chatroom_(chatRoom), maxmsgcachelength_(100),
 		isRecoverySyncState_(true), sync_lifetime_(5000.0), observer_(observer),
@@ -253,7 +253,7 @@ namespace chrono_chat
 	KeyChain& keyChain_;
 	Name certificateName_;
 	
-	ChatObserver *observer_;
+	ptr_lib::shared_ptr<ChatObserver> observer_;
   };
 }
 
