@@ -99,7 +99,6 @@ namespace conference_discovery
 	    return item->second;
 	  }
 	  else {
-	    // TODO: nullptr vs NULL
 	    return ndn::ptr_lib::shared_ptr<ConferenceInfo>(NULL);
 	  }
     };
@@ -110,7 +109,7 @@ namespace conference_discovery
     ndn::ptr_lib::shared_ptr<ConferenceInfo>
     getSelfConference() 
     {
-      if (conferenceInfo_ != NULL) {
+      if (conferenceInfo_) {
         return conferenceInfo_;
       }
       else {

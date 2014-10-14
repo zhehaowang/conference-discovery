@@ -236,6 +236,9 @@ SyncBasedDiscovery::contentCacheAdd(const Data& data)
           (*data.wireEncode());
       }
       catch (std::exception& e) {
+        // print the error message and throw again.
+        cerr << e.what() << endl;
+        throw;
       }
 
       // The pending interest is satisfied, so remove it.
