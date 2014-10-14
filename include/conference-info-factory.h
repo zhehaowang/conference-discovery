@@ -24,7 +24,8 @@ namespace conference_discovery
         return conferenceInfo_->serialize(conferenceInfo);
       }
       catch (std::exception& e) {
-        std::cout << e.what() << std::endl;
+        std::cerr << e.what() << std::endl;
+        throw;
       }
       return ndn::Blob();
     }
@@ -36,7 +37,8 @@ namespace conference_discovery
         return conferenceInfo_->deserialize(srcBlob);
       }
       catch (std::exception& e) {
-        std::cout << e.what() << std::endl;
+        std::cerr << e.what() << std::endl;
+        throw;
       }
       return ndn::ptr_lib::shared_ptr<ConferenceInfo>(NULL);
     }
