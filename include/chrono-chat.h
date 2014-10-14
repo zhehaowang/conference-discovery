@@ -75,6 +75,9 @@ namespace chrono_chat
      * @param face The face for broadcast sync and multicast chat interests.
      * @param keyChain The keychain to sign things with.
      * @param certificateName The name to locate the certificate.
+     *
+     * Constructor registers prefixes for both chat and broadcast namespaces.
+     * This should be put into critical section, if the face is accessed by different threads
      */
 	Chat
 	  (const Name& broadcastPrefix,
@@ -112,12 +115,18 @@ namespace chrono_chat
 	/**
 	 * Sends a chat message.
 	 * @param chatmsg The message to be sent.
+	 *
+	 * sendMessages calls sync publishNextSequenceNo, which expresses interest in broadcast namespace
+     * This should be put into critical section, if the face is accessed by different threads
 	 */
 	void
 	sendMessage(const std::string& chatmsg);
 
 	/**
 	 * Sends leave message and leave.
+	 *
+	 * leave calls sync publishNextSequenceNo, which expresses interest in broadcast namespace
+     * This should be put into critical section, if the face is accessed by different threads
 	 */
 	void
 	leave();
