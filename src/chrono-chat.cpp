@@ -30,7 +30,8 @@ Chat::initial()
 
 	if (find(roster_.begin(), roster_.end(), usrname_) == roster_.end()) {
 		roster_.push_back(usrname_);
-		notifyObserver(MessageTypes::JOIN, screen_name_.c_str(), "", 0);
+		notifyObserver(MessageTypes::JOIN, (chat_prefix_.getSubName
+		  (0, chat_prefix_.size() - prefixFromChatPrefixEnd_).toUri() + "/" + screen_name_).c_str(), "", 0);
 		
 		messageCacheAppend(SyncDemo::ChatMessage_ChatMessageType_JOIN, "xxx");
 	}
@@ -156,7 +157,8 @@ Chat::onData
 
 		if (l == roster_.size()) {
 			roster_.push_back(nameAndSession);
-			notifyObserver(MessageTypes::JOIN, name.c_str(), "", 0);
+			notifyObserver(MessageTypes::JOIN, (inst->getName().getSubName
+			  (0, inst->getName().size() - prefixFromInstEnd_).toUri() + "/" + name).c_str(), "", 0);
 		}
 
 		// Set the alive timeout using the Interest timeout mechanism.
@@ -171,14 +173,17 @@ Chat::onData
 		// TODO: If isRecoverySyncState_ changed, this assumes that we won't get
 		//   data from an interest sent before it changed.
 		if (content.type() == 0 && !isRecoverySyncState_ && content.from() != screen_name_) {
-		    notifyObserver(MessageTypes::CHAT, content.from().c_str(), content.data().c_str(), 0);
+		    notifyObserver(MessageTypes::CHAT,  (inst->getName().getSubName
+			  (0, inst->getName().size() - prefixFromInstEnd_).toUri() + "/" + content.from()).c_str(), content.data().c_str(), 0);
 		}
 		else if (content.type() == 2) {
 			// leave message
 			vector<string>::iterator n = find(roster_.begin(), roster_.end(), nameAndSession);
 			if (n != roster_.end() && name != screen_name_) {
 				roster_.erase(n);
-				notifyObserver(MessageTypes::LEAVE, name.c_str(), "", 0);
+				notifyObserver(MessageTypes::LEAVE, (inst->getName().getSubName
+			      (0, inst->getName().size() - prefixFromInstEnd_).toUri() + "/" + name).c_str(),
+			       "", 0);
 			}
 		}
 	}
@@ -222,7 +227,9 @@ Chat::sendMessage(const string& chatmsg)
 		//faceCs_.Leave();
 
 		messageCacheAppend(SyncDemo::ChatMessage_ChatMessageType_CHAT, chatmsg);
-		notifyObserver(MessageTypes::CHAT, screen_name_.c_str(), chatmsg.c_str(), 0);
+		notifyObserver(MessageTypes::CHAT, (chat_prefix_.getSubName
+		  (0, chat_prefix_.size() - prefixFromChatPrefixEnd_).toUri() + "/" + screen_name_).c_str(),
+		   chatmsg.c_str(), 0);
 	}
 }
 
@@ -249,7 +256,8 @@ Chat::alive
 	if (seq != -1 && n != roster_.end()) {
 		if (temp_seq == seq){
 			roster_.erase(n);
-			notifyObserver(MessageTypes::LEAVE, name.c_str(), "", 0);
+			notifyObserver(MessageTypes::LEAVE, (interest->getName().getSubName
+			  (0, interest->getName().size() - prefixFromInstEnd_).toUri() + "/" + name).c_str(), "", 0);
 		}
 	}
 }

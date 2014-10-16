@@ -262,6 +262,9 @@ namespace chrono_chat
 	Name certificateName_;
 	
 	ptr_lib::shared_ptr<ChatObserver> observer_;
+	
+	const int prefixFromInstEnd_ = 4;
+	const int prefixFromChatPrefixEnd_ = 2;
   };
 }
 
