@@ -143,7 +143,6 @@ int main()
   
   Name hubPrefix("/ndn/edu/ucla/remap");
   Name chatBroadcastPrefix("/ndn/broadcast/chrono-chat/");
-  std::string conferenceDiscoveryBdcastPrefix = "/ndn/broadcast/discovery";
   
   Face face;
   // Using default keyChain in ndn-cpp
@@ -167,12 +166,25 @@ int main()
   }
   
   std::string msgString = "";
+  usleep(1000000);
+  // test chat auto send messages
+  
   while (1) {
     if (isStdinReady())
     {
       msgString = stdinReadLine();
       if (msgString == "-leave" || msgString == "-exit") {
         break;
+      }
+      if (msgString == "-auto") {
+		for (int i = 0; i < 30; i++) {
+		  chat->sendMessage(std::to_string(i));
+		  for (int j = 0; j < 100; j++) {
+		    face.processEvents();
+		    usleep(2000);
+		  }
+		}
+		continue;
       }
       
       chat->sendMessage(msgString);
@@ -182,12 +194,12 @@ int main()
   }
   chat->leave();
   
-  // Give some time so that others can fetch leave, under testing.
   int sleepSeconds = 0;
   while (sleepSeconds < 1000000) {
 	face.processEvents();
 	usleep(10000);
 	sleepSeconds += 10000;
   }
+
   return 1;
 }

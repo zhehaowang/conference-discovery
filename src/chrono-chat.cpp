@@ -74,6 +74,9 @@ Chat::sendInterest
 	for (size_t i = 0; i < sendlist.size(); ++i) {
 		ostringstream uri;
 		uri << sendlist[i] << "/" << sessionlist[i] << "/" << seqlist[i];
+		
+		cout << "sendInterest expresses interest: " << uri.str() << endl;
+		
 		Interest interest(uri.str());
 		interest.setInterestLifetimeMilliseconds(sync_lifetime_);
 		faceProcessor_.expressInterest
@@ -172,7 +175,9 @@ Chat::onData
 		// isRecoverySyncState_ was set by sendInterest.
 		// TODO: If isRecoverySyncState_ changed, this assumes that we won't get
 		//   data from an interest sent before it changed.
-		if (content.type() == 0 && !isRecoverySyncState_ && content.from() != screen_name_) {
+		
+		// && !isRecoverySyncState_
+		if (content.type() == 0 && content.from() != screen_name_) {
 		    notifyObserver(MessageTypes::CHAT,  (inst->getName().getSubName
 			  (0, inst->getName().size() - prefixFromInstEnd_).toUri() + "/" + content.from()).c_str(), content.data().c_str(), 0);
 		}
