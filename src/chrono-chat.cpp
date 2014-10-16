@@ -238,9 +238,6 @@ Chat::leave()
 {
 	sync_->publishNextSequenceNo();
 	messageCacheAppend(SyncDemo::ChatMessage_ChatMessageType_LEAVE, "xxx");
-	
-	// For now, we sleep for 1 second so that other applications can fetch 'leave' message
-	usleep(1000000);
 }
 
 void
