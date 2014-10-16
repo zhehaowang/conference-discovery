@@ -183,6 +183,11 @@ int main()
   chat->leave();
   
   // Give some time so that others can fetch leave, under testing.
-  usleep(2000);
+  int sleepSeconds = 0;
+  while (sleepSeconds < 1000000) {
+	face.processEvents();
+	usleep(10000);
+	sleepSeconds += 10000;
+  }
   return 1;
 }
