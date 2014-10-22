@@ -79,6 +79,7 @@ Chat::sendInterest
 		ostringstream uri;
 		uri << sendlist[i] << "/" << sessionlist[i];
 		
+		// Try to fetch all chat messages that wasn't fetched before
 		int j = 0;
 		std::map<string, int>::iterator item = syncTreeStatus_.find(uri.str());
   

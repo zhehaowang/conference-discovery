@@ -82,10 +82,10 @@ namespace conference_discovery
 	stopPublishingConference();
 	
 	/**
-	 * getConferences returns the copy of list of conferences
+	 * getConferenceList returns the copy of list of conferences
 	 */
 	std::map<std::string, ndn::ptr_lib::shared_ptr<ConferenceInfo>>
-	getConference() { return conferenceList_; };
+	getConferenceList() { return conferenceList_; };
     
     /**
      * getConference gets the conference info from list of conferences discovered (hosted by others)
