@@ -89,8 +89,8 @@ namespace chrono_chat
 		faceProcessor_(face), keyChain_(keyChain), certificateName_(certificateName),
 		broadcastPrefix_(broadcastPrefix)
 	{
-	  string chat_usrname = Chat::getRandomString();
-	  chat_prefix_ = Name(hubPrefix).append(chatroom_).append(chat_usrname);
+	  chat_usrname_ = Chat::getRandomString();
+	  chat_prefix_ = Name(hubPrefix).append(chatroom_).append(chat_usrname_);
 	  
 	  int session = (int)::round(getNowMilliseconds()  / 1000.0);
 	  ostringstream tempStream;

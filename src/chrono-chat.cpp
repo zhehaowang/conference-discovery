@@ -93,15 +93,13 @@ Chat::sendInterest
 		for (j = j + 1; j <= seqlist[i]; j++)
 		{
 			ostringstream interestUri;
-			interestUri << uri.rdbuf() << "/" << j;
-		
+			interestUri << uri.str() << "/" << j;
+			
 			Interest interest(interestUri.str());
 			interest.setInterestLifetimeMilliseconds(sync_lifetime_);
 			faceProcessor_.expressInterest
 			  (interest, bind(&Chat::onData, this, _1, _2),
 			   bind(&Chat::chatTimeout, this, _1));
-			   
-			cout << interestUri.rdbuf() << endl;
 		}
 		
 		syncTreeStatus_[uri.str()] = seqlist[i];
@@ -199,9 +197,6 @@ Chat::onData
 		// TODO: If isRecoverySyncState_ changed, this assumes that we won't get
 		//   data from an interest sent before it changed.
 		
-		if (isRecoverySyncState_) {
-			cout << "In recovery" << endl;
-		}
 		if (content.type() == 0 && content.from() != screen_name_) {
 			notifyObserver(MessageTypes::CHAT,  (inst->getName().getSubName
 			  (0, inst->getName().size() - prefixFromInstEnd_).toUri() + "/" + content.from()).c_str(), content.data().c_str(), 0);
