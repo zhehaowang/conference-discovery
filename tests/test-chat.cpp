@@ -178,7 +178,9 @@ int main()
       }
       if (msgString == "-auto") {
 		for (int i = 0; i < 30; i++) {
-		  chat->sendMessage(std::to_string(i));
+		  ostringstream ss;
+		  ss << i;
+		  chat->sendMessage(ss.str());
 		  for (int j = 0; j < 100; j++) {
 		    face.processEvents();
 		    usleep(2000);
