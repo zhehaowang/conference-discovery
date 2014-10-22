@@ -89,7 +89,9 @@ namespace chrono_chat
 		faceProcessor_(face), keyChain_(keyChain), certificateName_(certificateName),
 		broadcastPrefix_(broadcastPrefix)
 	{
-	  chat_prefix_ = Name(hubPrefix).append(chatroom_).append(Chat::getRandomString());
+	  string chat_usrname = Chat::getRandomString();
+	  chat_prefix_ = Name(hubPrefix).append(chatroom_).append(chat_usrname);
+	  
 	  int session = (int)::round(getNowMilliseconds()  / 1000.0);
 	  ostringstream tempStream;
 	  tempStream << screen_name_ << session;
@@ -130,7 +132,6 @@ namespace chrono_chat
 	 */
 	void
 	leave();
-	
 
   private:
 	/**
@@ -247,11 +248,15 @@ namespace chrono_chat
 	std::vector<std::string> roster_;
 	size_t maxmsgcachelength_;
 	bool isRecoverySyncState_;
+	
 	std::string screen_name_;
 	std::string chatroom_;
 	std::string usrname_;
 	
 	Name broadcastPrefix_;
+	
+	// Added for comparison with name_t in sendInterest, not present in ndn-cpp
+	std::string chat_usrname_;
 	Name chat_prefix_;
 	
 	Milliseconds sync_lifetime_;
@@ -262,6 +267,9 @@ namespace chrono_chat
 	Name certificateName_;
 	
 	ptr_lib::shared_ptr<ChatObserver> observer_;
+	
+	// Added for not sending interest repeated for one piece of message
+	std::map<std::string, int> syncTreeStatus_;
 	
 	const int prefixFromInstEnd_ = 4;
 	const int prefixFromChatPrefixEnd_ = 2;

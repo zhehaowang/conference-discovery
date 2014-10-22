@@ -43,7 +43,7 @@ Chat::sendInterest
 {
 	// This is used by onData to decide whether to display the chat messages.
 	isRecoverySyncState_ = isRecovery;
-
+	
 	vector<string> sendlist;
 	vector<int> sessionlist;
 	vector<int> seqlist;
@@ -51,12 +51,15 @@ Chat::sendInterest
 		Name name_components(syncStates[j].getDataPrefix());
 		string name_t = name_components.get(-1).toEscapedString();
 		int session = syncStates[j].getSessionNo();
-		if (name_t != screen_name_) {
+		
+		// bug in ndn-cpp's implementation
+		if (name_t != chat_usrname_) {
 			int index_n = -1;
+			
 			for (size_t k = 0; k < sendlist.size(); ++k) {
 				if (sendlist[k] == syncStates[j].getDataPrefix()) {
 					index_n = k;
-				break;
+					break;
 				}
 			}
 			if (index_n != -1) {
@@ -70,18 +73,38 @@ Chat::sendInterest
 			}
 		}
 	}
-
+	
 	for (size_t i = 0; i < sendlist.size(); ++i) {
+	
 		ostringstream uri;
-		uri << sendlist[i] << "/" << sessionlist[i] << "/" << seqlist[i];
+		uri << sendlist[i] << "/" << sessionlist[i];
 		
-		cout << "sendInterest expresses interest: " << uri.str() << endl;
+		int j = 0;
+		std::map<string, int>::iterator item = syncTreeStatus_.find(uri.str());
+  
+		if (item == syncTreeStatus_.end()) {
+			syncTreeStatus_.insert(std::pair<string, int>(uri.str(), 0));
+			j = -1;
+		}
+		else {
+			j = item->second;
+		}
 		
-		Interest interest(uri.str());
-		interest.setInterestLifetimeMilliseconds(sync_lifetime_);
-		faceProcessor_.expressInterest
-		  (interest, bind(&Chat::onData, this, _1, _2),
-		   bind(&Chat::chatTimeout, this, _1));
+		for (j = j + 1; j <= seqlist[i]; j++)
+		{
+			ostringstream interestUri;
+			interestUri << uri.rdbuf() << "/" << j;
+		
+			Interest interest(interestUri.str());
+			interest.setInterestLifetimeMilliseconds(sync_lifetime_);
+			faceProcessor_.expressInterest
+			  (interest, bind(&Chat::onData, this, _1, _2),
+			   bind(&Chat::chatTimeout, this, _1));
+			   
+			cout << interestUri.rdbuf() << endl;
+		}
+		
+		syncTreeStatus_[uri.str()] = seqlist[i];
 	}
 }
 
@@ -176,9 +199,11 @@ Chat::onData
 		// TODO: If isRecoverySyncState_ changed, this assumes that we won't get
 		//   data from an interest sent before it changed.
 		
-		// && !isRecoverySyncState_
+		if (isRecoverySyncState_) {
+			cout << "In recovery" << endl;
+		}
 		if (content.type() == 0 && content.from() != screen_name_) {
-		    notifyObserver(MessageTypes::CHAT,  (inst->getName().getSubName
+			notifyObserver(MessageTypes::CHAT,  (inst->getName().getSubName
 			  (0, inst->getName().size() - prefixFromInstEnd_).toUri() + "/" + content.from()).c_str(), content.data().c_str(), 0);
 		}
 		else if (content.type() == 2) {
@@ -198,6 +223,7 @@ void
 Chat::chatTimeout(const ptr_lib::shared_ptr<const Interest>& interest)
 {
 	// No chat data coming back.
+	cout << "Chat interest times out " << interest->getName().toUri() << endl;
 }
 
 void

@@ -24,6 +24,7 @@ namespace conference_discovery
         return conferenceInfo_->serialize(conferenceInfo);
       }
       catch (std::exception& e) {
+        // serialize must be defined, and (probably) shouldn't give an empty string;
         std::cerr << e.what() << std::endl;
         throw;
       }
