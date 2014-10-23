@@ -74,7 +74,8 @@ SyncBasedDiscovery::dummyOnData
   (const ptr_lib::shared_ptr<const Interest>& interest,
    const ptr_lib::shared_ptr<Data>& data)
 {
-  cout << "Dummy onData called." << endl;
+  cerr << "Dummy onData called." << endl;
+  throw std::runtime_error("Discovery library called dummyOnData, which shouldn't be called in any case.\n");
   return;
 }
 
@@ -100,8 +101,6 @@ SyncBasedDiscovery::onInterest
    const ptr_lib::shared_ptr<const Interest>& interest, Transport& transport,
    uint64_t registerPrefixId)
 {
-  // memoryContentCache should be able to satisfy interests marked with "ANSWER_NO_CONTENT_STORE",
-  // Will it cause potential problems?
   string syncDigest = interest->getName().get
     (broadcastPrefix_.size()).toEscapedString();
     
@@ -114,8 +113,8 @@ SyncBasedDiscovery::onInterest
     // later steps
     Data data(interest->getName());
     std::string content = objectsToString();
+    
     data.setContent((const uint8_t *)&content[0], content.size());
-    data.getMetaInfo().setTimestampMilliseconds(time(NULL) * 1000.0);
     
     data.getMetaInfo().setFreshnessPeriod(defaultDataFreshnessPeriod_);
     
@@ -136,7 +135,10 @@ void
 SyncBasedDiscovery::onRegisterFailed
   (const ptr_lib::shared_ptr<const Name>& prefix)
 {
-  cout << "Prefix registration for name " << prefix->toUri() << " failed." << endl;
+  ostringstream ss;
+  ss << "Prefix registration for name " << prefix->toUri() << " failed." << endl;
+  cerr << ss.str();
+  throw std::runtime_error(ss.str());
 }
 
 // Digest methods are not yet tested
@@ -186,7 +188,6 @@ SyncBasedDiscovery::publishObject(std::string name)
     
       std::string content = objectsToString();
       data.setContent((const uint8_t *)&content[0], content.size());
-      data.getMetaInfo().setTimestampMilliseconds(time(NULL) * 1000.0);
       data.getMetaInfo().setFreshnessPeriod(defaultDataFreshnessPeriod_);
     
       keyChain_.sign(data, certificateName_);
@@ -206,7 +207,7 @@ SyncBasedDiscovery::publishObject(std::string name)
        bind(&SyncBasedDiscovery::onTimeout, this, _1));
   }
   else {
-    cout << "Object already exists." << endl;
+    cerr << "Object already exists." << endl;
   }
 }
 

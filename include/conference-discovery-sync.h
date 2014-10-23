@@ -33,6 +33,7 @@
 // TODO: Constantly getting 'add conference' message during a test.
 // TODO: Different lifetimes could cause interest towards stopped self hosted conference to get reissued;
 //   explicit conference over still being verified.
+// TODO: sync interest does not seem to timeout; for an add/remove the same entry; freshness period problem?
 
 namespace conference_discovery
 {
@@ -52,7 +53,7 @@ namespace conference_discovery
 	  (std::string broadcastPrefix, ndn::ptr_lib::shared_ptr<ConferenceDiscoveryObserver> observer, 
 	   ndn::ptr_lib::shared_ptr<ConferenceInfoFactory> factory, ndn::Face& face, ndn::KeyChain& keyChain, 
 	   ndn::Name certificateName)
-	:  defaultDataFreshnessPeriod_(2000), defaultKeepPeriod_(10000), 
+	:  defaultDataFreshnessPeriod_(2000), defaultKeepPeriod_(3000), 
 	   defaultHeartbeatInterval_(2000), defaultTimeoutReexpressInterval_(300), 
 	   observer_(observer), factory_(factory), faceProcessor_(face), keyChain_(keyChain), 
 	   certificateName_(certificateName), hostedConferenceNum_(0)

@@ -59,7 +59,7 @@ ConferenceDiscovery::removeRegisteredPrefix
     hostedConferenceNum_ --;
   }
   else {
-	cout << "No such conference exist." << endl;
+	cerr << "No such conference exist." << endl;
   }
 }
 
@@ -74,6 +74,7 @@ ConferenceDiscovery::stopPublishingConference
   
 	if (item != hostedConferenceList_.end()) {
       item->second->setBeingRemoved(true);
+      syncBasedDiscovery_->removeObject(conferenceBeingStopped.toUri(), true);
       
       Interest timeout("/localhost/timeout");
 	  timeout.setInterestLifetimeMilliseconds(defaultKeepPeriod_);
@@ -87,12 +88,12 @@ ConferenceDiscovery::stopPublishingConference
 	  return true;
     }
     else {
-      cout << "No such conference exist." << endl;
+      cerr << "No such conference exist." << endl;
       return false;
     }
   }
   else {
-	cout << "Not hosting any conferences." << endl;
+	cerr << "Not hosting any conferences." << endl;
 	return false;
   }
 }
@@ -140,7 +141,6 @@ ConferenceDiscovery::onInterest
 	  data.setContent((const uint8_t *)&content[0], content.size());
 	}
     
-	data.getMetaInfo().setTimestampMilliseconds(time(NULL) * 1000.0);
 	data.getMetaInfo().setFreshnessPeriod(defaultDataFreshnessPeriod_);
 
 	keyChain_.sign(data, certificateName_);
@@ -149,7 +149,7 @@ ConferenceDiscovery::onInterest
 	transport.send(*encodedData);
   }
   else {
-    cout << "Received interest about conference not hosted by this instance." << endl;
+    cerr << "Received interest about conference not hosted by this instance." << endl;
   }
 }
 
@@ -184,7 +184,7 @@ ConferenceDiscovery::onData
 	  // Expect this to be equal with 0 several times. 
 	  // Because new digest does not get updated immediately
 	  if (syncBasedDiscovery_->addObject(interest->getName().toUri(), true) == 0) {
-		cout << "Did not add to the discoveredConferenceList_ in syncBasedDiscovery_" << endl;
+		cerr << "Did not add to the discoveredConferenceList_ in syncBasedDiscovery_" << endl;
 	  }
 
 	  notifyObserver(MessageTypes::ADD, interest->getName().toUri().c_str(), 0);
@@ -212,7 +212,7 @@ ConferenceDiscovery::onData
     }
     else {
       if (syncBasedDiscovery_->removeObject(item->first, true) == 0) {
-		cout << "Did not remove from the discoveredConferenceList_ in syncBasedDiscovery_" << endl;
+		cerr << "Did not remove from the discoveredConferenceList_ in syncBasedDiscovery_" << endl;
 	  }
 	  std::vector<string>::iterator queriedItem = std::find
         (queriedConferenceList_.begin(), queriedConferenceList_.end(), interest->getName().toUri());
@@ -234,8 +234,6 @@ void
 ConferenceDiscovery::onTimeout
   (const ptr_lib::shared_ptr<const Interest>& interest)
 {
-  cout << "Interest times out: " << interest->getName().toUri() << endl;
-  
   // the last component should be the name of the conference itself
   std::string conferenceName = interest->getName().get
 	(-1).toEscapedString();
@@ -246,7 +244,7 @@ ConferenceDiscovery::onTimeout
 	if (item->second->incrementTimeout()) {
 	  // Probably need lock for adding/removing objects in SyncBasedDiscovery class.
 	  if (syncBasedDiscovery_->removeObject(item->first, true) == 0) {
-		cout << "Did not remove from the discoveredConferenceList_ in syncBasedDiscovery_" << endl;
+		cerr << "Did not remove from the discoveredConferenceList_ in syncBasedDiscovery_" << endl;
 	  }
   
 	  // erase the item after it's removed in removeObject, or removeObject would remove the
