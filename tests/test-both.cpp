@@ -162,8 +162,21 @@ int main()
       if (msgString == "-leave" || msgString == "-exit") {
         break;
       }
-      if (msgString == "-stoppublish") {
-        discovery->stopPublishingConference();
+      if (msgString.find("-stop ") != std::string::npos) {
+        cout << "Please give prefix name: " << endl;
+        std::string prefix = stdinReadLine();
+        Name prefixName(prefix);
+        discovery->stopPublishingConference(msgString.substr(string("-stop ").size()), prefixName);
+        continue;
+      }
+      if (msgString.find("-start ") != std::string::npos) {
+        cout << "Please give prefix name: " << endl;	
+        std::string prefix = stdinReadLine();
+        Name prefixName(prefix);
+        ConferenceDescription thisConference;
+    	thisConference.setDescription("conference: " + msgString);
+        discovery->publishConference
+          (msgString.substr(string("-start ").size()), prefixName, ptr_lib::make_shared<ConferenceDescription>(thisConference));
         continue;
       }
       if (msgString.find("-show ") != std::string::npos) {

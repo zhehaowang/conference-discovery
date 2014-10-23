@@ -14,7 +14,9 @@ namespace conference_discovery
   public:
     ConferenceInfo()
     {
-      timeoutCount = 0;
+      timeoutCount_ = 0;
+      prefixId_ = -1;
+      beingRemoved_ = false;
     }
     
     virtual ndn::Blob serialize(const ndn::ptr_lib::shared_ptr<ConferenceInfo> &info) = 0;
@@ -33,7 +35,7 @@ namespace conference_discovery
     
     bool incrementTimeout()
     {
-      if (timeoutCount ++ > TIMEOUTCOUNT) {
+      if (timeoutCount_ ++ > TIMEOUTCOUNT) {
         return true;
       }
       else {
@@ -41,14 +43,22 @@ namespace conference_discovery
       }
     }
     
-    void resetTimeout() { timeoutCount = 0; }
-    int getTimeoutCount() { return timeoutCount; }
+    void resetTimeout() { timeoutCount_ = 0; }
+    int getTimeoutCount() { return timeoutCount_; }
     
     std::string getConferenceName() { return conferenceName_; }
     void setConferenceName(std::string conferenceName) { conferenceName_ = conferenceName; }
+    
+    uint64_t getRegisteredPrefixId() { return prefixId_; }
+    void setRegisteredPrefixId(uint64_t prefixId) { prefixId_ = prefixId; }
+    
+    bool getBeingRemoved() { return beingRemoved_; }
+    void setBeingRemoved(bool beingRemoved) { beingRemoved_ = beingRemoved; }
   protected:
-    int timeoutCount;
+    int timeoutCount_;
+    uint64_t prefixId_;
     std::string conferenceName_;
+    bool beingRemoved_;
   };
 }
 

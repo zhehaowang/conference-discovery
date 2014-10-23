@@ -13,65 +13,86 @@ using namespace conference_discovery;
 using namespace func_lib::placeholders;
 #endif
 
-void 
+bool 
 ConferenceDiscovery::publishConference
   (std::string conferenceName, Name localPrefix, ptr_lib::shared_ptr<ConferenceInfo> conferenceInfo) 
 {
-  if (!isHostingConference_) {
-	conferenceName_ = Name(localPrefix).append(conferenceName);
-	registeredPrefixId_ = faceProcessor_.registerPrefix
-	  (conferenceName_, 
+  Name prefixName = Name(localPrefix).append(conferenceName);
+	
+  std::map<std::string, ndn::ptr_lib::shared_ptr<ConferenceInfo>>::iterator item = hostedConferenceList_.find(prefixName.toUri());
+  if (item == hostedConferenceList_.end()) {
+
+	uint64_t registeredPrefixId = faceProcessor_.registerPrefix
+	  (prefixName, 
 	   bind(&ConferenceDiscovery::onInterest, this, _1, _2, _3, _4), 
 	   bind(&ConferenceDiscovery::onRegisterFailed, this, _1));
-	
-	syncBasedDiscovery_->publishObject(conferenceName_.toUri());
-	isHostingConference_ = true;
-	conferenceBeingRemoved_ = "";
-	
+  
+	syncBasedDiscovery_->publishObject(prefixName.toUri());
+  
 	// this destroys the parent class object.
-	conferenceInfo_ = conferenceInfo;
-	
+	ptr_lib::shared_ptr<ConferenceInfo> info = conferenceInfo;
+	info->setRegisteredPrefixId(registeredPrefixId);
+  
+	hostedConferenceList_.insert
+	  (std::pair<std::string, ndn::ptr_lib::shared_ptr<ConferenceInfo>>(prefixName.toUri(), info));
+  
 	notifyObserver(MessageTypes::START, conferenceName.c_str(), 0);
+	hostedConferenceNum_ ++;
+	return true;
   }
   else {
-	cout << "Already hosting a conference." << endl;
+	return false;
   }
 }
 
 void
 ConferenceDiscovery::removeRegisteredPrefix
-  (const ptr_lib::shared_ptr<const Interest>& interest)
-{
-  faceProcessor_.removeRegisteredPrefix(registeredPrefixId_);
-  conferenceBeingRemoved_ = "";
+  (const ptr_lib::shared_ptr<const Interest>& interest,
+   Name conferenceName)
+{ 
+  std::map<std::string, ndn::ptr_lib::shared_ptr<ConferenceInfo>>::iterator item = hostedConferenceList_.find(conferenceName.toUri());
+  if (item != hostedConferenceList_.end()) {
+    faceProcessor_.removeRegisteredPrefix(item->second->getRegisteredPrefixId());
+    hostedConferenceList_.erase(item);
+    hostedConferenceNum_ --;
+  }
+  else {
+	cout << "No such conference exist." << endl;
+  }
 }
 
-void
-ConferenceDiscovery::stopPublishingConference()
+bool
+ConferenceDiscovery::stopPublishingConference
+  (std::string conferenceName, ndn::Name prefix)
 {
-  if (isHostingConference_) {
-    // TODO: Could it go wrong if the peer stops the current conference, and
-    // start one again within the interval? This judgment here shouldn't matter.
-    if (conferenceBeingRemoved_ == "") {
-	  isHostingConference_ = false;
-	  conferenceBeingRemoved_ = conferenceName_.toUri();
-	
-	  Interest timeout("/timeout");
+  if (hostedConferenceNum_ > 0) {
+    Name conferenceBeingStopped = Name(prefix).append(conferenceName);
+    
+    std::map<std::string, ndn::ptr_lib::shared_ptr<ConferenceInfo>>::iterator item = hostedConferenceList_.find(conferenceBeingStopped.toUri());
+  
+	if (item != hostedConferenceList_.end()) {
+      item->second->setBeingRemoved(true);
+      
+      Interest timeout("/localhost/timeout");
 	  timeout.setInterestLifetimeMilliseconds(defaultHeartbeatInterval_);
 
 	  faceProcessor_.expressInterest
 		(timeout, bind(&ConferenceDiscovery::dummyOnData, this, _1, _2),
-		 bind(&ConferenceDiscovery::removeRegisteredPrefix, this, _1));
+		 bind(&ConferenceDiscovery::removeRegisteredPrefix, this, _1, conferenceBeingStopped));
 	
-	  syncBasedDiscovery_->stopPublishingObject(conferenceName_.toUri());
-	  notifyObserver(MessageTypes::STOP, conferenceName_.toUri().c_str(), 0);
-	}
-	else {
-	  cout << "Last conference " << conferenceBeingRemoved_ << " is still being removed." << endl;
-	}
+	  syncBasedDiscovery_->stopPublishingObject(conferenceBeingStopped.toUri());
+	  notifyObserver(MessageTypes::STOP, conferenceBeingStopped.toUri().c_str(), 0);
+	  
+	  return true;
+    }
+    else {
+      cout << "No such conference exist." << endl;
+      return false;
+    }
   }
   else {
 	cout << "Not hosting any conferences." << endl;
+	return false;
   }
 }
 
@@ -84,12 +105,14 @@ ConferenceDiscovery::onReceivedSyncData
   // For every name received from sync, express interest to ask if they are valid;
   // Could try answer_origin_kind for this, but not scalable.
   for (size_t j = 0; j < syncData.size(); ++j) {
-	if (syncData[j] != conferenceName_.toUri()) {
+    std::map<std::string, ndn::ptr_lib::shared_ptr<ConferenceInfo>>::iterator hostedItem = hostedConferenceList_.find(syncData[j]);
+    std::map<std::string, ndn::ptr_lib::shared_ptr<ConferenceInfo>>::iterator discoveredItem = conferenceList_.find(syncData[j]);
+    
+    if (hostedItem == hostedConferenceList_.end() && discoveredItem == conferenceList_.end()) {
 	  interest.reset(new Interest(syncData[j]));
 	  interest->setInterestLifetimeMilliseconds(defaultInterestLifetime_);
-  
-	  // Using bind vs not?
-	  faceProcessor_.expressInterest
+      
+      faceProcessor_.expressInterest
 		(*(interest.get()), bind(&ConferenceDiscovery::onData, this, _1, _2),
 		 bind(&ConferenceDiscovery::onTimeout, this, _1));
 	}
@@ -102,22 +125,30 @@ ConferenceDiscovery::onInterest
    const ptr_lib::shared_ptr<const Interest>& interest, Transport& transport,
    uint64_t registerPrefixId)
 {
-  Data data(interest->getName());
+  std::map<std::string, ndn::ptr_lib::shared_ptr<ConferenceInfo>>::iterator item = hostedConferenceList_.find(interest->getName().toUri());
   
-  if (interest->getName().toUri() != conferenceBeingRemoved_) {
-	data.setContent(factory_->serialize(conferenceInfo_));
-  } else {
-    string content = "over";
-    data.setContent((const uint8_t *)&content[0], content.size());
+  if (item != hostedConferenceList_.end()) {
+  
+	Data data(interest->getName());
+  
+	if (item->second->getBeingRemoved() == false) {
+	  data.setContent(factory_->serialize(item->second));
+	} else {
+	  string content = "over";
+	  data.setContent((const uint8_t *)&content[0], content.size());
+	}
+  
+	data.getMetaInfo().setTimestampMilliseconds(time(NULL) * 1000.0);
+	data.getMetaInfo().setFreshnessPeriod(defaultDataFreshnessPeriod_);
+
+	keyChain_.sign(data, certificateName_);
+	Blob encodedData = data.wireEncode();
+
+	transport.send(*encodedData);
   }
-  
-  data.getMetaInfo().setTimestampMilliseconds(time(NULL) * 1000.0);
-  data.getMetaInfo().setFreshnessPeriod(defaultDataFreshnessPeriod_);
-
-  keyChain_.sign(data, certificateName_);
-  Blob encodedData = data.wireEncode();
-
-  transport.send(*encodedData);
+  else {
+    cout << "Received interest about conference not hosted by this instance." << endl;
+  }
 }
 
 void 
@@ -288,8 +319,9 @@ ConferenceDiscovery::conferencesToString()
 	result += it->first;
 	result += "\n";
   }
-  if (isHostingConference_) {
-	result += (" * " + conferenceName_.toUri() + "\n");
+  for(std::map<string, ptr_lib::shared_ptr<ConferenceInfo>>::iterator it = hostedConferenceList_.begin(); it != hostedConferenceList_.end(); ++it) {
+	result += (" * " + it->first);
+	result += "\n";
   }
   return result;
 }
