@@ -68,7 +68,7 @@ namespace conference_discovery
 	 * @param conferenceName string name of the conference.
 	 * @param localPrefix name prefix of the conference.
 	 * @param conferenceInfo the info of this conference.
-	 * @return true, if conference name is not already published by this instance; false if otherwise
+	 * @return true, if conference name is not already published by this instance; false if otherwise.
 	 */
 	bool 
 	publishConference(std::string conferenceName, ndn::Name localPrefix, ndn::ptr_lib::shared_ptr<ConferenceInfo> conferenceInfo);
@@ -80,16 +80,22 @@ namespace conference_discovery
 	 * onInterest.
 	 * @param conferenceName string name of the conference to be stopped
 	 * @param prefix name prefix of the conference to be stopped
-	 * @return true, if conference with that name is published by this instance; false if otherwise
+	 * @return true, if conference with that name is published by this instance; false if otherwise.
 	 */
 	bool
 	stopPublishingConference(std::string conferenceName, ndn::Name prefix);
 	
 	/**
-	 * getConferenceList returns the copy of list of conferences
+	 * getDiscoveredConferenceList returns the copy of list of discovered conferences
 	 */
 	std::map<std::string, ndn::ptr_lib::shared_ptr<ConferenceInfo>>
-	getConferenceList() { return conferenceList_; };
+	getDiscoveredConferenceList() { return discoveredConferenceList_; };
+    
+    /**
+	 * getHostedConferenceList returns the copy of list of discovered conferences
+	 */
+	std::map<std::string, ndn::ptr_lib::shared_ptr<ConferenceInfo>>
+	getHostedConferenceList() { return hostedConferenceList_; };
     
     /**
      * getConference gets the conference info from list of conferences discovered (hosted by others)
@@ -97,9 +103,9 @@ namespace conference_discovery
     ndn::ptr_lib::shared_ptr<ConferenceInfo>
     getConference(std::string conferenceName) 
     {
-      std::map<std::string, ndn::ptr_lib::shared_ptr<ConferenceInfo>>::iterator item = conferenceList_.find
+      std::map<std::string, ndn::ptr_lib::shared_ptr<ConferenceInfo>>::iterator item = discoveredConferenceList_.find
         (conferenceName);
-	  if (item != conferenceList_.end()) {
+	  if (item != discoveredConferenceList_.end()) {
 	    return item->second;
 	  }
 	  else {
@@ -220,7 +226,7 @@ namespace conference_discovery
 	const ndn::Milliseconds defaultTimeoutReexpressInterval_;
   
 	// List of discovered conference.
-	std::map<std::string, ndn::ptr_lib::shared_ptr<ConferenceInfo>> conferenceList_;
+	std::map<std::string, ndn::ptr_lib::shared_ptr<ConferenceInfo>> discoveredConferenceList_;
 	// List of hosted conference.
 	std::map<std::string, ndn::ptr_lib::shared_ptr<ConferenceInfo>> hostedConferenceList_;
 	

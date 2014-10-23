@@ -106,9 +106,9 @@ ConferenceDiscovery::onReceivedSyncData
   // Could try answer_origin_kind for this, but not scalable.
   for (size_t j = 0; j < syncData.size(); ++j) {
     std::map<std::string, ndn::ptr_lib::shared_ptr<ConferenceInfo>>::iterator hostedItem = hostedConferenceList_.find(syncData[j]);
-    std::map<std::string, ndn::ptr_lib::shared_ptr<ConferenceInfo>>::iterator discoveredItem = conferenceList_.find(syncData[j]);
+    std::map<std::string, ndn::ptr_lib::shared_ptr<ConferenceInfo>>::iterator discoveredItem = discoveredConferenceList_.find(syncData[j]);
     
-    if (hostedItem == hostedConferenceList_.end() && discoveredItem == conferenceList_.end()) {
+    if (hostedItem == hostedConferenceList_.end() && discoveredItem == discoveredConferenceList_.end()) {
 	  interest.reset(new Interest(syncData[j]));
 	  interest->setInterestLifetimeMilliseconds(defaultInterestLifetime_);
       
@@ -159,10 +159,10 @@ ConferenceDiscovery::onData
   std::string conferenceName = interest->getName().get
 	(-1).toEscapedString();
   
-  std::map<string, ptr_lib::shared_ptr<ConferenceInfo>>::iterator item = conferenceList_.find
+  std::map<string, ptr_lib::shared_ptr<ConferenceInfo>>::iterator item = discoveredConferenceList_.find
     (interest->getName().toUri());
   
-  if (item == conferenceList_.end()) {
+  if (item == discoveredConferenceList_.end()) {
     if (conferenceName != "") {
       string content = "";
       for (size_t i = 0; i < data->getContent().size(); ++i) {
@@ -170,12 +170,12 @@ ConferenceDiscovery::onData
       }
       
       if (content != "over") {
-		conferenceList_.insert
+		discoveredConferenceList_.insert
 		  (std::pair<string, ptr_lib::shared_ptr<ConferenceInfo>>
 			(interest->getName().toUri(), factory_->deserialize(data->getContent())));
 	
 		// std::map should be sorted by default
-		//std::sort(conferenceList_.begin(), conferenceList_.end());
+		//std::sort(discoveredConferenceList_.begin(), discoveredConferenceList_.end());
 
 		// Probably need lock for adding/removing objects in SyncBasedDiscovery class.
 		// Here we update hash as well as adding object; The next interest will carry the new digest
@@ -183,7 +183,7 @@ ConferenceDiscovery::onData
 		// Expect this to be equal with 0 several times. 
 		// Because new digest does not get updated immediately
 		if (syncBasedDiscovery_->addObject(interest->getName().toUri(), true) == 0) {
-		  cout << "Did not add to the conferenceList_ in syncBasedDiscovery_" << endl;
+		  cout << "Did not add to the discoveredConferenceList_ in syncBasedDiscovery_" << endl;
 		}
 
 		notifyObserver(MessageTypes::ADD, interest->getName().toUri().c_str(), 0);
@@ -205,14 +205,14 @@ ConferenceDiscovery::onData
 	    
 		// Same code as in timeout, should generalize as removeConference.
 		if (syncBasedDiscovery_->removeObject(item->first, true) == 0) {
-		  cout << "Did not remove from the conferenceList_ in syncBasedDiscovery_" << endl;
+		  cout << "Did not remove from the discoveredConferenceList_ in syncBasedDiscovery_" << endl;
 		}
   
 		// erase the item after it's removed in removeObject, or removeObject would remove the
 		// wrong element: iterator is actually representing a position index, and the two vectors
 		// should be exactly the same: (does it make sense for them to be shared, 
 		// and mutex-locked correspondingly?)
-		conferenceList_.erase(item);
+		discoveredConferenceList_.erase(item);
 	
 		notifyObserver(MessageTypes::STOP, conferenceName.c_str(), 0);
 	  }
@@ -239,20 +239,20 @@ ConferenceDiscovery::onTimeout
   std::string conferenceName = interest->getName().get
 	(-1).toEscapedString();
   
-  std::map<string, ptr_lib::shared_ptr<ConferenceInfo>>::iterator item = conferenceList_.find
+  std::map<string, ptr_lib::shared_ptr<ConferenceInfo>>::iterator item = discoveredConferenceList_.find
     (interest->getName().toUri());
-  if (item != conferenceList_.end()) {
+  if (item != discoveredConferenceList_.end()) {
 	if (item->second->incrementTimeout()) {
 	  // Probably need lock for adding/removing objects in SyncBasedDiscovery class.
 	  if (syncBasedDiscovery_->removeObject(item->first, true) == 0) {
-		cout << "Did not remove from the conferenceList_ in syncBasedDiscovery_" << endl;
+		cout << "Did not remove from the discoveredConferenceList_ in syncBasedDiscovery_" << endl;
 	  }
   
 	  // erase the item after it's removed in removeObject, or removeObject would remove the
 	  // wrong element: iterator is actually representing a position index, and the two vectors
 	  // should be exactly the same: (does it make sense for them to be shared, 
 	  // and mutex-locked correspondingly?)
-	  conferenceList_.erase(item);
+	  discoveredConferenceList_.erase(item);
 	
 	  notifyObserver(MessageTypes::STOP, conferenceName.c_str(), 0);
 	}
@@ -315,7 +315,7 @@ std::string
 ConferenceDiscovery::conferencesToString()
 {
   std::string result;
-  for(std::map<string, ptr_lib::shared_ptr<ConferenceInfo>>::iterator it = conferenceList_.begin(); it != conferenceList_.end(); ++it) {
+  for(std::map<string, ptr_lib::shared_ptr<ConferenceInfo>>::iterator it = discoveredConferenceList_.begin(); it != discoveredConferenceList_.end(); ++it) {
 	result += it->first;
 	result += "\n";
   }
