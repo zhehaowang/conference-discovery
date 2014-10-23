@@ -207,7 +207,7 @@ ConferenceDiscovery::onData
 		  cout << "Did not remove from the discoveredConferenceList_ in syncBasedDiscovery_" << endl;
 		}
 		
-		notifyObserver(MessageTypes::STOP, conferenceName.c_str(), 0);
+		notifyObserver(MessageTypes::REMOVE, conferenceName.c_str(), 0);
 	  }
 	}
 	else {
@@ -252,7 +252,7 @@ ConferenceDiscovery::onTimeout
 	  // and mutex-locked correspondingly?)
 	  discoveredConferenceList_.erase(item);
 	
-	  notifyObserver(MessageTypes::STOP, conferenceName.c_str(), 0);
+	  notifyObserver(MessageTypes::REMOVE, conferenceName.c_str(), 0);
 	}
 	else {
 	  Interest timeout("/timeout");
