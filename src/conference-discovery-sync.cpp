@@ -43,6 +43,7 @@ ConferenceDiscovery::publishConference
 	return true;
   }
   else {
+    cerr << "Conference with this name already exists locally." << endl;
 	return false;
   }
 }
