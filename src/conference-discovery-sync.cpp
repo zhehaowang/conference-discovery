@@ -110,6 +110,8 @@ ConferenceDiscovery::onReceivedSyncData
 	  interest.reset(new Interest(syncData[j]));
 	  interest->setInterestLifetimeMilliseconds(defaultInterestLifetime_);
       
+      cout << "onreceivedsyncdata: Sending interest towards " << interest->getName().toUri() << endl;
+      
       faceProcessor_.expressInterest
 		(*(interest.get()), bind(&ConferenceDiscovery::onData, this, _1, _2),
 		 bind(&ConferenceDiscovery::onTimeout, this, _1));
