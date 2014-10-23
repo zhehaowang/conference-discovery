@@ -169,7 +169,9 @@ ConferenceDiscovery::onData
 	content += (*data->getContent())[i];
   }
   
+  // if it's not a discovered conference
   if (item == discoveredConferenceList_.end()) {
+	// if it's still going on
 	if (content != "over") {
 	  discoveredConferenceList_.insert
 		(std::pair<string, ptr_lib::shared_ptr<ConferenceInfo>>
@@ -196,6 +198,13 @@ ConferenceDiscovery::onData
 	  faceProcessor_.expressInterest
 		(timeout, bind(&ConferenceDiscovery::dummyOnData, this, _1, _2),
 		 bind(&ConferenceDiscovery::expressHeartbeatInterest, this, _1, interest));
+	}
+	else {
+	  std::vector<string>::iterator queriedItem = std::find
+        (queriedConferenceList_.begin(), queriedConferenceList_.end(), interest->getName().toUri());
+      if (queriedItem != queriedConferenceList_.end()) {
+	    queriedConferenceList_.erase(queriedItem);
+	  }
 	}
   }
   else {
@@ -252,7 +261,13 @@ ConferenceDiscovery::onTimeout
 	  // should be exactly the same: (does it make sense for them to be shared, 
 	  // and mutex-locked correspondingly?)
 	  discoveredConferenceList_.erase(item);
-	
+	  
+	  std::vector<string>::iterator queriedItem = std::find
+        (queriedConferenceList_.begin(), queriedConferenceList_.end(), interest->getName().toUri());
+      if (queriedItem != queriedConferenceList_.end()) {
+	    queriedConferenceList_.erase(queriedItem);
+	  }
+	  
 	  notifyObserver(MessageTypes::REMOVE, conferenceName.c_str(), 0);
 	}
 	else {
