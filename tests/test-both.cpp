@@ -188,12 +188,21 @@ int main()
       }
       chat->sendMessage(msgString);
     }
-    face.processEvents();
+    try {
+      face.processEvents();
+    }
+    catch (std::exception& e) {
+      cout << e.what() << endl;
+    }
     usleep(10000);
   }
   chat->leave();
   
-  // Give some time so that others can fetch leave.
-  usleep(2000);
+  int sleepSeconds = 0;
+  while (sleepSeconds < 1000000) {
+	face.processEvents();
+	usleep(10000);
+	sleepSeconds += 10000;
+  }
   return 1;
 }
