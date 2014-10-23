@@ -74,7 +74,7 @@ ConferenceDiscovery::stopPublishingConference
       item->second->setBeingRemoved(true);
       
       Interest timeout("/localhost/timeout");
-	  timeout.setInterestLifetimeMilliseconds(defaultHeartbeatInterval_);
+	  timeout.setInterestLifetimeMilliseconds(defaultDataFreshnessPeriod_);
 
 	  faceProcessor_.expressInterest
 		(timeout, bind(&ConferenceDiscovery::dummyOnData, this, _1, _2),
@@ -187,7 +187,7 @@ ConferenceDiscovery::onData
 
 		notifyObserver(MessageTypes::ADD, interest->getName().toUri().c_str(), 0);
 
-		Interest timeout("/timeout");
+		Interest timeout("/localhost/timeout");
 		timeout.setInterestLifetimeMilliseconds(defaultHeartbeatInterval_);
 
 		// express heartbeat interest after 2 seconds of sleep
@@ -233,6 +233,8 @@ void
 ConferenceDiscovery::onTimeout
   (const ptr_lib::shared_ptr<const Interest>& interest)
 {
+  cout << "Interest times out: " << interest->getName().toUri() << endl;
+  
   // the last component should be the name of the conference itself
   std::string conferenceName = interest->getName().get
 	(-1).toEscapedString();

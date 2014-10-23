@@ -87,8 +87,8 @@ namespace conference_discovery
      : broadcastPrefix_(broadcastPrefix), onReceivedSyncData_(onReceivedSyncData), 
        face_(face), keyChain_(keyChain), certificateName_(certificateName), 
        contentCache_(&face), newComerDigest_("00"), currentDigest_(newComerDigest_),
-       defaultDataFreshnessPeriod_(4000), defaultInterestLifetime_(2000), 
-       defaultInterval_(500)
+       defaultDataFreshnessPeriod_(2000), defaultInterestLifetime_(2000), 
+       defaultInterval_(1000)
     {
       // Storing it in contentCache, the idea is that a set of strings maps to a digest
       contentCache_.registerPrefix

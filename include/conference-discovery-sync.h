@@ -52,8 +52,8 @@ namespace conference_discovery
 	  (std::string broadcastPrefix, ndn::ptr_lib::shared_ptr<ConferenceDiscoveryObserver> observer, 
 	   ndn::ptr_lib::shared_ptr<ConferenceInfoFactory> factory, ndn::Face& face, ndn::KeyChain& keyChain, 
 	   ndn::Name certificateName)
-	:  defaultDataFreshnessPeriod_(1000), defaultInterestLifetime_(1000), 
-	   defaultHeartbeatInterval_(1000), defaultTimeoutReexpressInterval_(300), 
+	:  defaultDataFreshnessPeriod_(2000), defaultInterestLifetime_(1000), 
+	   defaultHeartbeatInterval_(2000), defaultTimeoutReexpressInterval_(300), 
 	   observer_(observer), factory_(factory), faceProcessor_(face), keyChain_(keyChain), 
 	   certificateName_(certificateName), hostedConferenceNum_(0)
 	{
