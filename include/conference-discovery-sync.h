@@ -68,6 +68,7 @@ namespace conference_discovery
 	 * @param conferenceName string name of the conference.
 	 * @param localPrefix name prefix of the conference.
 	 * @param conferenceInfo the info of this conference.
+	 * @return true, if conference name is not already published by this instance; false if otherwise
 	 */
 	bool 
 	publishConference(std::string conferenceName, ndn::Name localPrefix, ndn::ptr_lib::shared_ptr<ConferenceInfo> conferenceInfo);
@@ -77,6 +78,9 @@ namespace conference_discovery
 	 * Also removes the registered prefix by its ID.
 	 * Note that interest with matching name could still arrive, but will not trigger
 	 * onInterest.
+	 * @param conferenceName string name of the conference to be stopped
+	 * @param prefix name prefix of the conference to be stopped
+	 * @return true, if conference with that name is published by this instance; false if otherwise
 	 */
 	bool
 	stopPublishingConference(std::string conferenceName, ndn::Name prefix);
