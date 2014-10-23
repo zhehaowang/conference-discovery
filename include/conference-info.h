@@ -31,7 +31,7 @@ namespace conference_discovery
     
     virtual ndn::ptr_lib::shared_ptr<ConferenceInfo> 
     deserializeName()
-    { return ndn::ptr_lib::shared_ptr<ConferenceInfo>(NULL); }
+    { return ndn::ptr_lib::shared_ptr<ConferenceInfo>(); }
     
     bool incrementTimeout()
     {

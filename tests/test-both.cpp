@@ -132,14 +132,14 @@ int main()
   try {
     chat.reset
       (new Chat(chatBroadcastPrefix, screenName, chatroom,
-  	   hubPrefix, NULL, face, keyChain, certificateName));
+  	   hubPrefix, ptr_lib::shared_ptr<ChatObserver>(), face, keyChain, certificateName));
   	
   	ConferenceDescription cd;
   	ConferenceInfoFactory factory(ptr_lib::make_shared<ConferenceDescription>(cd));
 
   	discovery.reset
   	  (new ConferenceDiscovery(conferenceDiscoveryBdcastPrefix, 
-  	   NULL, ptr_lib::make_shared<ConferenceInfoFactory>(factory), 
+  	   ptr_lib::shared_ptr<ConferenceDiscoveryObserver>(), ptr_lib::make_shared<ConferenceInfoFactory>(factory), 
   	   face, keyChain, certificateName));
   	   
   	ConferenceDescription thisConference;
@@ -181,7 +181,7 @@ int main()
           ptr_lib::dynamic_pointer_cast<ConferenceDescription>
             (discovery->getConference(msgString.substr(string("-show ").size())));
         
-        if (description != NULL) {
+        if (description) {
           cout << description->getDescription() << endl;
         }
         continue;

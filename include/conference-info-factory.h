@@ -41,7 +41,7 @@ namespace conference_discovery
         std::cerr << e.what() << std::endl;
         throw;
       }
-      return ndn::ptr_lib::shared_ptr<ConferenceInfo>(NULL);
+      return ndn::ptr_lib::shared_ptr<ConferenceInfo>();
     }
   protected:
     ndn::ptr_lib::shared_ptr<ConferenceInfo> conferenceInfo_;

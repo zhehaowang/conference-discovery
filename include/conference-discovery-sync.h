@@ -119,7 +119,7 @@ namespace conference_discovery
           return hostedItem->second;
         }
         else {
-	      return ndn::ptr_lib::shared_ptr<ConferenceInfo>(NULL);
+	      return ndn::ptr_lib::shared_ptr<ConferenceInfo>();
 	    }
 	  }
     };
