@@ -163,20 +163,17 @@ int main()
         break;
       }
       if (msgString.find("-stop ") != std::string::npos) {
-        cout << "Please give prefix name: " << endl;
-        std::string prefix = stdinReadLine();
-        Name prefixName(prefix);
-        discovery->stopPublishingConference(msgString.substr(string("-stop ").size()), prefixName);
+        cout << "Using default prefix: " << hubPrefix.toUri() << endl;
+        discovery->stopPublishingConference(msgString.substr(string("-stop ").size()), hubPrefix);
         continue;
       }
       if (msgString.find("-start ") != std::string::npos) {
-        cout << "Please give prefix name: " << endl;	
-        std::string prefix = stdinReadLine();
-        Name prefixName(prefix);
+        cout << "Using default prefix: " << hubPrefix.toUri() << endl;
+        
         ConferenceDescription thisConference;
     	thisConference.setDescription("conference: " + msgString);
         discovery->publishConference
-          (msgString.substr(string("-start ").size()), prefixName, ptr_lib::make_shared<ConferenceDescription>(thisConference));
+          (msgString.substr(string("-start ").size()), hubPrefix, ptr_lib::make_shared<ConferenceDescription>(thisConference));
         continue;
       }
       if (msgString.find("-show ") != std::string::npos) {

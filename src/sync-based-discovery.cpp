@@ -43,10 +43,9 @@ SyncBasedDiscovery::onData
   // Try expressing in a given timeout period: 
   // Why it does not work as expected, without this interval?
   
-  Interest timeout("/timeout");
-  timeout.setInterestLifetimeMilliseconds(defaultInterval_);
+  Interest timeout("/localhost/timeout");
+  timeout.setInterestLifetimeMilliseconds(defaultInterestLifetime_);
   
-  // express broadcast interest after .5 seconds of sleep
   face_.expressInterest
     (timeout, bind(&SyncBasedDiscovery::dummyOnData, this, _1, _2),
      bind(&SyncBasedDiscovery::expressBroadcastInterest, this, _1));

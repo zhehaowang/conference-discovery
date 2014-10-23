@@ -87,8 +87,7 @@ namespace conference_discovery
      : broadcastPrefix_(broadcastPrefix), onReceivedSyncData_(onReceivedSyncData), 
        face_(face), keyChain_(keyChain), certificateName_(certificateName), 
        contentCache_(&face), newComerDigest_("00"), currentDigest_(newComerDigest_),
-       defaultDataFreshnessPeriod_(2000), defaultInterestLifetime_(2000), 
-       defaultInterval_(1000)
+       defaultDataFreshnessPeriod_(2000), defaultInterestLifetime_(2000)
     {
       // Storing it in contentCache, the idea is that a set of strings maps to a digest
       contentCache_.registerPrefix
@@ -171,8 +170,7 @@ namespace conference_discovery
 	const std::string newComerDigest_;
 	const ndn::Milliseconds defaultDataFreshnessPeriod_;
 	const ndn::Milliseconds defaultInterestLifetime_;
-	const ndn::Milliseconds defaultInterval_;
-    
+	
     /**
      * These functions should be replaced, once we replace objects with something more
      * generic
