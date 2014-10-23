@@ -114,8 +114,6 @@ ConferenceDiscovery::onReceivedSyncData
 	  interest.setInterestLifetimeMilliseconds(defaultHeartbeatInterval_);
       interest.setMustBeFresh(true);
       
-      cout << "Interest sent : " << interest.getName().toUri() << endl;
-      
       faceProcessor_.expressInterest
 		(interest, bind(&ConferenceDiscovery::onData, this, _1, _2),
 		 bind(&ConferenceDiscovery::onTimeout, this, _1));
@@ -138,7 +136,6 @@ ConferenceDiscovery::onInterest
 	if (item->second->getBeingRemoved() == false) {
 	  data.setContent(factory_->serialize(item->second));
 	} else {
-	  cout << "reply with over" << endl;
 	  string content("over");
 	  data.setContent((const uint8_t *)&content[0], content.size());
 	}
@@ -171,8 +168,6 @@ ConferenceDiscovery::onData
   for (size_t i = 0; i < data->getContent().size(); ++i) {
 	content += (*data->getContent())[i];
   }
-  
-  cout << "content received: " << content << endl;
   
   if (item == discoveredConferenceList_.end()) {
 	if (content != "over") {
