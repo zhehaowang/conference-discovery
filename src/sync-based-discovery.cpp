@@ -61,6 +61,7 @@ SyncBasedDiscovery::expressBroadcastInterest
 
   Interest newInterest(name);
   newInterest.setInterestLifetimeMilliseconds(defaultInterestLifetime_);
+  newInterest.setMustBeFresh(true);
   
   face_.expressInterest
     (newInterest, bind(&SyncBasedDiscovery::onData, this, _1, _2),
@@ -86,7 +87,8 @@ SyncBasedDiscovery::onTimeout
   
   Interest newInterest(interestName);
   newInterest.setInterestLifetimeMilliseconds(defaultInterestLifetime_);
-    
+  newInterest.setMustBeFresh(true);
+
   face_.expressInterest
     (newInterest, bind(&SyncBasedDiscovery::onData, this, _1, _2), 
      bind(&SyncBasedDiscovery::onTimeout, this, _1));
@@ -160,15 +162,10 @@ SyncBasedDiscovery::stringHash()
 
 }
 
-void
+int
 SyncBasedDiscovery::stopPublishingObject(std::string name)
 {
-  if (removeObject(name, true)) {
-    
-  }
-  else {
-    cout << "Did not remove self when stop publishing." << endl;
-  }
+  return removeObject(name, true);
 }
 
 void
@@ -202,6 +199,7 @@ SyncBasedDiscovery::publishObject(std::string name)
     Name interestName = Name(broadcastPrefix_).append(currentDigest_);
     Interest interest(interestName);
     interest.setInterestLifetimeMilliseconds(defaultInterestLifetime_);
+    interest.setMustBeFresh(true);
     
     face_.expressInterest
       (interest, bind(&SyncBasedDiscovery::onData, this, _1, _2), 

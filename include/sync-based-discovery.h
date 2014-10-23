@@ -97,6 +97,7 @@ namespace conference_discovery
       ndn::Interest interest(broadcastPrefix);
       interest.getName().append(newComerDigest_);
       interest.setInterestLifetimeMilliseconds(defaultInterestLifetime_);
+      interest.setMustBeFresh(true);
       // setAnswerOriginKind is deprecated
       //interest.setAnswerOriginKind(ndn_Interest_ANSWER_NO_CONTENT_STORE);
   
@@ -159,7 +160,7 @@ namespace conference_discovery
     /**
      * Called when stopConferencePublishing
      */
-    void stopPublishingObject(std::string name);
+    int stopPublishingObject(std::string name);
     
     /**
      * Updates the currentDigest_ according to the list of objects

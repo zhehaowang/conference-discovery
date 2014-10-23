@@ -74,13 +74,13 @@ ConferenceDiscovery::stopPublishingConference
       item->second->setBeingRemoved(true);
       
       Interest timeout("/localhost/timeout");
-	  timeout.setInterestLifetimeMilliseconds(defaultDataFreshnessPeriod_);
+	  timeout.setInterestLifetimeMilliseconds(defaultKeepPeriod_);
 
 	  faceProcessor_.expressInterest
 		(timeout, bind(&ConferenceDiscovery::dummyOnData, this, _1, _2),
 		 bind(&ConferenceDiscovery::removeRegisteredPrefix, this, _1, conferenceBeingStopped));
 	
-	  syncBasedDiscovery_->stopPublishingObject(conferenceBeingStopped.toUri());
+	  cout << "stop successful " << syncBasedDiscovery_->stopPublishingObject(conferenceBeingStopped.toUri()) << endl;
 	  notifyObserver(MessageTypes::STOP, conferenceBeingStopped.toUri().c_str(), 0);
 	  
 	  return true;
@@ -108,9 +108,8 @@ ConferenceDiscovery::onReceivedSyncData
     
     if (hostedItem == hostedConferenceList_.end() && discoveredItem == discoveredConferenceList_.end()) {
 	  interest.reset(new Interest(syncData[j]));
-	  interest->setInterestLifetimeMilliseconds(defaultInterestLifetime_);
-      
-      cout << "onreceivedsyncdata: Sending interest towards " << interest->getName().toUri() << endl;
+	  interest->setInterestLifetimeMilliseconds(defaultHeartbeatInterval_);
+      interest->setMustBeFresh(true);
       
       faceProcessor_.expressInterest
 		(*(interest.get()), bind(&ConferenceDiscovery::onData, this, _1, _2),
@@ -284,7 +283,7 @@ ConferenceDiscovery::onHeartbeatData
   (const ptr_lib::shared_ptr<const Interest>& interest,
    const ptr_lib::shared_ptr<Data>& data)
 {
-  Interest timeout("/timeout");
+  Interest timeout("/localhost/timeout");
   timeout.setInterestLifetimeMilliseconds(defaultHeartbeatInterval_);
 
 	// express heartbeat interest after 2 seconds of sleep
