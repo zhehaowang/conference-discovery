@@ -102,8 +102,6 @@ ConferenceDiscovery::onReceivedSyncData
 {
   ptr_lib::shared_ptr<Interest> interest;
 
-  // For every name received from sync, express interest to ask if they are valid;
-  // Could try answer_origin_kind for this, but not scalable.
   for (size_t j = 0; j < syncData.size(); ++j) {
     std::map<std::string, ndn::ptr_lib::shared_ptr<ConferenceInfo>>::iterator hostedItem = hostedConferenceList_.find(syncData[j]);
     std::map<std::string, ndn::ptr_lib::shared_ptr<ConferenceInfo>>::iterator discoveredItem = discoveredConferenceList_.find(syncData[j]);

@@ -31,6 +31,8 @@
 #endif
 
 // TODO: Constantly getting 'add conference' message during a test.
+// TODO: Different lifetimes could cause interest towards stopped self hosted conference to get reissued;
+//   explicit conference over still being verified.
 
 namespace conference_discovery
 {
@@ -51,7 +53,7 @@ namespace conference_discovery
 	   ndn::ptr_lib::shared_ptr<ConferenceInfoFactory> factory, ndn::Face& face, ndn::KeyChain& keyChain, 
 	   ndn::Name certificateName)
 	:  defaultDataFreshnessPeriod_(1000), defaultInterestLifetime_(1000), 
-	   defaultHeartbeatInterval_(500), defaultTimeoutReexpressInterval_(300), 
+	   defaultHeartbeatInterval_(1000), defaultTimeoutReexpressInterval_(300), 
 	   observer_(observer), factory_(factory), faceProcessor_(face), keyChain_(keyChain), 
 	   certificateName_(certificateName), hostedConferenceNum_(0)
 	{
