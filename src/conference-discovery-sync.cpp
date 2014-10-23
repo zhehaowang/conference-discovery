@@ -80,7 +80,6 @@ ConferenceDiscovery::stopPublishingConference
 		(timeout, bind(&ConferenceDiscovery::dummyOnData, this, _1, _2),
 		 bind(&ConferenceDiscovery::removeRegisteredPrefix, this, _1, conferenceBeingStopped));
 	
-	  cout << "stop successful " << syncBasedDiscovery_->stopPublishingObject(conferenceBeingStopped.toUri()) << endl;
 	  notifyObserver(MessageTypes::STOP, conferenceBeingStopped.toUri().c_str(), 0);
 	  
 	  return true;
@@ -133,6 +132,7 @@ ConferenceDiscovery::onInterest
 	if (item->second->getBeingRemoved() == false) {
 	  data.setContent(factory_->serialize(item->second));
 	} else {
+	  cout << "reply with over" << endl;
 	  string content = "over";
 	  data.setContent((const uint8_t *)&content[0], content.size());
 	}
@@ -165,6 +165,8 @@ ConferenceDiscovery::onData
   for (size_t i = 0; i < data->getContent().size(); ++i) {
 	content += (*data->getContent())[i];
   }
+  
+  cout << "content received: " << content << endl;
   
   if (item == discoveredConferenceList_.end()) {
     if (conferenceName != "") {
