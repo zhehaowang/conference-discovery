@@ -4,6 +4,8 @@
 #include <openssl/rand.h>
 #include <iostream>
 
+#include <algorithm>
+
 using namespace std;
 using namespace ndn;
 using namespace ndn::func_lib;
@@ -99,19 +101,23 @@ void
 ConferenceDiscovery::onReceivedSyncData
   (const std::vector<std::string>& syncData)
 {
-  ptr_lib::shared_ptr<Interest> interest;
-
   for (size_t j = 0; j < syncData.size(); ++j) {
     std::map<std::string, ndn::ptr_lib::shared_ptr<ConferenceInfo>>::iterator hostedItem = hostedConferenceList_.find(syncData[j]);
-    std::map<std::string, ndn::ptr_lib::shared_ptr<ConferenceInfo>>::iterator discoveredItem = discoveredConferenceList_.find(syncData[j]);
+    std::vector<std::string>::iterator queriedItem = std::find(queriedConferenceList_.begin(), queriedConferenceList_.end(), syncData[j]);
     
-    if (hostedItem == hostedConferenceList_.end() && discoveredItem == discoveredConferenceList_.end()) {
-	  interest.reset(new Interest(syncData[j]));
-	  interest->setInterestLifetimeMilliseconds(defaultHeartbeatInterval_);
-      interest->setMustBeFresh(true);
+    if (hostedItem == hostedConferenceList_.end() && queriedItem == queriedConferenceList_.end()) {
+      queriedConferenceList_.push_back(syncData[j]);
+    
+	  Name name(syncData[j]);
+	  Interest interest(name);
+	  
+	  interest.setInterestLifetimeMilliseconds(defaultHeartbeatInterval_);
+      interest.setMustBeFresh(true);
+      
+      cout << "Interest sent : " << interest.getName().toUri() << endl;
       
       faceProcessor_.expressInterest
-		(*(interest.get()), bind(&ConferenceDiscovery::onData, this, _1, _2),
+		(interest, bind(&ConferenceDiscovery::onData, this, _1, _2),
 		 bind(&ConferenceDiscovery::onTimeout, this, _1));
 	}
   }
@@ -133,10 +139,10 @@ ConferenceDiscovery::onInterest
 	  data.setContent(factory_->serialize(item->second));
 	} else {
 	  cout << "reply with over" << endl;
-	  string content = "over";
+	  string content("over");
 	  data.setContent((const uint8_t *)&content[0], content.size());
 	}
-  
+    
 	data.getMetaInfo().setTimestampMilliseconds(time(NULL) * 1000.0);
 	data.getMetaInfo().setFreshnessPeriod(defaultDataFreshnessPeriod_);
 
@@ -169,60 +175,57 @@ ConferenceDiscovery::onData
   cout << "content received: " << content << endl;
   
   if (item == discoveredConferenceList_.end()) {
-    if (conferenceName != "") {
-      
-      if (content != "over") {
-		discoveredConferenceList_.insert
-		  (std::pair<string, ptr_lib::shared_ptr<ConferenceInfo>>
-			(interest->getName().toUri(), factory_->deserialize(data->getContent())));
-	
-		// std::map should be sorted by default
-		//std::sort(discoveredConferenceList_.begin(), discoveredConferenceList_.end());
+	if (content != "over") {
+	  discoveredConferenceList_.insert
+		(std::pair<string, ptr_lib::shared_ptr<ConferenceInfo>>
+		  (interest->getName().toUri(), factory_->deserialize(data->getContent())));
+  
+	  // std::map should be sorted by default
+	  //std::sort(discoveredConferenceList_.begin(), discoveredConferenceList_.end());
 
-		// Probably need lock for adding/removing objects in SyncBasedDiscovery class.
-		// Here we update hash as well as adding object; The next interest will carry the new digest
+	  // Probably need lock for adding/removing objects in SyncBasedDiscovery class.
+	  // Here we update hash as well as adding object; The next interest will carry the new digest
 
-		// Expect this to be equal with 0 several times. 
-		// Because new digest does not get updated immediately
-		if (syncBasedDiscovery_->addObject(interest->getName().toUri(), true) == 0) {
-		  cout << "Did not add to the discoveredConferenceList_ in syncBasedDiscovery_" << endl;
-		}
-
-		notifyObserver(MessageTypes::ADD, interest->getName().toUri().c_str(), 0);
-
-		Interest timeout("/localhost/timeout");
-		timeout.setInterestLifetimeMilliseconds(defaultHeartbeatInterval_);
-
-		// express heartbeat interest after 2 seconds of sleep
-		faceProcessor_.expressInterest
-		  (timeout, bind(&ConferenceDiscovery::dummyOnData, this, _1, _2),
-		   bind(&ConferenceDiscovery::expressHeartbeatInterest, this, _1, interest));
+	  // Expect this to be equal with 0 several times. 
+	  // Because new digest does not get updated immediately
+	  if (syncBasedDiscovery_->addObject(interest->getName().toUri(), true) == 0) {
+		cout << "Did not add to the discoveredConferenceList_ in syncBasedDiscovery_" << endl;
 	  }
-	  else {
-        cout << "received over" << endl;
-	    // TODO: The chance of this happening at the exactly the same time as 
-	    // a row of timeouts happen is small, but that case should still be considered.
-	    
-	    // For now, this part can only happen when the data stored in content cache became stale
-	    
-		// Same code as in timeout, should generalize as removeConference.
-		if (syncBasedDiscovery_->removeObject(item->first, true) == 0) {
-		  cout << "Did not remove from the discoveredConferenceList_ in syncBasedDiscovery_" << endl;
-		}
-		
-		notifyObserver(MessageTypes::REMOVE, conferenceName.c_str(), 0);
-	  }
-	}
-	else {
-	  cout << "Conference name empty." << endl;
+
+	  notifyObserver(MessageTypes::ADD, interest->getName().toUri().c_str(), 0);
+
+	  Interest timeout("/localhost/timeout");
+	  timeout.setInterestLifetimeMilliseconds(defaultHeartbeatInterval_);
+
+	  // express heartbeat interest after 2 seconds of sleep
+	  faceProcessor_.expressInterest
+		(timeout, bind(&ConferenceDiscovery::dummyOnData, this, _1, _2),
+		 bind(&ConferenceDiscovery::expressHeartbeatInterest, this, _1, interest));
 	}
   }
   else {
     if (content != "over") {
       item->second->resetTimeout();
+      
+      Interest timeout("/localhost/timeout");
+	  timeout.setInterestLifetimeMilliseconds(defaultHeartbeatInterval_);
+
+	  // express heartbeat interest after 2 seconds of sleep
+	  faceProcessor_.expressInterest
+		(timeout, bind(&ConferenceDiscovery::dummyOnData, this, _1, _2),
+		 bind(&ConferenceDiscovery::expressHeartbeatInterest, this, _1, interest));
     }
     else {
-      discoveredConferenceList_.erase(item);
+      if (syncBasedDiscovery_->removeObject(item->first, true) == 0) {
+		cout << "Did not remove from the discoveredConferenceList_ in syncBasedDiscovery_" << endl;
+	  }
+	  std::vector<string>::iterator queriedItem = std::find
+        (queriedConferenceList_.begin(), queriedConferenceList_.end(), interest->getName().toUri());
+      if (queriedItem != queriedConferenceList_.end()) {
+	    queriedConferenceList_.erase(queriedItem);
+	  } 
+	  discoveredConferenceList_.erase(item);
+	  notifyObserver(MessageTypes::REMOVE, conferenceName.c_str(), 0);
     }
   }
 }
@@ -267,6 +270,13 @@ ConferenceDiscovery::onTimeout
 		 bind(&ConferenceDiscovery::expressHeartbeatInterest, this, _1, interest));
 	}
   }
+  else {
+    std::vector<string>::iterator queriedItem = std::find
+      (queriedConferenceList_.begin(), queriedConferenceList_.end(), interest->getName().toUri());
+	if (queriedItem != queriedConferenceList_.end()) {
+	  queriedConferenceList_.erase(queriedItem);
+	} 
+  }
 }
 
 void
@@ -276,22 +286,8 @@ ConferenceDiscovery::expressHeartbeatInterest
 {
   faceProcessor_.expressInterest
 	(*(conferenceInterest.get()),
-	 bind(&ConferenceDiscovery::onHeartbeatData, this, _1, _2), 
+	 bind(&ConferenceDiscovery::onData, this, _1, _2), 
 	 bind(&ConferenceDiscovery::onTimeout, this, _1));
-}
-
-void
-ConferenceDiscovery::onHeartbeatData
-  (const ptr_lib::shared_ptr<const Interest>& interest,
-   const ptr_lib::shared_ptr<Data>& data)
-{
-  Interest timeout("/localhost/timeout");
-  timeout.setInterestLifetimeMilliseconds(defaultHeartbeatInterval_);
-
-	// express heartbeat interest after 2 seconds of sleep
-  faceProcessor_.expressInterest
-	(timeout, bind(&ConferenceDiscovery::dummyOnData, this, _1, _2),
-	 bind(&ConferenceDiscovery::expressHeartbeatInterest, this, _1, interest));
 }
 
 void 

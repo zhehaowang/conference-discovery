@@ -228,6 +228,10 @@ namespace conference_discovery
   
 	// List of discovered conference.
 	std::map<std::string, ndn::ptr_lib::shared_ptr<ConferenceInfo>> discoveredConferenceList_;
+	// List of conferences that are being expressed interest towards,
+	// this includes discoveredConferenceList_ and unverified conferences.
+	std::vector<std::string> queriedConferenceList_;
+	
 	// List of hosted conference.
 	std::map<std::string, ndn::ptr_lib::shared_ptr<ConferenceInfo>> hostedConferenceList_;
 	
