@@ -7,7 +7,7 @@
 namespace conference_discovery
 {
   // (TIMEOUTCOUNT + 1) timeouts in a row signifies conference dropped
-  const int TIMEOUTCOUNT = 2;
+  const int TIMEOUTCOUNT = 4;
   
   class ConferenceInfo
   {
