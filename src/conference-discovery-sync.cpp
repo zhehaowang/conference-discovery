@@ -162,12 +162,13 @@ ConferenceDiscovery::onData
   std::map<string, ptr_lib::shared_ptr<ConferenceInfo>>::iterator item = discoveredConferenceList_.find
     (interest->getName().toUri());
   
+  string content = "";
+  for (size_t i = 0; i < data->getContent().size(); ++i) {
+	content += (*data->getContent())[i];
+  }
+  
   if (item == discoveredConferenceList_.end()) {
     if (conferenceName != "") {
-      string content = "";
-      for (size_t i = 0; i < data->getContent().size(); ++i) {
-        content += (*data->getContent())[i];
-      }
       
       if (content != "over") {
 		discoveredConferenceList_.insert
@@ -207,13 +208,7 @@ ConferenceDiscovery::onData
 		if (syncBasedDiscovery_->removeObject(item->first, true) == 0) {
 		  cout << "Did not remove from the discoveredConferenceList_ in syncBasedDiscovery_" << endl;
 		}
-  
-		// erase the item after it's removed in removeObject, or removeObject would remove the
-		// wrong element: iterator is actually representing a position index, and the two vectors
-		// should be exactly the same: (does it make sense for them to be shared, 
-		// and mutex-locked correspondingly?)
-		discoveredConferenceList_.erase(item);
-	
+		
 		notifyObserver(MessageTypes::STOP, conferenceName.c_str(), 0);
 	  }
 	}
@@ -222,7 +217,12 @@ ConferenceDiscovery::onData
 	}
   }
   else {
-    item->second->resetTimeout();
+    if (content != "over") {
+      item->second->resetTimeout();
+    }
+    else {
+      discoveredConferenceList_.erase(item);
+    }
   }
 }
 

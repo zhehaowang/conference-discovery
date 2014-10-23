@@ -98,7 +98,8 @@ namespace conference_discovery
 	getHostedConferenceList() { return hostedConferenceList_; };
     
     /**
-     * getConference gets the conference info from list of conferences discovered (hosted by others)
+     * getConference gets the conference info from list of conferences discovered or hosted
+     * The first conference with matching name will get returned.
      */
     ndn::ptr_lib::shared_ptr<ConferenceInfo>
     getConference(std::string conferenceName) 
@@ -109,17 +110,15 @@ namespace conference_discovery
 	    return item->second;
 	  }
 	  else {
-	    return ndn::ptr_lib::shared_ptr<ConferenceInfo>(NULL);
+	    std::map<std::string, ndn::ptr_lib::shared_ptr<ConferenceInfo>>::iterator hostedItem = hostedConferenceList_.find
+          (conferenceName);
+        if (hostedItem != hostedConferenceList_.end()) {
+          return hostedItem->second;
+        }
+        else {
+	      return ndn::ptr_lib::shared_ptr<ConferenceInfo>(NULL);
+	    }
 	  }
-    };
-    
-    /**
-     * getSelfConference gets the list of conferences hosted by self;
-     */
-    std::map<std::string, ndn::ptr_lib::shared_ptr<ConferenceInfo>>
-    getSelfConference() 
-    {
-      return hostedConferenceList_;
     };
     
 	~ConferenceDiscovery() 
