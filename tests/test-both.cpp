@@ -118,7 +118,7 @@ int main()
   
   Name hubPrefix("/ndn/edu/ucla/remap");
   Name chatBroadcastPrefix("/ndn/broadcast/chrono-chat0.3/");
-  std::string conferenceDiscoveryBdcastPrefix = "/ndn/broadcast/discovery";
+  std::string conferenceDiscoveryBdcastPrefix = "/ndn/broadcast/ndnrtc/conferences";
   
   Face face;
   // Using default keyChain in ndn-cpp
@@ -142,10 +142,10 @@ int main()
   	   ptr_lib::shared_ptr<ConferenceDiscoveryObserver>(), ptr_lib::make_shared<ConferenceInfoFactory>(factory), 
   	   face, keyChain, certificateName));
   	   
-  	ConferenceDescription thisConference;
-  	thisConference.setDescription("conference: " + screenName);
-  	discovery->publishConference
-  	  (screenName, hubPrefix, ptr_lib::make_shared<ConferenceDescription>(thisConference));
+  	//ConferenceDescription thisConference;
+  	//thisConference.setDescription("conference: " + screenName);
+  	//discovery->publishConference
+  	//  (screenName, hubPrefix, ptr_lib::make_shared<ConferenceDescription>(thisConference));
   }
   catch (std::exception& e) {
     cout << e.what() << '\n';

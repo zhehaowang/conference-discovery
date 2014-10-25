@@ -174,31 +174,46 @@ ConferenceDiscovery::onData
   if (item == discoveredConferenceList_.end()) {
 	// if it's still going on
 	if (content != "over") {
-	  discoveredConferenceList_.insert
+	  ptr_lib::shared_ptr<ConferenceInfo> conferenceInfo = factory_->deserialize(data->getContent());
+	  
+	  if (conferenceInfo) {
+	    discoveredConferenceList_.insert
 		(std::pair<string, ptr_lib::shared_ptr<ConferenceInfo>>
-		  (interest->getName().toUri(), factory_->deserialize(data->getContent())));
+		  (interest->getName().toUri(), conferenceInfo));
   
-	  // std::map should be sorted by default
-	  //std::sort(discoveredConferenceList_.begin(), discoveredConferenceList_.end());
+		// std::map should be sorted by default
+		//std::sort(discoveredConferenceList_.begin(), discoveredConferenceList_.end());
 
-	  // Probably need lock for adding/removing objects in SyncBasedDiscovery class.
-	  // Here we update hash as well as adding object; The next interest will carry the new digest
+		// Probably need lock for adding/removing objects in SyncBasedDiscovery class.
+		// Here we update hash as well as adding object; The next interest will carry the new digest
 
-	  // Expect this to be equal with 0 several times. 
-	  // Because new digest does not get updated immediately
-	  if (syncBasedDiscovery_->addObject(interest->getName().toUri(), true) == 0) {
-		cerr << "Did not add to the discoveredConferenceList_ in syncBasedDiscovery_" << endl;
+		// Expect this to be equal with 0 several times. 
+		// Because new digest does not get updated immediately
+		if (syncBasedDiscovery_->addObject(interest->getName().toUri(), true) == 0) {
+		  cerr << "Did not add to the discoveredConferenceList_ in syncBasedDiscovery_" << endl;
+		}
+
+		notifyObserver(MessageTypes::ADD, interest->getName().toUri().c_str(), 0);
+
+		Interest timeout("/localhost/timeout");
+		timeout.setInterestLifetimeMilliseconds(defaultHeartbeatInterval_);
+
+		// express heartbeat interest after 2 seconds of sleep
+		faceProcessor_.expressInterest
+		  (timeout, bind(&ConferenceDiscovery::dummyOnData, this, _1, _2),
+		   bind(&ConferenceDiscovery::expressHeartbeatInterest, this, _1, interest));
 	  }
+	  else {
+	    // If received conferenceInfo is malformed, 
+	    // re-express interest after a timeout.
+	    Interest timeout("/localhost/timeout");
+		timeout.setInterestLifetimeMilliseconds(defaultHeartbeatInterval_);
 
-	  notifyObserver(MessageTypes::ADD, interest->getName().toUri().c_str(), 0);
-
-	  Interest timeout("/localhost/timeout");
-	  timeout.setInterestLifetimeMilliseconds(defaultHeartbeatInterval_);
-
-	  // express heartbeat interest after 2 seconds of sleep
-	  faceProcessor_.expressInterest
-		(timeout, bind(&ConferenceDiscovery::dummyOnData, this, _1, _2),
-		 bind(&ConferenceDiscovery::expressHeartbeatInterest, this, _1, interest));
+		// express heartbeat interest after 2 seconds of sleep
+		faceProcessor_.expressInterest
+		  (timeout, bind(&ConferenceDiscovery::dummyOnData, this, _1, _2),
+		   bind(&ConferenceDiscovery::expressHeartbeatInterest, this, _1, interest));
+	  }
 	}
 	else {
 	  std::vector<string>::iterator queriedItem = std::find
@@ -251,7 +266,7 @@ ConferenceDiscovery::onTimeout
   std::map<string, ptr_lib::shared_ptr<ConferenceInfo>>::iterator item = discoveredConferenceList_.find
     (interest->getName().toUri());
   if (item != discoveredConferenceList_.end()) {
-	if (item->second->incrementTimeout()) {
+	if (item->second && item->second->incrementTimeout()) {
 	  // Probably need lock for adding/removing objects in SyncBasedDiscovery class.
 	  if (syncBasedDiscovery_->removeObject(item->first, true) == 0) {
 		cerr << "Did not remove from the discoveredConferenceList_ in syncBasedDiscovery_" << endl;
