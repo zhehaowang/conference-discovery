@@ -38,7 +38,7 @@ ConferenceDiscovery::publishConference
 	hostedConferenceList_.insert
 	  (std::pair<std::string, ndn::ptr_lib::shared_ptr<ConferenceInfo>>(prefixName.toUri(), info));
   
-	notifyObserver(MessageTypes::START, conferenceName.c_str(), 0);
+	notifyObserver(MessageTypes::START, prefixName.toUri().c_str(), 0);
 	hostedConferenceNum_ ++;
 	return true;
   }
@@ -159,11 +159,10 @@ ConferenceDiscovery::onData
   (const ptr_lib::shared_ptr<const Interest>& interest,
    const ptr_lib::shared_ptr<Data>& data)
 {
-  std::string conferenceName = interest->getName().get
-	(-1).toEscapedString();
+  std::string conferenceName = interest->getName().toUri();
   
   std::map<string, ptr_lib::shared_ptr<ConferenceInfo>>::iterator item = discoveredConferenceList_.find
-    (interest->getName().toUri());
+    (conferenceName);
   
   string content = "";
   for (size_t i = 0; i < data->getContent().size(); ++i) {
@@ -179,7 +178,7 @@ ConferenceDiscovery::onData
 	  if (conferenceInfo) {
 	    discoveredConferenceList_.insert
 		(std::pair<string, ptr_lib::shared_ptr<ConferenceInfo>>
-		  (interest->getName().toUri(), conferenceInfo));
+		  (conferenceName, conferenceInfo));
   
 		// std::map should be sorted by default
 		//std::sort(discoveredConferenceList_.begin(), discoveredConferenceList_.end());
@@ -189,11 +188,11 @@ ConferenceDiscovery::onData
 
 		// Expect this to be equal with 0 several times. 
 		// Because new digest does not get updated immediately
-		if (syncBasedDiscovery_->addObject(interest->getName().toUri(), true) == 0) {
+		if (syncBasedDiscovery_->addObject(conferenceName, true) == 0) {
 		  cerr << "Did not add to the discoveredConferenceList_ in syncBasedDiscovery_" << endl;
 		}
 
-		notifyObserver(MessageTypes::ADD, interest->getName().toUri().c_str(), 0);
+		notifyObserver(MessageTypes::ADD, conferenceName.c_str(), 0);
 
 		Interest timeout("/localhost/timeout");
 		timeout.setInterestLifetimeMilliseconds(defaultHeartbeatInterval_);
@@ -218,7 +217,7 @@ ConferenceDiscovery::onData
 	// if the not already discovered conference is already over.
 	else {
 	  std::vector<string>::iterator queriedItem = std::find
-        (queriedConferenceList_.begin(), queriedConferenceList_.end(), interest->getName().toUri());
+        (queriedConferenceList_.begin(), queriedConferenceList_.end(), conferenceName);
       if (queriedItem != queriedConferenceList_.end()) {
 	    queriedConferenceList_.erase(queriedItem);
 	  }
@@ -244,7 +243,7 @@ ConferenceDiscovery::onData
 		cerr << "Did not remove from the discoveredConferenceList_ in syncBasedDiscovery_" << endl;
 	  }
 	  std::vector<string>::iterator queriedItem = std::find
-        (queriedConferenceList_.begin(), queriedConferenceList_.end(), interest->getName().toUri());
+        (queriedConferenceList_.begin(), queriedConferenceList_.end(), conferenceName);
       if (queriedItem != queriedConferenceList_.end()) {
 	    queriedConferenceList_.erase(queriedItem);
 	  }
@@ -262,12 +261,11 @@ void
 ConferenceDiscovery::onTimeout
   (const ptr_lib::shared_ptr<const Interest>& interest)
 {
-  // the last component should be the name of the conference itself
-  std::string conferenceName = interest->getName().get
-	(-1).toEscapedString();
+  // conferenceName is the full name of the conference, with the last component being the conference name string.
+  std::string conferenceName = interest->getName().toUri();
   
   std::map<string, ptr_lib::shared_ptr<ConferenceInfo>>::iterator item = discoveredConferenceList_.find
-    (interest->getName().toUri());
+    (conferenceName);
   if (item != discoveredConferenceList_.end()) {
 	if (item->second && item->second->incrementTimeout()) {
 	  notifyObserver(MessageTypes::REMOVE, conferenceName.c_str(), 0);
@@ -284,7 +282,7 @@ ConferenceDiscovery::onTimeout
 	  discoveredConferenceList_.erase(item);
 	  
 	  std::vector<string>::iterator queriedItem = std::find
-        (queriedConferenceList_.begin(), queriedConferenceList_.end(), interest->getName().toUri());
+        (queriedConferenceList_.begin(), queriedConferenceList_.end(), conferenceName);
       if (queriedItem != queriedConferenceList_.end()) {
 	    queriedConferenceList_.erase(queriedItem);
 	  }
@@ -299,7 +297,7 @@ ConferenceDiscovery::onTimeout
   }
   else {
     std::vector<string>::iterator queriedItem = std::find
-      (queriedConferenceList_.begin(), queriedConferenceList_.end(), interest->getName().toUri());
+      (queriedConferenceList_.begin(), queriedConferenceList_.end(), conferenceName);
 	if (queriedItem != queriedConferenceList_.end()) {
 	  queriedConferenceList_.erase(queriedItem);
 	} 
