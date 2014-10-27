@@ -19,26 +19,26 @@ bool
 ConferenceDiscovery::publishConference
   (std::string conferenceName, Name localPrefix, ptr_lib::shared_ptr<ConferenceInfo> conferenceInfo) 
 {
-  Name prefixName = Name(localPrefix).append(conferenceName);
+  Name conferenceFullName = Name(localPrefix).append(conferenceName);
 	
-  std::map<std::string, ndn::ptr_lib::shared_ptr<ConferenceInfo>>::iterator item = hostedConferenceList_.find(prefixName.toUri());
+  std::map<std::string, ndn::ptr_lib::shared_ptr<ConferenceInfo>>::iterator item = hostedConferenceList_.find(conferenceFullName.toUri());
   if (item == hostedConferenceList_.end()) {
 
 	uint64_t registeredPrefixId = faceProcessor_.registerPrefix
-	  (prefixName, 
+	  (conferenceFullName, 
 	   bind(&ConferenceDiscovery::onInterest, this, _1, _2, _3, _4), 
 	   bind(&ConferenceDiscovery::onRegisterFailed, this, _1));
   
-	syncBasedDiscovery_->publishObject(prefixName.toUri());
+	syncBasedDiscovery_->publishObject(conferenceFullName.toUri());
   
 	// this destroys the parent class object.
 	ptr_lib::shared_ptr<ConferenceInfo> info = conferenceInfo;
 	info->setRegisteredPrefixId(registeredPrefixId);
   
 	hostedConferenceList_.insert
-	  (std::pair<std::string, ndn::ptr_lib::shared_ptr<ConferenceInfo>>(prefixName.toUri(), info));
+	  (std::pair<std::string, ndn::ptr_lib::shared_ptr<ConferenceInfo>>(conferenceFullName.toUri(), info));
   
-	notifyObserver(MessageTypes::START, prefixName.toUri().c_str(), 0);
+	notifyObserver(MessageTypes::START, conferenceFullName.toUri().c_str(), 0);
 	hostedConferenceNum_ ++;
 	return true;
   }
