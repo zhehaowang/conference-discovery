@@ -34,6 +34,8 @@
 // TODO: Different lifetimes could cause interest towards stopped self hosted conference to get reissued;
 //   explicit conference over still being verified.
 // TODO: sync interest does not seem to timeout; for an add/remove the same entry; freshness period problem?
+// TODO: Moving timeout count and other variables out of ConferenceInfo, so that passing nil conferenceInfo(from deserialize) to this library
+//   won't cause problems.
 
 namespace conference_discovery
 {

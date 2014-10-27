@@ -170,7 +170,7 @@ ConferenceDiscovery::onData
 	content += (*data->getContent())[i];
   }
   
-  // if it's not a discovered conference
+  // if it's not an already discovered conference
   if (item == discoveredConferenceList_.end()) {
 	// if it's still going on
 	if (content != "over") {
@@ -223,6 +223,7 @@ ConferenceDiscovery::onData
 	  }
 	}
   }
+  // if it's an undiscovered conference
   else {
     if (content != "over") {
       item->second->resetTimeout();
@@ -243,9 +244,8 @@ ConferenceDiscovery::onData
         (queriedConferenceList_.begin(), queriedConferenceList_.end(), interest->getName().toUri());
       if (queriedItem != queriedConferenceList_.end()) {
 	    queriedConferenceList_.erase(queriedItem);
-	  } 
+	  }
 	  discoveredConferenceList_.erase(item);
-	  notifyObserver(MessageTypes::REMOVE, conferenceName.c_str(), 0);
     }
   }
 }
