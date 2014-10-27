@@ -215,6 +215,7 @@ ConferenceDiscovery::onData
 		   bind(&ConferenceDiscovery::expressHeartbeatInterest, this, _1, interest));
 	  }
 	}
+	// if the not already discovered conference is already over.
 	else {
 	  std::vector<string>::iterator queriedItem = std::find
         (queriedConferenceList_.begin(), queriedConferenceList_.end(), interest->getName().toUri());
@@ -223,7 +224,7 @@ ConferenceDiscovery::onData
 	  }
 	}
   }
-  // if it's an undiscovered conference
+  // if it's an already discovered conference
   else {
     if (content != "over") {
       item->second->resetTimeout();
@@ -237,6 +238,8 @@ ConferenceDiscovery::onData
 		 bind(&ConferenceDiscovery::expressHeartbeatInterest, this, _1, interest));
     }
     else {
+      notifyObserver(MessageTypes::REMOVE, conferenceName.c_str(), 0);
+      
       if (syncBasedDiscovery_->removeObject(item->first, true) == 0) {
 		cerr << "Did not remove from the discoveredConferenceList_ in syncBasedDiscovery_" << endl;
 	  }
@@ -267,6 +270,8 @@ ConferenceDiscovery::onTimeout
     (interest->getName().toUri());
   if (item != discoveredConferenceList_.end()) {
 	if (item->second && item->second->incrementTimeout()) {
+	  notifyObserver(MessageTypes::REMOVE, conferenceName.c_str(), 0);
+	  
 	  // Probably need lock for adding/removing objects in SyncBasedDiscovery class.
 	  if (syncBasedDiscovery_->removeObject(item->first, true) == 0) {
 		cerr << "Did not remove from the discoveredConferenceList_ in syncBasedDiscovery_" << endl;
@@ -283,8 +288,6 @@ ConferenceDiscovery::onTimeout
       if (queriedItem != queriedConferenceList_.end()) {
 	    queriedConferenceList_.erase(queriedItem);
 	  }
-	  
-	  notifyObserver(MessageTypes::REMOVE, conferenceName.c_str(), 0);
 	}
 	else {
 	  Interest timeout("/timeout");
