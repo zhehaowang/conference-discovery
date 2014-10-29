@@ -117,7 +117,7 @@ int main()
   string chatroom = "ndnchat";
   
   Name hubPrefix("/ndn/edu/ucla/remap");
-  Name chatBroadcastPrefix("/ndn/broadcast/chrono-chat0.3/");
+  Name chatBroadcastPrefix("/ndn/broadcast/chrono-chat/");
   std::string conferenceDiscoveryBdcastPrefix = "/ndn/broadcast/ndnrtc/conferences";
   
   Face face;
@@ -132,14 +132,14 @@ int main()
   try {
     chat.reset
       (new Chat(chatBroadcastPrefix, screenName, chatroom,
-  	   hubPrefix, ptr_lib::shared_ptr<ChatObserver>(), face, keyChain, certificateName));
+  	   hubPrefix, NULL, face, keyChain, certificateName));
   	
   	ConferenceDescription cd;
   	ConferenceInfoFactory factory(ptr_lib::make_shared<ConferenceDescription>(cd));
 
   	discovery.reset
   	  (new ConferenceDiscovery(conferenceDiscoveryBdcastPrefix, 
-  	   ptr_lib::shared_ptr<ConferenceDiscoveryObserver>(), ptr_lib::make_shared<ConferenceInfoFactory>(factory), 
+  	   NULL, ptr_lib::make_shared<ConferenceInfoFactory>(factory), 
   	   face, keyChain, certificateName));
   	   
   	//ConferenceDescription thisConference;

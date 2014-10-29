@@ -138,7 +138,7 @@ class SampleChatObserver : public ChatObserver
  */
 int main()
 {
-  string screenName = getRandomString();
+  string screenName = "zhehao";
   string chatroom = "ndnchat";
   
   Name hubPrefix("/ndn/edu/ucla/remap");
@@ -158,7 +158,7 @@ int main()
     // Instruction for using the class at chrono-chat.h
     chat.reset
       (new Chat(chatBroadcastPrefix, screenName, chatroom,
-  	   hubPrefix, ptr_lib::make_shared<SampleChatObserver>(chatObserver), 
+  	   hubPrefix, &chatObserver, 
   	   face, keyChain, certificateName));
   }
   catch (std::exception& e) {

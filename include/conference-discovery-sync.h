@@ -52,7 +52,7 @@ namespace conference_discovery
      * @param certificateName The certificate name for locating the certificate.
      */
 	ConferenceDiscovery
-	  (std::string broadcastPrefix, ndn::ptr_lib::shared_ptr<ConferenceDiscoveryObserver> observer, 
+	  (std::string broadcastPrefix, ConferenceDiscoveryObserver *observer, 
 	   ndn::ptr_lib::shared_ptr<ConferenceInfoFactory> factory, ndn::Face& face, ndn::KeyChain& keyChain, 
 	   ndn::Name certificateName)
 	:  defaultDataFreshnessPeriod_(2000), defaultKeepPeriod_(3000), 
@@ -239,7 +239,7 @@ namespace conference_discovery
 	std::map<std::string, ndn::ptr_lib::shared_ptr<ConferenceInfo>> hostedConferenceList_;
 	
 	ndn::ptr_lib::shared_ptr<SyncBasedDiscovery> syncBasedDiscovery_;
-	ndn::ptr_lib::shared_ptr<ConferenceDiscoveryObserver> observer_;
+	ConferenceDiscoveryObserver *observer_;
 	
 	ndn::ptr_lib::shared_ptr<ConferenceInfoFactory> factory_;
   };
