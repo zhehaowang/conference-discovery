@@ -143,7 +143,7 @@ namespace chrono_chat
 	getNowMilliseconds();
 
 	int 
-	notifyObserver(MessageTypes type, const char *name, const char *msg, double timestamp);
+	notifyObserver(MessageTypes type, const char *prefix, const char *name, const char *msg, double timestamp);
 
 	// Initialization: push the JOIN message in to the msgcache, update roster and start heartbeat.
 	void

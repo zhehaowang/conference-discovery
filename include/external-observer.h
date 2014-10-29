@@ -18,7 +18,7 @@ namespace chrono_chat
     /**
      * The timestamp is considered as a double, which is the base type for ndn_Milliseconds in common.h
      */
-    virtual void onStateChanged(MessageTypes type, const char *userName, const char *msg, double timestamp) = 0;
+    virtual void onStateChanged(MessageTypes type, const char *prefix, const char *userName, const char *msg, double timestamp) = 0;
   };
 }
 

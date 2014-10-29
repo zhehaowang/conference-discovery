@@ -116,7 +116,7 @@ class SampleChatObserver : public ChatObserver
     
     }
     
-    void onStateChanged(chrono_chat::MessageTypes type, const char *userName, const char *msg, double timestamp)
+    void onStateChanged(chrono_chat::MessageTypes type, const char *prefix, const char *userName, const char *msg, double timestamp)
     {
       string state = "";
 	  switch (type) {

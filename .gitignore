@@ -39,3 +39,6 @@ config.log
 
 # Mac OSX
 .DS_Store
+
+# Log files
+*.log
