@@ -219,7 +219,9 @@ void
 Chat::chatTimeout(const ptr_lib::shared_ptr<const Interest>& interest)
 {
 	// No chat data coming back.
+#ifdef CHAT_DEBUG
 	cout << "Chat interest times out " << interest->getName().toUri() << endl;
+#endif
 }
 
 void
