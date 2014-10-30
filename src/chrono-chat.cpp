@@ -26,8 +26,7 @@ Chat::initial()
 	// TODO: Are we sure using a "/timeout" interest is the best future call approach?
 	Interest timeout("/timeout");
 	timeout.setInterestLifetimeMilliseconds(60000);
-	pendingInterestIDs_.push_back
-	  (faceProcessor_.expressInterest(timeout, dummyOnData, bind(&Chat::heartbeat, this, _1)));
+	faceProcessor_.expressInterest(timeout, dummyOnData, bind(&Chat::heartbeat, this, _1));
 
 	if (find(roster_.begin(), roster_.end(), usrname_) == roster_.end()) {
 		roster_.push_back(usrname_);
@@ -99,10 +98,9 @@ Chat::sendInterest
 			
 			Interest interest(interestUri.str());
 			interest.setInterestLifetimeMilliseconds(sync_lifetime_);
-			pendingInterestIDs_.push_back
-			  (faceProcessor_.expressInterest
-			    (interest, bind(&Chat::onData, this, _1, _2),
-			     bind(&Chat::chatTimeout, this, _1)));
+			faceProcessor_.expressInterest
+			  (interest, bind(&Chat::onData, this, _1, _2),
+			   bind(&Chat::chatTimeout, this, _1));
 		}
 		
 		syncTreeStatus_[uri.str()] = seqlist[i];
@@ -192,10 +190,9 @@ Chat::onData
 		// TODO: Are we sure using a "/timeout" interest is the best future call approach?
 		Interest timeout("/timeout");
 		timeout.setInterestLifetimeMilliseconds(120000);
-		pendingInterestIDs_.push_back
-		  (faceProcessor_.expressInterest
-		    (timeout, dummyOnData,
-		     bind(&Chat::alive, this, _1, seqno, name, session, prefix)));
+		faceProcessor_.expressInterest
+		  (timeout, dummyOnData,
+		   bind(&Chat::alive, this, _1, seqno, name, session, prefix));
 
 		// isRecoverySyncState_ was set by sendInterest.
 		// TODO: If isRecoverySyncState_ changed, this assumes that we won't get
@@ -240,9 +237,8 @@ Chat::heartbeat(const ptr_lib::shared_ptr<const Interest> &interest)
 	// TODO: Are we sure using a "/timeout" interest is the best future call approach?
 	Interest timeout("/timeout");
 	timeout.setInterestLifetimeMilliseconds(60000);
-	pendingInterestIDs_.push_back
-	  (faceProcessor_.expressInterest
-	    (timeout, dummyOnData, bind(&Chat::heartbeat, this, _1)));
+	faceProcessor_.expressInterest
+	  (timeout, dummyOnData, bind(&Chat::heartbeat, this, _1));
 }
 
 void

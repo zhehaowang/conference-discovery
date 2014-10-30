@@ -116,11 +116,6 @@ namespace chrono_chat
 	~Chat()
 	{
 	  faceProcessor_.removeRegisteredPrefix(registeredPrefixId_);
-	  // there will be duplicates in this, because onData and onTimeouts now does
-      // not remove the pendingInterestID automatically.
-      for(std::vector<uint64_t>::iterator it = pendingInterestIDs_.begin(); it != pendingInterestIDs_.end(); ++it) {
-        faceProcessor_.removePendingInterest(*it);
-      }
 	}
 	
 	/**
@@ -278,10 +273,6 @@ namespace chrono_chat
 	ChatObserver *observer_;
 	
 	uint64_t registeredPrefixId_;
-	
-    // PendingInterestIDs for holding interests that this peer's sent, so that onData and 
-    // onTimeout do not get called when object's already de-instantiated.
-    std::vector<uint64_t> pendingInterestIDs_;
 	
 	// Added for not sending interest repeated for one piece of message
 	std::map<std::string, int> syncTreeStatus_;
