@@ -70,7 +70,8 @@ namespace chrono_chat
      * @param broadcastPrefix The prefix for broadcast digest-tree sync namespace.
      * @param screenName The name string of this participant in the chatroom.
      * @param chatRoom The name string of chatroom.
-     * @param hubPrefix The chat prefix of this participant in the chatroom.
+     * @param hubPrefix The chat prefix of this participant in the chatroom. 
+     *   (hubPrefix + chatroomName + chatUsername + sessionNumber + sequence) is the full name of a chat message
      * @param observer The class that receives and displays chat messages.
      * @param face The face for broadcast sync and multicast chat interests.
      * @param keyChain The keychain to sign things with.

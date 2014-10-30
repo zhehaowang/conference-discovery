@@ -71,7 +71,7 @@ namespace conference_discovery
 	 * It registers prefix for the intended conference name, 
 	 * if local peer's not publishing before
 	 * @param conferenceName string name of the conference.
-	 * @param localPrefix name prefix of the conference.
+	 * @param localPrefix name prefix of the conference. (localPrefix + conferenceName) is the full name of the conference
 	 * @param conferenceInfo the info of this conference.
 	 * @return true, if conference name is not already published by this instance; false if otherwise.
 	 */
