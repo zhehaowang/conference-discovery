@@ -46,9 +46,10 @@ SyncBasedDiscovery::onData
   Interest timeout("/localhost/timeout");
   timeout.setInterestLifetimeMilliseconds(defaultInterestLifetime_);
   
-  face_.expressInterest
-    (timeout, bind(&SyncBasedDiscovery::dummyOnData, this, _1, _2),
-     bind(&SyncBasedDiscovery::expressBroadcastInterest, this, _1));
+  pendingInterestIDs_.push_back
+    (face_.expressInterest
+      (timeout, bind(&SyncBasedDiscovery::dummyOnData, this, _1, _2),
+       bind(&SyncBasedDiscovery::expressBroadcastInterest, this, _1)));
   return;
 }
 
@@ -63,9 +64,10 @@ SyncBasedDiscovery::expressBroadcastInterest
   newInterest.setInterestLifetimeMilliseconds(defaultInterestLifetime_);
   newInterest.setMustBeFresh(true);
   
-  face_.expressInterest
-    (newInterest, bind(&SyncBasedDiscovery::onData, this, _1, _2),
-     bind(&SyncBasedDiscovery::onTimeout, this, _1));
+  pendingInterestIDs_.push_back
+    (face_.expressInterest
+      (newInterest, bind(&SyncBasedDiscovery::onData, this, _1, _2),
+       bind(&SyncBasedDiscovery::onTimeout, this, _1)));
   return;
 }
 
@@ -90,9 +92,10 @@ SyncBasedDiscovery::onTimeout
   newInterest.setInterestLifetimeMilliseconds(defaultInterestLifetime_);
   newInterest.setMustBeFresh(true);
 
-  face_.expressInterest
-    (newInterest, bind(&SyncBasedDiscovery::onData, this, _1, _2), 
-     bind(&SyncBasedDiscovery::onTimeout, this, _1));
+  pendingInterestIDs_.push_back
+    (face_.expressInterest
+      (newInterest, bind(&SyncBasedDiscovery::onData, this, _1, _2), 
+       bind(&SyncBasedDiscovery::onTimeout, this, _1)));
 }
 
 void 
@@ -202,9 +205,10 @@ SyncBasedDiscovery::publishObject(std::string name)
     interest.setInterestLifetimeMilliseconds(defaultInterestLifetime_);
     interest.setMustBeFresh(true);
     
-    face_.expressInterest
-      (interest, bind(&SyncBasedDiscovery::onData, this, _1, _2), 
-       bind(&SyncBasedDiscovery::onTimeout, this, _1));
+    pendingInterestIDs_.push_back
+      (face_.expressInterest
+        (interest, bind(&SyncBasedDiscovery::onData, this, _1, _2), 
+         bind(&SyncBasedDiscovery::onTimeout, this, _1)));
   }
   else {
     cerr << "Object already exists." << endl;

@@ -104,14 +104,23 @@ namespace chrono_chat
 		 faceProcessor_, keyChain_, 
 		 certificateName_, sync_lifetime_, onRegisterFailed));
 	  
-	  faceProcessor_.registerPrefix
+	  registeredPrefixId_ = faceProcessor_.registerPrefix
 		(chat_prefix_, bind(&Chat::onInterest, this, _1, _2, _3, _4),
 		 onRegisterFailed);   
 	}
 	
+	/**
+     * When calling destructor, destroy all pending interests and remove all
+     * registered prefixes.
+     */
 	~Chat()
 	{
-	  
+	  faceProcessor_.removeRegisteredPrefix(registeredPrefixId_);
+	  // there will be duplicates in this, because onData and onTimeouts now does
+      // not remove the pendingInterestID automatically.
+      for(std::vector<uint64_t>::iterator it = pendingInterestIDs_.begin(); it != pendingInterestIDs_.end(); ++it) {
+        faceProcessor_.removePendingInterest(*it);
+      }
 	}
 	
 	/**
@@ -267,6 +276,12 @@ namespace chrono_chat
 	Name certificateName_;
 	
 	ChatObserver *observer_;
+	
+	uint64_t registeredPrefixId_;
+	
+    // PendingInterestIDs for holding interests that this peer's sent, so that onData and 
+    // onTimeout do not get called when object's already de-instantiated.
+    std::vector<uint64_t> pendingInterestIDs_;
 	
 	// Added for not sending interest repeated for one piece of message
 	std::map<std::string, int> syncTreeStatus_;

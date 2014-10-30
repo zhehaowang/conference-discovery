@@ -80,9 +80,10 @@ ConferenceDiscovery::stopPublishingConference
       Interest timeout("/localhost/timeout");
 	  timeout.setInterestLifetimeMilliseconds(defaultKeepPeriod_);
 
-	  faceProcessor_.expressInterest
-		(timeout, bind(&ConferenceDiscovery::dummyOnData, this, _1, _2),
-		 bind(&ConferenceDiscovery::removeRegisteredPrefix, this, _1, conferenceBeingStopped));
+	  pendingInterestIDs_.push_back
+	    (faceProcessor_.expressInterest
+		  (timeout, bind(&ConferenceDiscovery::dummyOnData, this, _1, _2),
+		   bind(&ConferenceDiscovery::removeRegisteredPrefix, this, _1, conferenceBeingStopped)));
 	
 	  notifyObserver(MessageTypes::STOP, conferenceBeingStopped.toUri().c_str(), 0);
 	  
@@ -116,9 +117,10 @@ ConferenceDiscovery::onReceivedSyncData
 	  interest.setInterestLifetimeMilliseconds(defaultHeartbeatInterval_);
       interest.setMustBeFresh(true);
       
-      faceProcessor_.expressInterest
-		(interest, bind(&ConferenceDiscovery::onData, this, _1, _2),
-		 bind(&ConferenceDiscovery::onTimeout, this, _1));
+      pendingInterestIDs_.push_back
+        (faceProcessor_.expressInterest
+		  (interest, bind(&ConferenceDiscovery::onData, this, _1, _2),
+		   bind(&ConferenceDiscovery::onTimeout, this, _1)));
 	}
   }
 }
@@ -198,9 +200,10 @@ ConferenceDiscovery::onData
 		timeout.setInterestLifetimeMilliseconds(defaultHeartbeatInterval_);
 
 		// express heartbeat interest after 2 seconds of sleep
-		faceProcessor_.expressInterest
-		  (timeout, bind(&ConferenceDiscovery::dummyOnData, this, _1, _2),
-		   bind(&ConferenceDiscovery::expressHeartbeatInterest, this, _1, interest));
+		pendingInterestIDs_.push_back
+		  (faceProcessor_.expressInterest
+		    (timeout, bind(&ConferenceDiscovery::dummyOnData, this, _1, _2),
+		     bind(&ConferenceDiscovery::expressHeartbeatInterest, this, _1, interest)));
 	  }
 	  else {
 	    // If received conferenceInfo is malformed, 
@@ -209,9 +212,10 @@ ConferenceDiscovery::onData
 		timeout.setInterestLifetimeMilliseconds(defaultHeartbeatInterval_);
 
 		// express heartbeat interest after 2 seconds of sleep
-		faceProcessor_.expressInterest
-		  (timeout, bind(&ConferenceDiscovery::dummyOnData, this, _1, _2),
-		   bind(&ConferenceDiscovery::expressHeartbeatInterest, this, _1, interest));
+		pendingInterestIDs_.push_back
+		  (faceProcessor_.expressInterest
+		    (timeout, bind(&ConferenceDiscovery::dummyOnData, this, _1, _2),
+		     bind(&ConferenceDiscovery::expressHeartbeatInterest, this, _1, interest)));
 	  }
 	}
 	// if the not already discovered conference is already over.
@@ -232,9 +236,10 @@ ConferenceDiscovery::onData
 	  timeout.setInterestLifetimeMilliseconds(defaultHeartbeatInterval_);
 
 	  // express heartbeat interest after 2 seconds of sleep
-	  faceProcessor_.expressInterest
-		(timeout, bind(&ConferenceDiscovery::dummyOnData, this, _1, _2),
-		 bind(&ConferenceDiscovery::expressHeartbeatInterest, this, _1, interest));
+	  pendingInterestIDs_.push_back
+	    (faceProcessor_.expressInterest
+		  (timeout, bind(&ConferenceDiscovery::dummyOnData, this, _1, _2),
+		   bind(&ConferenceDiscovery::expressHeartbeatInterest, this, _1, interest)));
     }
     else {
       notifyObserver(MessageTypes::REMOVE, conferenceName.c_str(), 0);
@@ -290,9 +295,10 @@ ConferenceDiscovery::onTimeout
 	else {
 	  Interest timeout("/timeout");
 	  timeout.setInterestLifetimeMilliseconds(defaultTimeoutReexpressInterval_);
-      faceProcessor_.expressInterest
-		(timeout, bind(&ConferenceDiscovery::dummyOnData, this, _1, _2),
-		 bind(&ConferenceDiscovery::expressHeartbeatInterest, this, _1, interest));
+      pendingInterestIDs_.push_back
+        (faceProcessor_.expressInterest
+		  (timeout, bind(&ConferenceDiscovery::dummyOnData, this, _1, _2),
+		   bind(&ConferenceDiscovery::expressHeartbeatInterest, this, _1, interest)));
 	}
   }
   else {
@@ -309,10 +315,11 @@ ConferenceDiscovery::expressHeartbeatInterest
   (const ptr_lib::shared_ptr<const Interest>& interest,
    const ptr_lib::shared_ptr<const Interest>& conferenceInterest)
 {
-  faceProcessor_.expressInterest
-	(*(conferenceInterest.get()),
-	 bind(&ConferenceDiscovery::onData, this, _1, _2), 
-	 bind(&ConferenceDiscovery::onTimeout, this, _1));
+  pendingInterestIDs_.push_back
+    (faceProcessor_.expressInterest
+	  (*(conferenceInterest.get()),
+	   bind(&ConferenceDiscovery::onData, this, _1, _2), 
+	   bind(&ConferenceDiscovery::onTimeout, this, _1)));
 }
 
 void 

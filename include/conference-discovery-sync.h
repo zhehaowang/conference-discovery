@@ -126,9 +126,21 @@ namespace conference_discovery
 	  }
     };
     
+    /**
+     * When calling destructor, destroy all pending interests and remove all
+     * registered prefixes.
+     */
 	~ConferenceDiscovery() 
 	{
-  
+      for (std::map<std::string, ndn::ptr_lib::shared_ptr<ConferenceInfo>>::iterator it = hostedConferenceList_.begin(); it != hostedConferenceList_.end(); it++) {
+	    faceProcessor_.removeRegisteredPrefix(it->second->getRegisteredPrefixId());
+	  }
+	  
+	  // there will be duplicates in this, because onData and onTimeouts now does
+      // not remove the pendingInterestID automatically.
+      for(std::vector<uint64_t>::iterator it = pendingInterestIDs_.begin(); it != pendingInterestIDs_.end(); ++it) {
+        faceProcessor_.removePendingInterest(*it);
+      }
 	};
 	
 	
@@ -242,6 +254,10 @@ namespace conference_discovery
 	ConferenceDiscoveryObserver *observer_;
 	
 	ndn::ptr_lib::shared_ptr<ConferenceInfoFactory> factory_;
+	
+    // PendingInterestIDs for holding interests that this peer's sent, so that onData and 
+    // onTimeout do not get called when object's already de-instantiated.
+    std::vector<uint64_t> pendingInterestIDs_;
   };
 }
 

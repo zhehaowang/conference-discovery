@@ -101,14 +101,24 @@ namespace conference_discovery
       // setAnswerOriginKind is deprecated
       //interest.setAnswerOriginKind(ndn_Interest_ANSWER_NO_CONTENT_STORE);
   
-      face_.expressInterest
-        (interest, bind(&SyncBasedDiscovery::onData, this, _1, _2),
-         bind(&SyncBasedDiscovery::onTimeout, this, _1));
+      pendingInterestIDs_.push_back
+        (face_.expressInterest
+          (interest, bind(&SyncBasedDiscovery::onData, this, _1, _2),
+           bind(&SyncBasedDiscovery::onTimeout, this, _1)));
     };
     
+    /**
+     * When calling destructor, destroy all pending interests and remove all
+     * registered prefixes.
+     */
     ~SyncBasedDiscovery()
     {
-      
+      contentCache_.unregisterAll();
+      // there will be duplicates in this, because onData and onTimeouts now does
+      // not remove the pendingInterestID automatically.
+      for(std::vector<uint64_t>::iterator it = pendingInterestIDs_.begin(); it != pendingInterestIDs_.end(); ++it) {
+        face_.removePendingInterest(*it);
+      }
     };
     
     /**
@@ -311,6 +321,10 @@ namespace conference_discovery
     
     // PendingInterestTable for holding outstanding interests.
     std::vector<ndn::ptr_lib::shared_ptr<PendingInterest> > pendingInterestTable_;
+    
+    // PendingInterestIDs for holding interests that this peer's sent, so that onData and 
+    // onTimeout do not get called when object's already de-instantiated.
+    std::vector<uint64_t> pendingInterestIDs_;
   };
 }
 
