@@ -116,7 +116,7 @@ int main()
   string screenName = getRandomString();
   string chatroom = "ndnchat";
   
-  Name hubPrefix("/ndn/edu/ucla/remap");
+  Name hubPrefix("/ndn/edu/ucla/remap/ndnrtc");
   Name chatBroadcastPrefix("/ndn/broadcast/chrono-chat/");
   std::string conferenceDiscoveryBdcastPrefix = "/ndn/broadcast/ndnrtc/conferences";
   

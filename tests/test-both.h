@@ -8,6 +8,7 @@
 #include <ndn-cpp/util/blob.hpp>
 
 using namespace ndn;
+using namespace std;
 using namespace chrono_chat;
 using namespace conference_discovery;
 

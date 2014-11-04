@@ -9,6 +9,7 @@
 using namespace chrono_chat;
 using namespace conference_discovery;
 using namespace std;
+using namespace ndn;
 
 ptr_lib::shared_ptr<Chat> chat;
 
@@ -138,7 +139,7 @@ class SampleChatObserver : public ChatObserver
  */
 int main()
 {
-  string screenName = "zhehao";
+  string screenName = getRandomString();
   string chatroom = "ndnchat";
   
   Name hubPrefix("/ndn/edu/ucla/remap");
@@ -168,31 +169,37 @@ int main()
   std::string msgString = "";
   usleep(1000000);
   // test chat auto send messages
-  
   while (1) {
-    if (isStdinReady())
-    {
-      msgString = stdinReadLine();
-      if (msgString == "-leave" || msgString == "-exit") {
-        break;
-      }
-      if (msgString == "-auto") {
+	if (isStdinReady())
+	{
+	  msgString = stdinReadLine();
+	  // resets chat without doing anything else, to test Peter's callback problem
+	  if (msgString == "-reset") {
+		  cout << "Chat deleted." << endl;
+		  chat.reset();
+		  continue;
+	  }
+	  if (msgString == "-leave" || msgString == "-exit") {
+		break;
+	  }
+	  if (msgString == "-auto") {
 		for (int i = 0; i < 30; i++) {
 		  ostringstream ss;
 		  ss << i;
 		  chat->sendMessage(ss.str());
 		  for (int j = 0; j < 100; j++) {
-		    face.processEvents();
-		    usleep(2000);
+			face.processEvents();
+			usleep(2000);
 		  }
 		}
 		continue;
-      }
-      
-      chat->sendMessage(msgString);
-    }
-    face.processEvents();
-    usleep(10000);
+	  }
+	
+	  chat->sendMessage(msgString);
+	}
+  
+	face.processEvents();
+	usleep(10000);
   }
   chat->leave();
   
