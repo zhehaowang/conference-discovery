@@ -126,17 +126,25 @@ namespace conference_discovery
 	  }
     };
     
-    /**
-     * When calling destructor, destroy all pending interests and remove all
-     * registered prefixes.
-     */
+    
 	~ConferenceDiscovery() 
 	{
+	};
+	
+	/**
+     * When calling shutdown, destroy all pending interests and remove all
+     * registered prefixes.
+     *
+     * This accesses face, and should be called in the thread where face is accessed
+     */
+    void shutdown()
+	{
+	  syncBasedDiscovery_->shutdown();
+	  
       for (std::map<std::string, ndn::ptr_lib::shared_ptr<ConferenceInfo>>::iterator it = hostedConferenceList_.begin(); it != hostedConferenceList_.end(); it++) {
 	    faceProcessor_.removeRegisteredPrefix(it->second->getRegisteredPrefixId());
 	  }
-	};
-	
+	}
 	
   private:
 	/**

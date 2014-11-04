@@ -176,6 +176,7 @@ int main()
 	  // resets chat without doing anything else, to test Peter's callback problem
 	  if (msgString == "-reset") {
 		  cout << "Chat deleted." << endl;
+		  chat->shutdown();
 		  chat.reset();
 		  continue;
 	  }

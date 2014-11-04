@@ -103,13 +103,8 @@ namespace chrono_chat
 		 onRegisterFailed);   
 	}
 	
-	/**
-     * When calling destructor, destroy all pending interests and remove all
-     * registered prefixes.
-     */
 	~Chat()
 	{
-	  faceProcessor_.removeRegisteredPrefix(registeredPrefixId_);
 	}
 	
 	/**
@@ -123,13 +118,29 @@ namespace chrono_chat
 	sendMessage(const std::string& chatmsg);
 
 	/**
-	 * Sends leave message and leave.
+	 * Sends leave message. shutdown is not called in leave, therefore, you'll still be receiving and responding to sync interest.
 	 *
 	 * leave calls sync publishNextSequenceNo, which expresses interest in broadcast namespace
      * This should be put into critical section, if the face is accessed by different threads
 	 */
 	void
 	leave();
+    
+    /**
+     * When calling shutdown, destroy all pending interests and remove all
+     * registered prefixes.
+     * This accesses face, and should be in the same thread in which face is accessed.
+     * shutdown differs from leave, the former should work with destructors, and unregister things;
+     * while the latter just send another special message.
+     */
+    void
+    shutdown()
+    {
+      // Stop receiving broadcast sync interests by calling sync_->shutdown, 
+	  // which unregisters all prefixes from memoryContentCache of sync
+	  sync_->shutdown();
+	  faceProcessor_.removeRegisteredPrefix(registeredPrefixId_);
+    }
 
   private:
 	/**

@@ -107,13 +107,24 @@ namespace conference_discovery
     };
     
     /**
-     * When calling destructor, destroy all pending interests and remove all
-     * registered prefixes.
+     * Destructor does not call shutdown by default, avoid crashing caused by deletion 
+     * happening in a different thread.
      */
     ~SyncBasedDiscovery()
     {
-      contentCache_.unregisterAll();
     };
+    
+    /**
+     * When calling shutdown, destroy all pending interests and remove all
+     * registered prefixes.
+     *
+     * This should happen in the thread where face is accessed.
+     */
+    void
+    shutdown()
+    {
+      contentCache_.unregisterAll(); 
+    }
     
     /**
      * onData sorts both the object(string) array received, 
