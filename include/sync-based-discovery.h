@@ -87,7 +87,7 @@ namespace conference_discovery
      : broadcastPrefix_(broadcastPrefix), onReceivedSyncData_(onReceivedSyncData), 
        face_(face), keyChain_(keyChain), certificateName_(certificateName), 
        contentCache_(&face), newComerDigest_("00"), currentDigest_(newComerDigest_),
-       defaultDataFreshnessPeriod_(2000), defaultInterestLifetime_(2000)
+       defaultDataFreshnessPeriod_(2000), defaultInterestLifetime_(2000), enabled_(true)
     {
       // Storing it in contentCache, the idea is that a set of strings maps to a digest
       contentCache_.registerPrefix
@@ -124,6 +124,7 @@ namespace conference_discovery
     shutdown()
     {
       contentCache_.unregisterAll(); 
+      enabled_ = false;
     }
     
     /**
@@ -318,6 +319,7 @@ namespace conference_discovery
     
     // This serves as the rootDigest in ChronoSync.
     std::string currentDigest_;
+    bool enabled_;
     
     // This serves as the list of objects to be synchronized. 
     // For now, it's the list of full conference names (prefix + conferenceName)

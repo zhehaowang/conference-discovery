@@ -17,6 +17,8 @@ SyncBasedDiscovery::onData
   (const ptr_lib::shared_ptr<const Interest>& interest,
    const ptr_lib::shared_ptr<Data>& data)
 {
+  if (!enabled_)
+    return ;
   string content;
   for (size_t i = 0; i < data->getContent().size(); ++i)
     content += (*data->getContent())[i];
@@ -74,6 +76,8 @@ SyncBasedDiscovery::dummyOnData
   (const ptr_lib::shared_ptr<const Interest>& interest,
    const ptr_lib::shared_ptr<Data>& data)
 {
+  if (!enabled_)
+    return ;
   cerr << "Dummy onData called." << endl;
   throw std::runtime_error("Discovery library called dummyOnData, which shouldn't be called in any case.\n");
   return;
@@ -83,6 +87,8 @@ void
 SyncBasedDiscovery::onTimeout
   (const ptr_lib::shared_ptr<const Interest>& interest)
 {
+  if (!enabled_)
+    return ;
   Name interestName(broadcastPrefix_);
   interestName.append(currentDigest_);
   
@@ -101,6 +107,8 @@ SyncBasedDiscovery::onInterest
    const ptr_lib::shared_ptr<const Interest>& interest, Transport& transport,
    uint64_t registerPrefixId)
 {
+  if (!enabled_)
+    return ;
   string syncDigest = interest->getName().get
     (broadcastPrefix_.size()).toEscapedString();
     
@@ -135,6 +143,8 @@ void
 SyncBasedDiscovery::onRegisterFailed
   (const ptr_lib::shared_ptr<const Name>& prefix)
 {
+  if (!enabled_)
+    return ;
   ostringstream ss;
   ss << "Prefix registration for name " << prefix->toUri() << " failed." << endl;
   cerr << ss.str();
