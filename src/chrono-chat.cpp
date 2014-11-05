@@ -21,12 +21,15 @@ using namespace func_lib::placeholders;
 void
 Chat::initial()
 {
+	if (!enabled_)
+		return;
+		
 	// Set the heartbeat timeout using the Interest timeout mechanism. The
 	// heartbeat() function will call itself again after a timeout.
 	// TODO: Are we sure using a "/timeout" interest is the best future call approach?
 	Interest timeout("/timeout");
 	timeout.setInterestLifetimeMilliseconds(60000);
-	faceProcessor_.expressInterest(timeout, dummyOnData, bind(&Chat::heartbeat, this, _1));
+	faceProcessor_.expressInterest(timeout, dummyOnData, bind(&Chat::heartbeat, shared_from_this(), _1));
 
 	if (find(roster_.begin(), roster_.end(), usrname_) == roster_.end()) {
 		roster_.push_back(usrname_);
@@ -41,6 +44,9 @@ void
 Chat::sendInterest
   (const vector<ChronoSync2013::SyncState>& syncStates, bool isRecovery)
 {
+	if (!enabled_)
+		return ;
+		
 	// This is used by onData to decide whether to display the chat messages.
 	isRecoverySyncState_ = isRecovery;
 	
@@ -99,8 +105,8 @@ Chat::sendInterest
 			Interest interest(interestUri.str());
 			interest.setInterestLifetimeMilliseconds(sync_lifetime_);
 			faceProcessor_.expressInterest
-			  (interest, bind(&Chat::onData, this, _1, _2),
-			   bind(&Chat::chatTimeout, this, _1));
+			  (interest, bind(&Chat::onData, shared_from_this(), _1, _2),
+			   bind(&Chat::chatTimeout, shared_from_this(), _1));
 		}
 		
 		syncTreeStatus_[uri.str()] = seqlist[i];
@@ -113,6 +119,8 @@ Chat::onInterest
    const ptr_lib::shared_ptr<const Interest>& inst, Transport& transport,
    uint64_t registeredPrefixId)
 {
+	if (!enabled_)
+		return ;
 	SyncDemo::ChatMessage content;
 	int seq = ::atoi(inst->getName().get(chat_prefix_.size() + 1).toEscapedString().c_str());
 	for (int i = msgcache_.size() - 1; i >= 0; --i) {
@@ -155,6 +163,9 @@ Chat::onData
   (const ptr_lib::shared_ptr<const Interest>& inst,
    const ptr_lib::shared_ptr<Data>& co)
 {
+	if (!enabled_)
+		return ;
+		
 	SyncDemo::ChatMessage content;
 	content.ParseFromArray(co->getContent().buf(), co->getContent().size());
 	if (getNowMilliseconds() - content.timestamp() * 1000.0 < 120000.0) {
@@ -192,7 +203,7 @@ Chat::onData
 		timeout.setInterestLifetimeMilliseconds(120000);
 		faceProcessor_.expressInterest
 		  (timeout, dummyOnData,
-		   bind(&Chat::alive, this, _1, seqno, name, session, prefix));
+		   bind(&Chat::alive, shared_from_this(), _1, seqno, name, session, prefix));
 
 		// isRecoverySyncState_ was set by sendInterest.
 		// TODO: If isRecoverySyncState_ changed, this assumes that we won't get
@@ -219,6 +230,9 @@ void
 Chat::chatTimeout(const ptr_lib::shared_ptr<const Interest>& interest)
 {
 	// No chat data coming back.
+	if (!enabled_)
+		return ;
+		
 #ifdef CHAT_DEBUG
 	cout << "Chat interest times out " << interest->getName().toUri() << endl;
 #endif
@@ -227,6 +241,9 @@ Chat::chatTimeout(const ptr_lib::shared_ptr<const Interest>& interest)
 void
 Chat::heartbeat(const ptr_lib::shared_ptr<const Interest> &interest)
 {
+	if (!enabled_)
+		return ;
+		
 	if (msgcache_.size() == 0)
 		messageCacheAppend(SyncDemo::ChatMessage_ChatMessageType_JOIN, "xxx");
 
@@ -238,7 +255,7 @@ Chat::heartbeat(const ptr_lib::shared_ptr<const Interest> &interest)
 	Interest timeout("/timeout");
 	timeout.setInterestLifetimeMilliseconds(60000);
 	faceProcessor_.expressInterest
-	  (timeout, dummyOnData, bind(&Chat::heartbeat, this, _1));
+	  (timeout, dummyOnData, bind(&Chat::heartbeat, shared_from_this(), _1));
 }
 
 void
@@ -274,6 +291,9 @@ Chat::alive
   (const ptr_lib::shared_ptr<const Interest> &interest, int temp_seq,
    const string& name, int session, const string& prefix)
 {
+	if (!enabled_)
+		return ;
+		
 	int seq = sync_->getProducerSequenceNo(prefix, session);
 	ostringstream tempStream;
 	tempStream << name << session;

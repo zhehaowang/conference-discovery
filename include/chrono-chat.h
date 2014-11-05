@@ -55,7 +55,7 @@
 
 namespace chrono_chat
 {
-  class Chat
+  class Chat : public ndn::ptr_lib::enable_shared_from_this<Chat>
   {
   public:
     /**
@@ -81,7 +81,7 @@ namespace chrono_chat
 	  : screen_name_(screenName), chatroom_(chatRoom), maxmsgcachelength_(100),
 		isRecoverySyncState_(true), sync_lifetime_(5000.0), observer_(observer),
 		faceProcessor_(face), keyChain_(keyChain), certificateName_(certificateName),
-		broadcastPrefix_(broadcastPrefix)
+		broadcastPrefix_(broadcastPrefix), enabled_(true)
 	{
 	  chat_usrname_ = Chat::getRandomString();
 	  chat_prefix_ = ndn::Name(hubPrefix).append(chatroom_).append(chat_usrname_);
@@ -139,6 +139,7 @@ namespace chrono_chat
       // Stop receiving broadcast sync interests by calling sync_->shutdown, 
 	  // which unregisters all prefixes from memoryContentCache of sync
 	  sync_->shutdown();
+	  enabled_ = false;
 	  faceProcessor_.removeRegisteredPrefix(registeredPrefixId_);
     }
 
@@ -261,6 +262,7 @@ namespace chrono_chat
 	std::string screen_name_;
 	std::string chatroom_;
 	std::string usrname_;
+	bool enabled_;
 	
 	ndn::Name broadcastPrefix_;
 	
