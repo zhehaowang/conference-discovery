@@ -61,7 +61,6 @@ namespace conference_discovery
 	   faceProcessor_(face), keyChain_(keyChain), 
 	   certificateName_(certificateName), hostedConferenceNum_(0)
 	{
-	  
 	};
   
     void

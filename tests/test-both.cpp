@@ -142,11 +142,7 @@ int main()
   	  (new ConferenceDiscovery(conferenceDiscoveryBdcastPrefix, 
   	   NULL, ptr_lib::make_shared<ConferenceInfoFactory>(factory), 
   	   face, keyChain, certificateName));
-  	   
-  	//ConferenceDescription thisConference;
-  	//thisConference.setDescription("conference: " + screenName);
-  	//discovery->publishConference
-  	//  (screenName, hubPrefix, ptr_lib::make_shared<ConferenceDescription>(thisConference));
+  	discovery->start();
   }
   catch (std::exception& e) {
     cout << e.what() << '\n';
