@@ -66,6 +66,8 @@ namespace conference_discovery
     void
     start()
     {
+	  enabled_ = true;
+	  
       syncBasedDiscovery_.reset(new SyncBasedDiscovery
 		(broadcastPrefix_, bind(&ConferenceDiscovery::onReceivedSyncData, shared_from_this(), _1), 
 		 faceProcessor_, keyChain_, certificateName_));
@@ -147,6 +149,7 @@ namespace conference_discovery
     void shutdown()
 	{
 	  syncBasedDiscovery_->shutdown();
+	  enabled_ = false;
 	  
       for (std::map<std::string, ndn::ptr_lib::shared_ptr<ConferenceInfo>>::iterator it = hostedConferenceList_.begin(); it != hostedConferenceList_.end(); it++) {
 	    faceProcessor_.removeRegisteredPrefix(it->second->getRegisteredPrefixId());

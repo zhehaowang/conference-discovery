@@ -268,10 +268,8 @@ Chat::sendMessage(const string& chatmsg)
 	// forming Sync Data Packet.
 	if (chatmsg != "") {
 		// This should be locked because it uses the same face.
-		//faceCs_.Enter();
 		sync_->publishNextSequenceNo();
-		//faceCs_.Leave();
-
+		
 		messageCacheAppend(SyncDemo::ChatMessage_ChatMessageType_CHAT, chatmsg);
 		notifyObserver(MessageTypes::CHAT, chat_prefix_.getSubName
 		  (0, chat_prefix_.size() - prefixFromChatPrefixEnd_).toUri().c_str(), screen_name_.c_str(),

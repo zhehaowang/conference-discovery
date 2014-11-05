@@ -11,7 +11,7 @@ using namespace conference_discovery;
 using namespace std;
 using namespace ndn;
 
-ptr_lib::shared_ptr<Chat> chat;
+//ptr_lib::shared_ptr<Chat> chat;
 
 static const char *WHITESPACE_CHARS = " \n\r\t";
 
@@ -132,6 +132,8 @@ class SampleChatObserver : public ChatObserver
 	    cout << state << " " << timestamp << "\t" << userName << endl;
 	  }
     }
+    
+    ptr_lib::shared_ptr<Chat> chat;
 };
 
 /**
@@ -151,17 +153,17 @@ int main()
   Name certificateName = keyChain.getDefaultCertificateName();
   
   face.setCommandSigningInfo(keyChain, keyChain.getDefaultCertificateName());
-  
+  SampleChatObserver chatObserver;
+    
   // This throws an libc++abi.dylib: terminate called throwing an exception
   // which is caused by "socket cannot connect to socket"
   try {
-    SampleChatObserver chatObserver;
     // Instruction for using the class at chrono-chat.h
-    chat.reset
+    chatObserver.chat.reset
       (new Chat(chatBroadcastPrefix, screenName, chatroom,
   	   hubPrefix, &chatObserver, 
   	   face, keyChain, certificateName));
-  	chat->start();
+  	chatObserver.chat->start();
   	
   }
   catch (std::exception& e) {
@@ -178,8 +180,8 @@ int main()
 	  // resets chat without doing anything else, to test Peter's callback problem
 	  if (msgString == "-reset") {
 		  cout << "Chat deleted." << endl;
-		  chat->shutdown();
-		  chat.reset();
+		  chatObserver.chat->shutdown();
+		  chatObserver.chat.reset();
 		  continue;
 	  }
 	  if (msgString == "-leave" || msgString == "-exit") {
@@ -189,7 +191,7 @@ int main()
 		for (int i = 0; i < 30; i++) {
 		  ostringstream ss;
 		  ss << i;
-		  chat->sendMessage(ss.str());
+		  chatObserver.chat->sendMessage(ss.str());
 		  for (int j = 0; j < 100; j++) {
 			face.processEvents();
 			usleep(2000);
@@ -198,13 +200,13 @@ int main()
 		continue;
 	  }
 	
-	  chat->sendMessage(msgString);
+	  chatObserver.chat->sendMessage(msgString);
 	}
   
 	face.processEvents();
 	usleep(10000);
   }
-  chat->leave();
+  chatObserver.chat->leave();
   
   int sleepSeconds = 0;
   while (sleepSeconds < 1000000) {
