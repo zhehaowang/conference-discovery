@@ -88,7 +88,7 @@ namespace chrono_chat
 	  
 	  session_ = (int)::round(getNowMilliseconds()  / 1000.0);
 	  std::ostringstream tempStream;
-	  tempStream << screen_name_ << session;
+	  tempStream << screen_name_ << session_;
 	  usrname_ = tempStream.str();
 	}
 	

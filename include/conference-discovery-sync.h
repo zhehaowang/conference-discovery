@@ -70,6 +70,7 @@ namespace conference_discovery
       syncBasedDiscovery_.reset(new SyncBasedDiscovery
 		(broadcastPrefix_, bind(&ConferenceDiscovery::onReceivedSyncData, shared_from_this(), _1), 
 		 faceProcessor_, keyChain_, certificateName_));
+	  syncBasedDiscovery_->start();
     }
   
     /**

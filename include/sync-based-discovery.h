@@ -62,7 +62,7 @@ namespace conference_discovery
    * a dependency upon a not-shrinking digest tree (whose nodes are names and sequence 
    * numbers) and log.
    */
-  class SyncBasedDiscovery
+  class SyncBasedDiscovery : public ndn::ptr_lib::enable_shared_from_this<SyncBasedDiscovery>
   {
   public:
   
@@ -89,22 +89,22 @@ namespace conference_discovery
        contentCache_(&face), newComerDigest_("00"), currentDigest_(newComerDigest_),
        defaultDataFreshnessPeriod_(2000), defaultInterestLifetime_(2000), enabled_(true)
     {
-      // Storing it in contentCache, the idea is that a set of strings maps to a digest
+    }
+    
+    void start()
+    {
       contentCache_.registerPrefix
-        (broadcastPrefix, bind(&SyncBasedDiscovery::onRegisterFailed, this, _1), 
-         bind(&SyncBasedDiscovery::onInterest, this, _1, _2, _3, _4));
-      
-      ndn::Interest interest(broadcastPrefix);
+        (broadcastPrefix_, bind(&SyncBasedDiscovery::onRegisterFailed, shared_from_this(), _1), 
+         bind(&SyncBasedDiscovery::onInterest, shared_from_this(), _1, _2, _3, _4));
+      ndn::Interest interest(broadcastPrefix_);
       interest.getName().append(newComerDigest_);
       interest.setInterestLifetimeMilliseconds(defaultInterestLifetime_);
       interest.setMustBeFresh(true);
-      // setAnswerOriginKind is deprecated
-      //interest.setAnswerOriginKind(ndn_Interest_ANSWER_NO_CONTENT_STORE);
-  
+      
       face_.expressInterest
-        (interest, bind(&SyncBasedDiscovery::onData, this, _1, _2),
-         bind(&SyncBasedDiscovery::onTimeout, this, _1));
-    };
+        (interest, bind(&SyncBasedDiscovery::onData, shared_from_this(), _1, _2),
+         bind(&SyncBasedDiscovery::onTimeout, shared_from_this(), _1));    
+    }
     
     /**
      * Destructor does not call shutdown by default, avoid crashing caused by deletion 
@@ -112,7 +112,7 @@ namespace conference_discovery
      */
     ~SyncBasedDiscovery()
     {
-    };
+    }
     
     /**
      * When calling shutdown, destroy all pending interests and remove all
