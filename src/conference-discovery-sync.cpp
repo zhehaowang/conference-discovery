@@ -103,6 +103,9 @@ void
 ConferenceDiscovery::onReceivedSyncData
   (const std::vector<std::string>& syncData)
 {
+  if (!enabled_)
+    return ;
+    
   for (size_t j = 0; j < syncData.size(); ++j) {
     std::map<std::string, ndn::ptr_lib::shared_ptr<ConferenceInfo>>::iterator hostedItem = hostedConferenceList_.find(syncData[j]);
     std::vector<std::string>::iterator queriedItem = std::find(queriedConferenceList_.begin(), queriedConferenceList_.end(), syncData[j]);
@@ -129,6 +132,9 @@ ConferenceDiscovery::onInterest
    const ptr_lib::shared_ptr<const Interest>& interest, Transport& transport,
    uint64_t registerPrefixId)
 {
+  if (!enabled_)
+    return ;
+    
   std::map<std::string, ndn::ptr_lib::shared_ptr<ConferenceInfo>>::iterator item = hostedConferenceList_.find(interest->getName().toUri());
   
   if (item != hostedConferenceList_.end()) {
@@ -159,6 +165,9 @@ ConferenceDiscovery::onData
   (const ptr_lib::shared_ptr<const Interest>& interest,
    const ptr_lib::shared_ptr<Data>& data)
 {
+  if (!enabled_)
+    return ;
+    
   std::string conferenceName = interest->getName().toUri();
   
   std::map<string, ptr_lib::shared_ptr<ConferenceInfo>>::iterator item = discoveredConferenceList_.find
@@ -261,6 +270,9 @@ void
 ConferenceDiscovery::onTimeout
   (const ptr_lib::shared_ptr<const Interest>& interest)
 {
+  if (!enabled_)
+    return ;
+    
   // conferenceName is the full name of the conference, with the last component being the conference name string.
   std::string conferenceName = interest->getName().toUri();
   
@@ -309,6 +321,9 @@ ConferenceDiscovery::expressHeartbeatInterest
   (const ptr_lib::shared_ptr<const Interest>& interest,
    const ptr_lib::shared_ptr<const Interest>& conferenceInterest)
 {
+  if (!enabled_)
+    return ;
+    
   faceProcessor_.expressInterest
 	(*(conferenceInterest.get()),
 	 bind(&ConferenceDiscovery::onData, this, _1, _2), 

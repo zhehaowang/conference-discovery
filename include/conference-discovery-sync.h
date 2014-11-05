@@ -59,7 +59,7 @@ namespace conference_discovery
 	   defaultHeartbeatInterval_(2000), defaultTimeoutReexpressInterval_(300), 
 	   broadcastPrefix_(broadcastPrefix), observer_(observer), factory_(factory), 
 	   faceProcessor_(face), keyChain_(keyChain), 
-	   certificateName_(certificateName), hostedConferenceNum_(0)
+	   certificateName_(certificateName), hostedConferenceNum_(0), enabled_(true)
 	{
 	};
   
@@ -245,6 +245,7 @@ namespace conference_discovery
     std::string broadcastPrefix_;
     
 	int hostedConferenceNum_;
+	bool enabled_;
 	
 	const ndn::Milliseconds defaultDataFreshnessPeriod_;
 	const ndn::Milliseconds defaultKeepPeriod_;

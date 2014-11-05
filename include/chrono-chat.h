@@ -105,6 +105,8 @@ namespace chrono_chat
 	void
 	start()
 	{
+	  enabled_ = true;
+
 	  sync_.reset(new ndn::ChronoSync2013
 		(ndn::func_lib::bind(&Chat::sendInterest, shared_from_this(), _1, _2),
 		 ndn::func_lib::bind(&Chat::initial, shared_from_this()), chat_prefix_,

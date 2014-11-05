@@ -93,6 +93,8 @@ namespace conference_discovery
     
     void start()
     {
+      enabled_ = true;
+      
       contentCache_.registerPrefix
         (broadcastPrefix_, bind(&SyncBasedDiscovery::onRegisterFailed, shared_from_this(), _1), 
          bind(&SyncBasedDiscovery::onInterest, shared_from_this(), _1, _2, _3, _4));
