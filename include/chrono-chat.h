@@ -86,25 +86,35 @@ namespace chrono_chat
 	  chat_usrname_ = Chat::getRandomString();
 	  chat_prefix_ = ndn::Name(hubPrefix).append(chatroom_).append(chat_usrname_);
 	  
-	  int session = (int)::round(getNowMilliseconds()  / 1000.0);
+	  session_ = (int)::round(getNowMilliseconds()  / 1000.0);
 	  std::ostringstream tempStream;
 	  tempStream << screen_name_ << session;
 	  usrname_ = tempStream.str();
-	  
-	  sync_.reset(new ndn::ChronoSync2013
-		(ndn::func_lib::bind(&Chat::sendInterest, this, _1, _2),
-		 ndn::func_lib::bind(&Chat::initial, this), chat_prefix_,
-		 broadcastPrefix_.append(chatroom_), session,
-		 faceProcessor_, keyChain_, 
-		 certificateName_, sync_lifetime_, onRegisterFailed));
-	  
-	  registeredPrefixId_ = faceProcessor_.registerPrefix
-		(chat_prefix_, bind(&Chat::onInterest, this, _1, _2, _3, _4),
-		 onRegisterFailed);   
 	}
 	
 	~Chat()
 	{
+	}
+	
+	/**
+	 * Chat does not start until start is called. 
+	 * Instead of having this pointer passed into bind, we have shared_from_this.
+	 *
+	 * This accesses face, and should be put into the thread where face is accessed.
+	 */
+	void
+	start()
+	{
+	  sync_.reset(new ndn::ChronoSync2013
+		(ndn::func_lib::bind(&Chat::sendInterest, shared_from_this(), _1, _2),
+		 ndn::func_lib::bind(&Chat::initial, shared_from_this()), chat_prefix_,
+		 broadcastPrefix_.append(chatroom_), session_,
+		 faceProcessor_, keyChain_, 
+		 certificateName_, sync_lifetime_, onRegisterFailed));
+	  
+	  registeredPrefixId_ = faceProcessor_.registerPrefix
+		(chat_prefix_, bind(&Chat::onInterest, shared_from_this(), _1, _2, _3, _4),
+		 onRegisterFailed);   
 	}
 	
 	/**
@@ -262,6 +272,8 @@ namespace chrono_chat
 	std::string screen_name_;
 	std::string chatroom_;
 	std::string usrname_;
+	int session_;
+	
 	bool enabled_;
 	
 	ndn::Name broadcastPrefix_;

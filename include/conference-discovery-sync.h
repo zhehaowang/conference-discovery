@@ -39,7 +39,7 @@
 
 namespace conference_discovery
 {
-  class ConferenceDiscovery
+  class ConferenceDiscovery : public ndn::ptr_lib::enable_shared_from_this<ConferenceDiscovery>
   {
   public:
     /**
@@ -57,13 +57,20 @@ namespace conference_discovery
 	   ndn::Name certificateName)
 	:  defaultDataFreshnessPeriod_(2000), defaultKeepPeriod_(3000), 
 	   defaultHeartbeatInterval_(2000), defaultTimeoutReexpressInterval_(300), 
-	   observer_(observer), factory_(factory), faceProcessor_(face), keyChain_(keyChain), 
+	   broadcastPrefix_(broadcastPrefix), observer_(observer), factory_(factory), 
+	   faceProcessor_(face), keyChain_(keyChain), 
 	   certificateName_(certificateName), hostedConferenceNum_(0)
 	{
-	  syncBasedDiscovery_.reset(new SyncBasedDiscovery
-		(broadcastPrefix, bind(&ConferenceDiscovery::onReceivedSyncData, this, _1), 
-		 faceProcessor_, keyChain_, certificateName_));
+	  
 	};
+  
+    void
+    start()
+    {
+      syncBasedDiscovery_.reset(new SyncBasedDiscovery
+		(broadcastPrefix_, bind(&ConferenceDiscovery::onReceivedSyncData, shared_from_this(), _1), 
+		 faceProcessor_, keyChain_, certificateName_));
+    }
   
     /**
 	 * Publish conference publishes conference to be discovered by the broadcastPrefix in 
@@ -235,6 +242,7 @@ namespace conference_discovery
 	ndn::KeyChain& keyChain_;
 	
 	ndn::Name certificateName_;
+    std::string broadcastPrefix_;
     
 	int hostedConferenceNum_;
 	

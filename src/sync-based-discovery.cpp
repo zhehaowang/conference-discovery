@@ -89,7 +89,7 @@ SyncBasedDiscovery::onTimeout
 {
   if (!enabled_)
     return ;
-  Name interestName(broadcastPrefix_);
+  Name interestName(broadcastPrehisfix_);
   interestName.append(currentDigest_);
   
   Interest newInterest(interestName);

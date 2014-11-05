@@ -133,6 +133,7 @@ int main()
     chat.reset
       (new Chat(chatBroadcastPrefix, screenName, chatroom,
   	   hubPrefix, NULL, face, keyChain, certificateName));
+  	chat->start();
   	
   	ConferenceDescription cd;
   	ConferenceInfoFactory factory(ptr_lib::make_shared<ConferenceDescription>(cd));

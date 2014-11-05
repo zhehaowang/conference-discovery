@@ -161,6 +161,8 @@ int main()
       (new Chat(chatBroadcastPrefix, screenName, chatroom,
   	   hubPrefix, &chatObserver, 
   	   face, keyChain, certificateName));
+  	chat->start();
+  	
   }
   catch (std::exception& e) {
     cout << e.what() << '\n';
