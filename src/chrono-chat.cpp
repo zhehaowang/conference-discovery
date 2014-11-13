@@ -174,8 +174,6 @@ Chat::onData
 		int session = ::atoi(co->getName().get(inst->getName().size() - prefixFromInstEnd_ + 2).toEscapedString().c_str());
 		int seqno = ::atoi(co->getName().get(inst->getName().size() - prefixFromInstEnd_ + 3).toEscapedString().c_str());
 		
-		cout << prefix << " " << session << " " << seqno << endl;
-		
 		ostringstream tempStream;
 		tempStream << name << session;
 		string nameAndSession = tempStream.str();
