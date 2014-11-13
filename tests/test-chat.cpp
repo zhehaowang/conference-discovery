@@ -236,7 +236,7 @@ int main()
 
   // This throws an libc++abi.dylib: terminate called throwing an exception
   // which is caused by "socket cannot connect to socket"
-  int nChats = 10;
+  int nChats = 1;
   try {
     // Instruction for using the class at chrono-chat.h
     for (int i = 0; i < nChats; i++) {
@@ -259,8 +259,7 @@ int main()
   }
 
   std::string msgString = "";
-  usleep(1000000);
-  // test chat auto send messages
+  
   while (1) {
 	if (isStdinReady())
 	{
@@ -268,8 +267,8 @@ int main()
 	  // resets chat without doing anything else, to test Peter's callback problem
 	  if (msgString == "-reset") {
 			  cout << "Chat deleted." << endl;
-			  chatObserver.chat->shutdown();
-			  chatObserver.chat.reset();
+			  observers[0]->chat->shutdown();
+			  observers[0]->chat.reset();
 			  continue;
 	  }
 	  if (msgString == "-leave" || msgString == "-exit") {
@@ -279,7 +278,7 @@ int main()
 			for (int i = 0; i < 30; i++) {
 			  ostringstream ss;
 			  ss << i;
-			  chatObserver.chat->sendMessage(ss.str());
+			  observers[0]->chat->sendMessage(ss.str());
 			  for (int j = 0; j < 100; j++) {
 					face.processEvents();
 					usleep(2000);
@@ -288,7 +287,7 @@ int main()
 			continue;
 	  }
 
-	  chatObserver.chat->sendMessage(msgString);
+	  observers[0]->chat->sendMessage(msgString);
 	}
 
 	face.processEvents();
