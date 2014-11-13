@@ -13,7 +13,9 @@
 #include <ndn-cpp/security/policy/no-verify-policy-manager.hpp>
 #include <ndn-cpp/transport/tcp-transport.hpp>
 
+// remove dependency on boost header for this.
 #include <boost/algorithm/string.hpp>
+
 #include <sys/time.h>
 #include <iostream>
 
