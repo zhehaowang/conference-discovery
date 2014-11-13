@@ -216,6 +216,7 @@ int main()
   string screenName = getRandomString();
   string chatroom = "ndnchat";
   
+  cout << "Please input hub prefix[/ndn/edu/ucla/remap]: " << endl;
   string hubPrefixString = "/ndn/edu/ucla/remap";
   hubPrefixString = stdinReadLine();
   if (hubPrefixString == "") {

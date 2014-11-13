@@ -170,9 +170,10 @@ Chat::onData
 	content.ParseFromArray(co->getContent().buf(), co->getContent().size());
 	if (getNowMilliseconds() - content.timestamp() * 1000.0 < 120000.0) {
 		string name = content.from();
-		string prefix = co->getName().getPrefix(chat_prefix_.size()).toUri();
-		int session = ::atoi(co->getName().get(chat_prefix_.size() + 0).toEscapedString().c_str());
-		int seqno = ::atoi(co->getName().get(chat_prefix_.size() + 1).toEscapedString().c_str());
+		string prefix = co->getName().getPrefix(inst->getName().size() - prefixFromInstEnd_ + 1).toUri();
+		int session = ::atoi(co->getName().get(inst->getName().size() - prefixFromInstEnd_).toEscapedString().c_str());
+		int seqno = ::atoi(co->getName().get(inst->getName().size() - prefixFromInstEnd_ + 1).toEscapedString().c_str());
+		
 		ostringstream tempStream;
 		tempStream << name << session;
 		string nameAndSession = tempStream.str();
@@ -190,13 +191,12 @@ Chat::onData
 				break;
 			}
 		}
-
-		if (l == roster_.size()) {
+        if (l == roster_.size()) {
 			roster_.push_back(nameAndSession);
 			notifyObserver(MessageTypes::JOIN, inst->getName().getSubName
 			  (0, inst->getName().size() - prefixFromInstEnd_).toUri().c_str(), name.c_str(), "", 0);
 		}
-
+        
 		// Set the alive timeout using the Interest timeout mechanism.
 		// TODO: Are we sure using a "/timeout" interest is the best future call approach?
 		Interest timeout("/timeout");
