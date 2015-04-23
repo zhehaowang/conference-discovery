@@ -241,10 +241,11 @@ ConferenceDiscovery::onData
   else {
     if (content != "over") {
       // Using set messages for (potentially) updated conferences
-      notifyObserver(MessageTypes::SET, conferenceName.c_str(), 0);
       ptr_lib::shared_ptr<ConferenceInfo> conferenceInfo = factory_->deserialize(data->getContent());
       item->second = conferenceInfo;
       item->second->resetTimeout();
+      
+      notifyObserver(MessageTypes::SET, conferenceName.c_str(), 0);
       
       Interest timeout("/localhost/timeout");
       timeout.setInterestLifetimeMilliseconds(defaultHeartbeatInterval_);
