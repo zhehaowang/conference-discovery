@@ -20,12 +20,12 @@
  * A copy of the GNU General Public License is in the file COPYING.
  */
 
-// Only compile if ndn-cpp-config.h defines NDN_CPP_HAVE_PROTOBUF = 1.
 #ifndef __ndnrtc__addon__chrono__chat__
 #define __ndnrtc__addon__chrono__chat__
 
 #include <ndn-cpp/ndn-cpp-config.h>
-#if NDN_CPP_HAVE_PROTOBUF
+
+//#if NDN_CPP_HAVE_PROTOBUF
 
 #include <cstdlib>
 #include <string>
@@ -302,21 +302,5 @@ namespace chrono_chat
 	const int prefixFromChatPrefixEnd_ = 2;
   };
 }
-
-
-
-#else // NDN_CPP_HAVE_PROTOBUF
-
-#include <iostream>
-
-using namespace std;
-
-int main(int argc, char** argv)
-{
-  cout <<
-    "This program uses Protobuf but it is not installed. Install it and ./configure again." << endl;
-}
-
-#endif // NDN_CPP_HAVE_PROTOBUF
 
 #endif // __ndnrtc__chrono__chat__
