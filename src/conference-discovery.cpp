@@ -43,8 +43,13 @@ ConferenceDiscovery::publishConference
     return true;
   }
   else {
-    cerr << "Conference with this name already exists locally." << endl;
-    return false;
+    // For the same conference name published again, we update its ConferenceInfo object
+    ptr_lib::shared_ptr<ConferenceInfo> info = conferenceInfo;
+    info->setRegisteredPrefixId(item->second->getRegisteredPrefixId());
+    item->second = info;
+    
+    notifyObserver(MessageTypes::SET, conferenceFullName.toUri().c_str(), 0);
+    return true;
   }
 }
 
@@ -186,8 +191,8 @@ ConferenceDiscovery::onData
       
       if (conferenceInfo) {
         discoveredConferenceList_.insert
-        (std::pair<string, ptr_lib::shared_ptr<ConferenceInfo>>
-          (conferenceName, conferenceInfo));
+          (std::pair<string, ptr_lib::shared_ptr<ConferenceInfo>>
+            (conferenceName, conferenceInfo));
   
         // std::map should be sorted by default
         //std::sort(discoveredConferenceList_.begin(), discoveredConferenceList_.end());
@@ -235,6 +240,10 @@ ConferenceDiscovery::onData
   // if it's an already discovered conference
   else {
     if (content != "over") {
+      // Using set messages for (potentially) updated conferences
+      notifyObserver(MessageTypes::SET, conferenceName.c_str(), 0);
+      ptr_lib::shared_ptr<ConferenceInfo> conferenceInfo = factory_->deserialize(data->getContent());
+      item->second = conferenceInfo;
       item->second->resetTimeout();
       
       Interest timeout("/localhost/timeout");
