@@ -132,17 +132,17 @@ int main()
   try {
     chat.reset
       (new Chat(chatBroadcastPrefix, screenName, chatroom,
-  	   hubPrefix, NULL, face, keyChain, certificateName));
-  	chat->start();
-  	
-  	ConferenceDescription cd;
-  	ConferenceInfoFactory factory(ptr_lib::make_shared<ConferenceDescription>(cd));
+         hubPrefix, NULL, face, keyChain, certificateName));
+      chat->start();
+      
+      ConferenceDescription cd;
+      ConferenceInfoFactory factory(ptr_lib::make_shared<ConferenceDescription>(cd));
 
-  	discovery.reset
-  	  (new ConferenceDiscovery(conferenceDiscoveryBdcastPrefix, 
-  	   NULL, ptr_lib::make_shared<ConferenceInfoFactory>(factory), 
-  	   face, keyChain, certificateName));
-  	discovery->start();
+      discovery.reset
+        (new ConferenceDiscovery(conferenceDiscoveryBdcastPrefix, 
+         NULL, ptr_lib::make_shared<ConferenceInfoFactory>(factory), 
+         face, keyChain, certificateName));
+      discovery->start();
   }
   catch (std::exception& e) {
     cout << e.what() << '\n';
@@ -168,7 +168,7 @@ int main()
         cout << "Using default prefix: " << hubPrefix.toUri() << endl;
         
         ConferenceDescription thisConference;
-    	thisConference.setDescription("conference: " + msgString);
+        thisConference.setDescription("conference: " + msgString);
         discovery->publishConference
           (msgString.substr(string("-start ").size()), hubPrefix, ptr_lib::make_shared<ConferenceDescription>(thisConference));
         continue;
@@ -197,9 +197,9 @@ int main()
   
   int sleepSeconds = 0;
   while (sleepSeconds < 1000000) {
-	face.processEvents();
-	usleep(10000);
-	sleepSeconds += 10000;
+    face.processEvents();
+    usleep(10000);
+    sleepSeconds += 10000;
   }
   return 1;
 }

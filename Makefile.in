@@ -153,7 +153,7 @@ libs_libchrono_chat2013_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX \
 libs_libconference_discovery_la_LIBADD =
 am_libs_libconference_discovery_la_OBJECTS =  \
 	src/libs_libconference_discovery_la-sync-based-discovery.lo \
-	src/libs_libconference_discovery_la-conference-discovery-sync.lo
+	src/libs_libconference_discovery_la-conference-discovery.lo
 libs_libconference_discovery_la_OBJECTS =  \
 	$(am_libs_libconference_discovery_la_OBJECTS)
 libs_libconference_discovery_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX \
@@ -400,13 +400,13 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS} -I m4
 AUTOMAKE_OPTIONS = subdir-objects
-pkginclude_HEADERS = include/chrono-chat.h include/external-observer.h include/conference-discovery-sync.h include/conference-info-factory.h include/conference-info.h include/sync-based-discovery.h
+pkginclude_HEADERS = include/chrono-chat.h include/external-observer.h include/conference-discovery.h include/conference-info-factory.h include/conference-info.h include/sync-based-discovery.h
 lib_LTLIBRARIES = libs/libchrono-chat2013.la libs/libconference-discovery.la
 libs_libchrono_chat2013_la_SOURCES = src/chrono-chat.cpp \
   src/chatbuf.pb.cc
 
 libs_libconference_discovery_la_SOURCES = src/sync-based-discovery.cpp \
-  src/conference-discovery-sync.cpp
+  src/conference-discovery.cpp
 
 libs_libchrono_chat2013_la_CPPFLAGS = -I$(top_srcdir)/include -I@PROTOBUFDIR@ -I@NDNCPPDIR@ -I@CRYPTODIR@ 
 libs_libchrono_chat2013_la_LDFLAGS = -L@PROTOBUFLIB@ -L@NDNCPPLIB@ -L@CRYPTOLIB@ -lndn-cpp -lcrypto -lprotobuf
@@ -510,7 +510,7 @@ libs/libchrono-chat2013.la: $(libs_libchrono_chat2013_la_OBJECTS) $(libs_libchro
 	$(AM_V_CXXLD)$(libs_libchrono_chat2013_la_LINK) -rpath $(libdir) $(libs_libchrono_chat2013_la_OBJECTS) $(libs_libchrono_chat2013_la_LIBADD) $(LIBS)
 src/libs_libconference_discovery_la-sync-based-discovery.lo:  \
 	src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
-src/libs_libconference_discovery_la-conference-discovery-sync.lo:  \
+src/libs_libconference_discovery_la-conference-discovery.lo:  \
 	src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
 
 libs/libconference-discovery.la: $(libs_libconference_discovery_la_OBJECTS) $(libs_libconference_discovery_la_DEPENDENCIES) $(EXTRA_libs_libconference_discovery_la_DEPENDENCIES) libs/$(am__dirstamp)
@@ -557,7 +557,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libs_libchrono_chat2013_la-chatbuf.pb.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libs_libchrono_chat2013_la-chrono-chat.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libs_libconference_discovery_la-conference-discovery-sync.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libs_libconference_discovery_la-conference-discovery.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libs_libconference_discovery_la-sync-based-discovery.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/bin_test_both-test-both.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/bin_test_chat-test-chat.Po@am__quote@
@@ -607,12 +607,12 @@ src/libs_libconference_discovery_la-sync-based-discovery.lo: src/sync-based-disc
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libs_libconference_discovery_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/libs_libconference_discovery_la-sync-based-discovery.lo `test -f 'src/sync-based-discovery.cpp' || echo '$(srcdir)/'`src/sync-based-discovery.cpp
 
-src/libs_libconference_discovery_la-conference-discovery-sync.lo: src/conference-discovery-sync.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libs_libconference_discovery_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/libs_libconference_discovery_la-conference-discovery-sync.lo -MD -MP -MF src/$(DEPDIR)/libs_libconference_discovery_la-conference-discovery-sync.Tpo -c -o src/libs_libconference_discovery_la-conference-discovery-sync.lo `test -f 'src/conference-discovery-sync.cpp' || echo '$(srcdir)/'`src/conference-discovery-sync.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/libs_libconference_discovery_la-conference-discovery-sync.Tpo src/$(DEPDIR)/libs_libconference_discovery_la-conference-discovery-sync.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/conference-discovery-sync.cpp' object='src/libs_libconference_discovery_la-conference-discovery-sync.lo' libtool=yes @AMDEPBACKSLASH@
+src/libs_libconference_discovery_la-conference-discovery.lo: src/conference-discovery.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libs_libconference_discovery_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/libs_libconference_discovery_la-conference-discovery.lo -MD -MP -MF src/$(DEPDIR)/libs_libconference_discovery_la-conference-discovery.Tpo -c -o src/libs_libconference_discovery_la-conference-discovery.lo `test -f 'src/conference-discovery.cpp' || echo '$(srcdir)/'`src/conference-discovery.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/libs_libconference_discovery_la-conference-discovery.Tpo src/$(DEPDIR)/libs_libconference_discovery_la-conference-discovery.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/conference-discovery.cpp' object='src/libs_libconference_discovery_la-conference-discovery.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libs_libconference_discovery_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/libs_libconference_discovery_la-conference-discovery-sync.lo `test -f 'src/conference-discovery-sync.cpp' || echo '$(srcdir)/'`src/conference-discovery-sync.cpp
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libs_libconference_discovery_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/libs_libconference_discovery_la-conference-discovery.lo `test -f 'src/conference-discovery.cpp' || echo '$(srcdir)/'`src/conference-discovery.cpp
 
 tests/bin_test_both-test-both.o: tests/test-both.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(bin_test_both_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT tests/bin_test_both-test-both.o -MD -MP -MF tests/$(DEPDIR)/bin_test_both-test-both.Tpo -c -o tests/bin_test_both-test-both.o `test -f 'tests/test-both.cpp' || echo '$(srcdir)/'`tests/test-both.cpp

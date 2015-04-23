@@ -3,7 +3,7 @@
 
 #include "external-observer.h"
 #include "chrono-chat.h"
-#include "conference-discovery-sync.h"
+#include "conference-discovery.h"
 
 #include <ndn-cpp/util/blob.hpp>
 

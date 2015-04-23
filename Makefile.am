@@ -1,7 +1,7 @@
 ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS} -I m4
 AUTOMAKE_OPTIONS = subdir-objects
 
-pkginclude_HEADERS = include/chrono-chat.h include/external-observer.h include/conference-discovery-sync.h include/conference-info-factory.h include/conference-info.h include/sync-based-discovery.h
+pkginclude_HEADERS = include/chrono-chat.h include/external-observer.h include/conference-discovery.h include/conference-info-factory.h include/conference-info.h include/sync-based-discovery.h
 
 lib_LTLIBRARIES = libs/libchrono-chat2013.la libs/libconference-discovery.la
 noinst_PROGRAMS = bin/test-both bin/test-chat
@@ -10,7 +10,7 @@ libs_libchrono_chat2013_la_SOURCES = src/chrono-chat.cpp \
   src/chatbuf.pb.cc
   
 libs_libconference_discovery_la_SOURCES = src/sync-based-discovery.cpp \
-  src/conference-discovery-sync.cpp
+  src/conference-discovery.cpp
 
 libs_libchrono_chat2013_la_CPPFLAGS = -I$(top_srcdir)/include -I@PROTOBUFDIR@ -I@NDNCPPDIR@ -I@CRYPTODIR@ 
 libs_libchrono_chat2013_la_LDFLAGS = -L@PROTOBUFLIB@ -L@NDNCPPLIB@ -L@CRYPTOLIB@ -lndn-cpp -lcrypto -lprotobuf

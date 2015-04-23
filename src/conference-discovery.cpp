@@ -1,4 +1,4 @@
-#include "conference-discovery-sync.h"
+#include "conference-discovery.h"
 #include "sync-based-discovery.h"
 #include <sys/time.h>
 #include <openssl/rand.h>

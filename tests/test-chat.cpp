@@ -1,6 +1,5 @@
 #include "external-observer.h"
 #include "chrono-chat.h"
-#include "conference-discovery-sync.h"
 
 #include <exception>
 #include <openssl/rand.h>
@@ -10,8 +9,6 @@ using namespace chrono_chat;
 using namespace conference_discovery;
 using namespace std;
 using namespace ndn;
-
-//ptr_lib::shared_ptr<Chat> chat;
 
 static const char *WHITESPACE_CHARS = " \n\r\t";
 
@@ -137,78 +134,6 @@ class SampleChatObserver : public ChatObserver
 };
 
 /**
- * Test for large number of registration in a row.
- */
-/*
-class Echo {
-public:
-  Echo(KeyChain &keyChain, const Name& certificateName)
-  : keyChain_(keyChain), certificateName_(certificateName), responseCount_(0)
-  {
-  }
-
-  // onInterest.
-  void operator()
-     (const ptr_lib::shared_ptr<const Name>& prefix,
-      const ptr_lib::shared_ptr<const Interest>& interest, Transport& transport,
-      uint64_t registeredPrefixId)
-  {
-    ++responseCount_;
-
-    // Make and sign a Data packet.
-    Data data(interest->getName());
-    string content(string("Echo ") + interest->getName().toUri());
-    data.setContent((const uint8_t *)&content[0], content.size());
-    keyChain_.sign(data, certificateName_);
-    Blob encodedData = data.wireEncode();
-
-    cout << "Sent content " << content << endl;
-    transport.send(*encodedData);
-  }
-
-  // onRegisterFailed.
-  void operator()(const ptr_lib::shared_ptr<const Name>& prefix)
-  {
-    ++responseCount_;
-    cout << "Register failed for prefix " << prefix->toUri() << endl;
-  }
-
-  KeyChain keyChain_;
-  Name certificateName_;
-  int responseCount_;
-};
- 
-int main()
-{
-  int nPrefix = 100;
-  
-  Face face;
-  KeyChain keyChain;
-  Name certificateName = keyChain.getDefaultCertificateName();
-  face.setCommandSigningInfo(keyChain, certificateName);
-  
-  Name prefix("/ndn/edu/ucla/remap");
-  Echo echo(keyChain, certificateName);
-  
-  for (int i = 0; i < nPrefix; i++) {
-    ostringstream ss;
-    ss << "prefix" << i;
-    Name name(prefix);
-    name.append(ss.str());
-    face.registerPrefix(name, func_lib::ref(echo), func_lib::ref(echo));
-    
-    cout << name.toUri() << endl;
-    usleep(10000);
-  }
-  while (1) {
-	face.processEvents();
-	// We need to sleep for a few milliseconds so we don't use 100% of the CPU.
-	usleep(100);
-  }
-}
-*/
-
-/**
  * Test function for chrono-chat
  */
 int main()
@@ -262,45 +187,45 @@ int main()
   std::string msgString = "";
   
   while (1) {
-	if (isStdinReady())
-	{
-	  msgString = stdinReadLine();
-	  // resets chat without doing anything else, to test Peter's callback problem
-	  if (msgString == "-reset") {
-			  cout << "Chat deleted." << endl;
-			  observers[0]->chat->shutdown();
-			  observers[0]->chat.reset();
-			  continue;
-	  }
-	  if (msgString == "-leave" || msgString == "-exit") {
-			break;
-	  }
-	  if (msgString == "-auto") {
-			for (int i = 0; i < 30; i++) {
-			  ostringstream ss;
-			  ss << i;
-			  observers[0]->chat->sendMessage(ss.str());
-			  for (int j = 0; j < 100; j++) {
-					face.processEvents();
-					usleep(2000);
-			  }
-			}
-			continue;
-	  }
+    if (isStdinReady())
+    {
+      msgString = stdinReadLine();
+      // resets chat without doing anything else, to test Peter's callback problem
+      if (msgString == "-reset") {
+        cout << "Chat deleted." << endl;
+        observers[0]->chat->shutdown();
+        observers[0]->chat.reset();
+        continue;
+      }
+      if (msgString == "-leave" || msgString == "-exit") {
+        break;
+      }
+      if (msgString == "-auto") {
+        for (int i = 0; i < 30; i++) {
+          ostringstream ss;
+          ss << i;
+          observers[0]->chat->sendMessage(ss.str());
+          for (int j = 0; j < 100; j++) {
+                face.processEvents();
+                usleep(2000);
+          }
+        }
+        continue;
+      }
 
-	  observers[0]->chat->sendMessage(msgString);
-	}
+      observers[0]->chat->sendMessage(msgString);
+    }
 
-	face.processEvents();
-	usleep(10000);
+    face.processEvents();
+    usleep(10000);
   }
   // chatObserver.chat->leave();
 
   int sleepSeconds = 0;
   while (sleepSeconds < 1000000) {
-        face.processEvents();
-        usleep(10000);
-        sleepSeconds += 10000;
+    face.processEvents();
+    usleep(10000);
+    sleepSeconds += 10000;
   }
 
   return 1;
