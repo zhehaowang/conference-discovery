@@ -48,6 +48,7 @@ ConferenceDiscovery::publishConference
     info->setRegisteredPrefixId(item->second->getRegisteredPrefixId());
     item->second = info;
     
+    // SET is called for notifyObserver
     notifyObserver(MessageTypes::SET, conferenceFullName.toUri().c_str(), 0);
     return true;
   }
@@ -240,12 +241,16 @@ ConferenceDiscovery::onData
   // if it's an already discovered conference
   else {
     if (content != "over") {
-      // Using set messages for (potentially) updated conferences
-      ptr_lib::shared_ptr<ConferenceInfo> conferenceInfo = factory_->deserialize(data->getContent());
-      item->second = conferenceInfo;
       item->second->resetTimeout();
       
-      notifyObserver(MessageTypes::SET, conferenceName.c_str(), 0);
+      // Using set messages for updated conferences
+      ptr_lib::shared_ptr<ConferenceInfo> conferenceInfo = factory_->deserialize(data->getContent());
+      
+      if (!factory_->serialize(conferenceInfo).equals(factory_->serialize(item->second))) {
+        item->second = conferenceInfo;
+        
+        notifyObserver(MessageTypes::SET, conferenceName.c_str(), 0);
+      }
       
       Interest timeout("/localhost/timeout");
       timeout.setInterestLifetimeMilliseconds(defaultHeartbeatInterval_);
