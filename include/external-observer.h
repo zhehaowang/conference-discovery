@@ -27,11 +27,11 @@ namespace conference_discovery
   // enum class won't compile with C++03
   enum class MessageTypes
   {
-    ADD,		// Received when discovering conference
-    REMOVE,		// Received when discovering conference end
-    SET,		// Not being used
-    START,		// Received when starting to host a conference
-    STOP		// Received when hosted conference stops
+    ADD,        // Received when discovering conference
+    REMOVE,        // Received when discovering conference end
+    SET,        // Not being used
+    START,        // Received when starting to host a conference
+    STOP        // Received when hosted conference stops
   };
   
   class ConferenceDiscoveryObserver

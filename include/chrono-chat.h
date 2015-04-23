@@ -25,8 +25,6 @@
 
 #include <ndn-cpp/ndn-cpp-config.h>
 
-//#if NDN_CPP_HAVE_PROTOBUF
-
 #include <cstdlib>
 #include <string>
 #include <iostream>
@@ -73,70 +71,70 @@ namespace chrono_chat
      * Constructor registers prefixes for both chat and broadcast namespaces.
      * This should be put into critical section, if the face is accessed by different threads
      */
-	Chat
-	  (const ndn::Name& broadcastPrefix,
-	   const std::string& screenName, const std::string& chatRoom,
-	   const ndn::Name& hubPrefix, ChatObserver *observer, ndn::Face& face, ndn::KeyChain& keyChain,
-	   ndn::Name certificateName)
-	  : screen_name_(screenName), chatroom_(chatRoom), maxmsgcachelength_(100),
-		isRecoverySyncState_(true), sync_lifetime_(5000.0), observer_(observer),
-		faceProcessor_(face), keyChain_(keyChain), certificateName_(certificateName),
-		broadcastPrefix_(broadcastPrefix), enabled_(true)
-	{
-	  chat_usrname_ = Chat::getRandomString();
-	  chat_prefix_ = ndn::Name(hubPrefix).append(chatroom_).append(chat_usrname_);
-	  
-	  session_ = (int)::round(getNowMilliseconds()  / 1000.0);
-	  std::ostringstream tempStream;
-	  tempStream << screen_name_ << session_;
-	  usrname_ = tempStream.str();
-	}
-	
-	~Chat()
-	{
-	}
-	
-	/**
-	 * Chat does not start until start is called. 
-	 * Instead of having this pointer passed into bind, we have shared_from_this.
-	 *
-	 * This accesses face, and should be put into the thread where face is accessed.
-	 */
-	void
-	start()
-	{
-	  enabled_ = true;
+    Chat
+      (const ndn::Name& broadcastPrefix,
+       const std::string& screenName, const std::string& chatRoom,
+       const ndn::Name& hubPrefix, ChatObserver *observer, ndn::Face& face, ndn::KeyChain& keyChain,
+       ndn::Name certificateName)
+      : screen_name_(screenName), chatroom_(chatRoom), maxmsgcachelength_(100),
+        isRecoverySyncState_(true), sync_lifetime_(5000.0), observer_(observer),
+        faceProcessor_(face), keyChain_(keyChain), certificateName_(certificateName),
+        broadcastPrefix_(broadcastPrefix), enabled_(true)
+    {
+      chat_usrname_ = Chat::getRandomString();
+      chat_prefix_ = ndn::Name(hubPrefix).append(chatroom_).append(chat_usrname_);
+      
+      session_ = (int)::round(getNowMilliseconds()  / 1000.0);
+      std::ostringstream tempStream;
+      tempStream << screen_name_ << session_;
+      usrname_ = tempStream.str();
+    }
+    
+    ~Chat()
+    {
+    }
+    
+    /**
+     * Chat does not start until start is called. 
+     * Instead of having this pointer passed into bind, we have shared_from_this.
+     *
+     * This accesses face, and should be put into the thread where face is accessed.
+     */
+    void
+    start()
+    {
+      enabled_ = true;
 
-	  sync_.reset(new ndn::ChronoSync2013
-		(ndn::func_lib::bind(&Chat::sendInterest, shared_from_this(), _1, _2),
-		 ndn::func_lib::bind(&Chat::initial, shared_from_this()), chat_prefix_,
-		 broadcastPrefix_.append(chatroom_), session_,
-		 faceProcessor_, keyChain_, 
-		 certificateName_, sync_lifetime_, onRegisterFailed));
-	  
-	  registeredPrefixId_ = faceProcessor_.registerPrefix
-		(chat_prefix_, bind(&Chat::onInterest, shared_from_this(), _1, _2, _3, _4),
-		 onRegisterFailed);   
-	}
-	
-	/**
-	 * Sends a chat message.
-	 * @param chatmsg The message to be sent.
-	 *
-	 * sendMessages calls sync publishNextSequenceNo, which expresses interest in broadcast namespace
+      sync_.reset(new ndn::ChronoSync2013
+        (ndn::func_lib::bind(&Chat::sendInterest, shared_from_this(), _1, _2),
+         ndn::func_lib::bind(&Chat::initial, shared_from_this()), chat_prefix_,
+         broadcastPrefix_.append(chatroom_), session_,
+         faceProcessor_, keyChain_, 
+         certificateName_, sync_lifetime_, onRegisterFailed));
+      
+      registeredPrefixId_ = faceProcessor_.registerPrefix
+        (chat_prefix_, bind(&Chat::onInterest, shared_from_this(), _1, _2, _3, _4),
+         onRegisterFailed);   
+    }
+    
+    /**
+     * Sends a chat message.
+     * @param chatmsg The message to be sent.
+     *
+     * sendMessages calls sync publishNextSequenceNo, which expresses interest in broadcast namespace
      * This should be put into critical section, if the face is accessed by different threads
-	 */
-	void
-	sendMessage(const std::string& chatmsg);
+     */
+    void
+    sendMessage(const std::string& chatmsg);
 
-	/**
-	 * Sends leave message. shutdown is not called in leave, therefore, you'll still be receiving and responding to sync interest.
-	 *
-	 * leave calls sync publishNextSequenceNo, which expresses interest in broadcast namespace
+    /**
+     * Sends leave message. shutdown is not called in leave, therefore, you'll still be receiving and responding to sync interest.
+     *
+     * leave calls sync publishNextSequenceNo, which expresses interest in broadcast namespace
      * This should be put into critical section, if the face is accessed by different threads
-	 */
-	void
-	leave();
+     */
+    void
+    leave();
     
     /**
      * When calling shutdown, destroy all pending interests and remove all
@@ -149,157 +147,157 @@ namespace chrono_chat
     shutdown()
     {
       // Stop receiving broadcast sync interests by calling sync_->shutdown, 
-	  // which unregisters all prefixes from memoryContentCache of sync
-	  sync_->shutdown();
-	  enabled_ = false;
-	  faceProcessor_.removeRegisteredPrefix(registeredPrefixId_);
+      // which unregisters all prefixes from memoryContentCache of sync
+      sync_->shutdown();
+      enabled_ = false;
+      faceProcessor_.removeRegisteredPrefix(registeredPrefixId_);
     }
 
   private:
-	/**
-	 * Use gettimeofday to return the current time in milliseconds.
-	 * @return The current time in milliseconds since 1/1/1970, including fractions
-	 * of a millisecond according to timeval.tv_usec.
-	 */
-	static ndn::MillisecondsSince1970
-	getNowMilliseconds();
+    /**
+     * Use gettimeofday to return the current time in milliseconds.
+     * @return The current time in milliseconds since 1/1/1970, including fractions
+     * of a millisecond according to timeval.tv_usec.
+     */
+    static ndn::MillisecondsSince1970
+    getNowMilliseconds();
 
-	int 
-	notifyObserver(MessageTypes type, const char *prefix, const char *name, const char *msg, double timestamp);
+    int 
+    notifyObserver(MessageTypes type, const char *prefix, const char *name, const char *msg, double timestamp);
 
-	// Initialization: push the JOIN message in to the msgcache, update roster and start heartbeat.
-	void
-	initial();
+    // Initialization: push the JOIN message in to the msgcache, update roster and start heartbeat.
+    void
+    initial();
 
-	// Send a Chat Interest to fetch chat messages after get the user gets the Sync data packet back but will not send interest.
-	void
-	sendInterest
-	  (const std::vector<ndn::ChronoSync2013::SyncState>& syncStates, bool isRecovery);
+    // Send a Chat Interest to fetch chat messages after get the user gets the Sync data packet back but will not send interest.
+    void
+    sendInterest
+      (const std::vector<ndn::ChronoSync2013::SyncState>& syncStates, bool isRecovery);
 
-	// Send back Chat Data Packet which contains the user's message.
-	void
-	onInterest
-	  (const ndn::ptr_lib::shared_ptr<const ndn::Name>& prefix,
-	   const ndn::ptr_lib::shared_ptr<const ndn::Interest>& inst, ndn::Transport& transport,
-	   uint64_t registeredPrefixId);
+    // Send back Chat Data Packet which contains the user's message.
+    void
+    onInterest
+      (const ndn::ptr_lib::shared_ptr<const ndn::Name>& prefix,
+       const ndn::ptr_lib::shared_ptr<const ndn::Interest>& inst, ndn::Transport& transport,
+       uint64_t registeredPrefixId);
 
-	// Processing the incoming Chat data.
-	void
-	onData
-	  (const ndn::ptr_lib::shared_ptr<const ndn::Interest>& inst,
-	   const ndn::ptr_lib::shared_ptr<ndn::Data>& co);
+    // Processing the incoming Chat data.
+    void
+    onData
+      (const ndn::ptr_lib::shared_ptr<const ndn::Interest>& inst,
+       const ndn::ptr_lib::shared_ptr<ndn::Data>& co);
 
-	void
-	chatTimeout(const ndn::ptr_lib::shared_ptr<const ndn::Interest>& interest);
+    void
+    chatTimeout(const ndn::ptr_lib::shared_ptr<const ndn::Interest>& interest);
 
-	/**
-	 * This repeatedly calls itself after a timeout to send a heartbeat message
-	 * (chat message type HELLO).
-	 * This method has an "interest" argument because we use it as the onTimeout
-	 * for Face.expressInterest.
-	 */
-	void
-	heartbeat(const ndn::ptr_lib::shared_ptr<const ndn::Interest> &interest);
+    /**
+     * This repeatedly calls itself after a timeout to send a heartbeat message
+     * (chat message type HELLO).
+     * This method has an "interest" argument because we use it as the onTimeout
+     * for Face.expressInterest.
+     */
+    void
+    heartbeat(const ndn::ptr_lib::shared_ptr<const ndn::Interest> &interest);
 
-	/**
-	 * This is called after a timeout to check if the user with prefix has a newer
-	 * sequence number than the given temp_seq. If not, assume the user is idle and
-	 * remove from the roster and print a leave message.
-	 * This method has an "interest" argument because we use it as the onTimeout
-	 * for Face.expressInterest.
-	 */
-	void
-	alive
-	  (const ndn::ptr_lib::shared_ptr<const ndn::Interest> &interest, int temp_seq,
-	   const std::string& name, int session, const std::string& prefix);
+    /**
+     * This is called after a timeout to check if the user with prefix has a newer
+     * sequence number than the given temp_seq. If not, assume the user is idle and
+     * remove from the roster and print a leave message.
+     * This method has an "interest" argument because we use it as the onTimeout
+     * for Face.expressInterest.
+     */
+    void
+    alive
+      (const ndn::ptr_lib::shared_ptr<const ndn::Interest> &interest, int temp_seq,
+       const std::string& name, int session, const std::string& prefix);
 
-	/**
-	 * Append a new CachedMessage to msgcache, using given messageType and message,
-	 * the sequence number from sync_->getSequenceNo() and the current time. Also
-	 * remove elements from the front of the cache as needed to keep
-	 * the size to maxmsgcachelength_.
-	 */
-	void
-	messageCacheAppend(int messageType, const std::string& message);
+    /**
+     * Append a new CachedMessage to msgcache, using given messageType and message,
+     * the sequence number from sync_->getSequenceNo() and the current time. Also
+     * remove elements from the front of the cache as needed to keep
+     * the size to maxmsgcachelength_.
+     */
+    void
+    messageCacheAppend(int messageType, const std::string& message);
 
-	// Generate a random name for ChronoSync.
-	static std::string
-	getRandomString();
+    // Generate a random name for ChronoSync.
+    static std::string
+    getRandomString();
 
-	static void
-	onRegisterFailed(const ndn::ptr_lib::shared_ptr<const ndn::Name>& prefix);
+    static void
+    onRegisterFailed(const ndn::ptr_lib::shared_ptr<const ndn::Name>& prefix);
 
-	/**
-	 * This is a do-nothing onData for using expressInterest for timeouts.
-	 * This should never be called.
-	 */
-	static void
-	dummyOnData
-	  (const ndn::ptr_lib::shared_ptr<const ndn::Interest>& interest,
-	   const ndn::ptr_lib::shared_ptr<ndn::Data>& data);
-	
-	class CachedMessage {
-	public:
-	  CachedMessage
-		(int seqno, int msgtype, const std::string& msg, ndn::MillisecondsSince1970 time)
-	  : seqno_(seqno), msgtype_(msgtype), msg_(msg), time_(time)
-	  {}
+    /**
+     * This is a do-nothing onData for using expressInterest for timeouts.
+     * This should never be called.
+     */
+    static void
+    dummyOnData
+      (const ndn::ptr_lib::shared_ptr<const ndn::Interest>& interest,
+       const ndn::ptr_lib::shared_ptr<ndn::Data>& data);
+    
+    class CachedMessage {
+    public:
+      CachedMessage
+        (int seqno, int msgtype, const std::string& msg, ndn::MillisecondsSince1970 time)
+      : seqno_(seqno), msgtype_(msgtype), msg_(msg), time_(time)
+      {}
 
-	  int
-	  getSequenceNo() const { return seqno_; }
+      int
+      getSequenceNo() const { return seqno_; }
 
-	  int
-	  getMessageType() const { return msgtype_; }
+      int
+      getMessageType() const { return msgtype_; }
 
-	  const std::string&
-	  getMessage() const { return msg_; }
+      const std::string&
+      getMessage() const { return msg_; }
 
-	  ndn::MillisecondsSince1970
-	  getTime() const { return time_; }
+      ndn::MillisecondsSince1970
+      getTime() const { return time_; }
 
-	private:
-	  int seqno_;
-	  // This is really enum SyncDemo::ChatMessage_ChatMessageType, but make it
-	  //   in int so that the head doesn't need to include the protobuf header.
-	  int msgtype_;
-	  std::string msg_;
-	  ndn::MillisecondsSince1970 time_;
-	};
-	
-	std::vector<ndn::ptr_lib::shared_ptr<CachedMessage> > msgcache_;
-	std::vector<std::string> roster_;
-	size_t maxmsgcachelength_;
-	bool isRecoverySyncState_;
-	
-	std::string screen_name_;
-	std::string chatroom_;
-	std::string usrname_;
-	int session_;
-	
-	bool enabled_;
-	
-	ndn::Name broadcastPrefix_;
-	
-	// Added for comparison with name_t in sendInterest, not present in ndn-cpp
-	std::string chat_usrname_;
-	ndn::Name chat_prefix_;
-	
-	ndn::Milliseconds sync_lifetime_;
-	ndn::ptr_lib::shared_ptr<ndn::ChronoSync2013> sync_;
-	
-	ndn::Face& faceProcessor_;
-	ndn::KeyChain& keyChain_;
-	ndn::Name certificateName_;
-	
-	ChatObserver *observer_;
-	
-	uint64_t registeredPrefixId_;
-	
-	// Added for not sending interest repeated for one piece of message
-	std::map<std::string, int> syncTreeStatus_;
-	
-	const int prefixFromInstEnd_ = 4;
-	const int prefixFromChatPrefixEnd_ = 2;
+    private:
+      int seqno_;
+      // This is really enum SyncDemo::ChatMessage_ChatMessageType, but make it
+      //   in int so that the head doesn't need to include the protobuf header.
+      int msgtype_;
+      std::string msg_;
+      ndn::MillisecondsSince1970 time_;
+    };
+    
+    std::vector<ndn::ptr_lib::shared_ptr<CachedMessage> > msgcache_;
+    std::vector<std::string> roster_;
+    size_t maxmsgcachelength_;
+    bool isRecoverySyncState_;
+    
+    std::string screen_name_;
+    std::string chatroom_;
+    std::string usrname_;
+    int session_;
+    
+    bool enabled_;
+    
+    ndn::Name broadcastPrefix_;
+    
+    // Added for comparison with name_t in sendInterest, not present in ndn-cpp
+    std::string chat_usrname_;
+    ndn::Name chat_prefix_;
+    
+    ndn::Milliseconds sync_lifetime_;
+    ndn::ptr_lib::shared_ptr<ndn::ChronoSync2013> sync_;
+    
+    ndn::Face& faceProcessor_;
+    ndn::KeyChain& keyChain_;
+    ndn::Name certificateName_;
+    
+    ChatObserver *observer_;
+    
+    uint64_t registeredPrefixId_;
+    
+    // Added for not sending interest repeated for one piece of message
+    std::map<std::string, int> syncTreeStatus_;
+    
+    const int prefixFromInstEnd_ = 4;
+    const int prefixFromChatPrefixEnd_ = 2;
   };
 }
 

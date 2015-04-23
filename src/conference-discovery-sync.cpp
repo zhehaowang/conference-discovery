@@ -20,31 +20,31 @@ ConferenceDiscovery::publishConference
   (std::string conferenceName, Name localPrefix, ptr_lib::shared_ptr<ConferenceInfo> conferenceInfo) 
 {
   Name conferenceFullName = Name(localPrefix).append(conferenceName);
-	
+    
   std::map<std::string, ndn::ptr_lib::shared_ptr<ConferenceInfo>>::iterator item = hostedConferenceList_.find(conferenceFullName.toUri());
   if (item == hostedConferenceList_.end()) {
 
-	uint64_t registeredPrefixId = faceProcessor_.registerPrefix
-	  (conferenceFullName, 
-	   bind(&ConferenceDiscovery::onInterest, this, _1, _2, _3, _4), 
-	   bind(&ConferenceDiscovery::onRegisterFailed, this, _1));
+    uint64_t registeredPrefixId = faceProcessor_.registerPrefix
+      (conferenceFullName, 
+       bind(&ConferenceDiscovery::onInterest, this, _1, _2, _3, _4), 
+       bind(&ConferenceDiscovery::onRegisterFailed, this, _1));
   
-	syncBasedDiscovery_->publishObject(conferenceFullName.toUri());
+    syncBasedDiscovery_->publishObject(conferenceFullName.toUri());
   
-	// this destroys the parent class object.
-	ptr_lib::shared_ptr<ConferenceInfo> info = conferenceInfo;
-	info->setRegisteredPrefixId(registeredPrefixId);
+    // this destroys the parent class object.
+    ptr_lib::shared_ptr<ConferenceInfo> info = conferenceInfo;
+    info->setRegisteredPrefixId(registeredPrefixId);
   
-	hostedConferenceList_.insert
-	  (std::pair<std::string, ndn::ptr_lib::shared_ptr<ConferenceInfo>>(conferenceFullName.toUri(), info));
+    hostedConferenceList_.insert
+      (std::pair<std::string, ndn::ptr_lib::shared_ptr<ConferenceInfo>>(conferenceFullName.toUri(), info));
   
-	notifyObserver(MessageTypes::START, conferenceFullName.toUri().c_str(), 0);
-	hostedConferenceNum_ ++;
-	return true;
+    notifyObserver(MessageTypes::START, conferenceFullName.toUri().c_str(), 0);
+    hostedConferenceNum_ ++;
+    return true;
   }
   else {
     cerr << "Conference with this name already exists locally." << endl;
-	return false;
+    return false;
   }
 }
 
@@ -60,7 +60,7 @@ ConferenceDiscovery::removeRegisteredPrefix
     hostedConferenceNum_ --;
   }
   else {
-	cerr << "No such conference exist." << endl;
+    cerr << "No such conference exist." << endl;
   }
 }
 
@@ -73,20 +73,20 @@ ConferenceDiscovery::stopPublishingConference
     
     std::map<std::string, ndn::ptr_lib::shared_ptr<ConferenceInfo>>::iterator item = hostedConferenceList_.find(conferenceBeingStopped.toUri());
   
-	if (item != hostedConferenceList_.end()) {
+    if (item != hostedConferenceList_.end()) {
       item->second->setBeingRemoved(true);
       syncBasedDiscovery_->removeObject(conferenceBeingStopped.toUri(), true);
       
       Interest timeout("/localhost/timeout");
-	  timeout.setInterestLifetimeMilliseconds(defaultKeepPeriod_);
+      timeout.setInterestLifetimeMilliseconds(defaultKeepPeriod_);
 
-	  faceProcessor_.expressInterest
-		(timeout, bind(&ConferenceDiscovery::dummyOnData, this, _1, _2),
-		 bind(&ConferenceDiscovery::removeRegisteredPrefix, this, _1, conferenceBeingStopped));
-	
-	  notifyObserver(MessageTypes::STOP, conferenceBeingStopped.toUri().c_str(), 0);
-	  
-	  return true;
+      faceProcessor_.expressInterest
+        (timeout, bind(&ConferenceDiscovery::dummyOnData, this, _1, _2),
+         bind(&ConferenceDiscovery::removeRegisteredPrefix, this, _1, conferenceBeingStopped));
+    
+      notifyObserver(MessageTypes::STOP, conferenceBeingStopped.toUri().c_str(), 0);
+      
+      return true;
     }
     else {
       cerr << "No such conference exist." << endl;
@@ -94,8 +94,8 @@ ConferenceDiscovery::stopPublishingConference
     }
   }
   else {
-	cerr << "Not hosting any conferences." << endl;
-	return false;
+    cerr << "Not hosting any conferences." << endl;
+    return false;
   }
 }
 
@@ -113,16 +113,16 @@ ConferenceDiscovery::onReceivedSyncData
     if (hostedItem == hostedConferenceList_.end() && queriedItem == queriedConferenceList_.end()) {
       queriedConferenceList_.push_back(syncData[j]);
     
-	  Name name(syncData[j]);
-	  Interest interest(name);
-	  
-	  interest.setInterestLifetimeMilliseconds(defaultHeartbeatInterval_);
+      Name name(syncData[j]);
+      Interest interest(name);
+      
+      interest.setInterestLifetimeMilliseconds(defaultHeartbeatInterval_);
       interest.setMustBeFresh(true);
       
       faceProcessor_.expressInterest
-		(interest, bind(&ConferenceDiscovery::onData, this, _1, _2),
-		 bind(&ConferenceDiscovery::onTimeout, this, _1));
-	}
+        (interest, bind(&ConferenceDiscovery::onData, this, _1, _2),
+         bind(&ConferenceDiscovery::onTimeout, this, _1));
+    }
   }
 }
 
@@ -139,21 +139,21 @@ ConferenceDiscovery::onInterest
   
   if (item != hostedConferenceList_.end()) {
   
-	Data data(interest->getName());
+    Data data(interest->getName());
   
-	if (item->second->getBeingRemoved() == false) {
-	  data.setContent(factory_->serialize(item->second));
-	} else {
-	  string content("over");
-	  data.setContent((const uint8_t *)&content[0], content.size());
-	}
+    if (item->second->getBeingRemoved() == false) {
+      data.setContent(factory_->serialize(item->second));
+    } else {
+      string content("over");
+      data.setContent((const uint8_t *)&content[0], content.size());
+    }
     
-	data.getMetaInfo().setFreshnessPeriod(defaultDataFreshnessPeriod_);
+    data.getMetaInfo().setFreshnessPeriod(defaultDataFreshnessPeriod_);
 
-	keyChain_.sign(data, certificateName_);
-	Blob encodedData = data.wireEncode();
+    keyChain_.sign(data, certificateName_);
+    Blob encodedData = data.wireEncode();
 
-	transport.send(*encodedData);
+    transport.send(*encodedData);
   }
   else {
     cerr << "Received interest about conference not hosted by this instance." << endl;
@@ -175,62 +175,62 @@ ConferenceDiscovery::onData
   
   string content = "";
   for (size_t i = 0; i < data->getContent().size(); ++i) {
-	content += (*data->getContent())[i];
+    content += (*data->getContent())[i];
   }
   
   // if it's not an already discovered conference
   if (item == discoveredConferenceList_.end()) {
-	// if it's still going on
-	if (content != "over") {
-	  ptr_lib::shared_ptr<ConferenceInfo> conferenceInfo = factory_->deserialize(data->getContent());
-	  
-	  if (conferenceInfo) {
-	    discoveredConferenceList_.insert
-		(std::pair<string, ptr_lib::shared_ptr<ConferenceInfo>>
-		  (conferenceName, conferenceInfo));
+    // if it's still going on
+    if (content != "over") {
+      ptr_lib::shared_ptr<ConferenceInfo> conferenceInfo = factory_->deserialize(data->getContent());
+      
+      if (conferenceInfo) {
+        discoveredConferenceList_.insert
+        (std::pair<string, ptr_lib::shared_ptr<ConferenceInfo>>
+          (conferenceName, conferenceInfo));
   
-		// std::map should be sorted by default
-		//std::sort(discoveredConferenceList_.begin(), discoveredConferenceList_.end());
+        // std::map should be sorted by default
+        //std::sort(discoveredConferenceList_.begin(), discoveredConferenceList_.end());
 
-		// Probably need lock for adding/removing objects in SyncBasedDiscovery class.
-		// Here we update hash as well as adding object; The next interest will carry the new digest
+        // Probably need lock for adding/removing objects in SyncBasedDiscovery class.
+        // Here we update hash as well as adding object; The next interest will carry the new digest
 
-		// Expect this to be equal with 0 several times. 
-		// Because new digest does not get updated immediately
-		if (syncBasedDiscovery_->addObject(conferenceName, true) == 0) {
-		  cerr << "Did not add to the discoveredConferenceList_ in syncBasedDiscovery_" << endl;
-		}
+        // Expect this to be equal with 0 several times. 
+        // Because new digest does not get updated immediately
+        if (syncBasedDiscovery_->addObject(conferenceName, true) == 0) {
+          cerr << "Did not add to the discoveredConferenceList_ in syncBasedDiscovery_" << endl;
+        }
 
-		notifyObserver(MessageTypes::ADD, conferenceName.c_str(), 0);
+        notifyObserver(MessageTypes::ADD, conferenceName.c_str(), 0);
 
-		Interest timeout("/localhost/timeout");
-		timeout.setInterestLifetimeMilliseconds(defaultHeartbeatInterval_);
+        Interest timeout("/localhost/timeout");
+        timeout.setInterestLifetimeMilliseconds(defaultHeartbeatInterval_);
 
-		// express heartbeat interest after 2 seconds of sleep
-		faceProcessor_.expressInterest
-		  (timeout, bind(&ConferenceDiscovery::dummyOnData, this, _1, _2),
-		   bind(&ConferenceDiscovery::expressHeartbeatInterest, this, _1, interest));
-	  }
-	  else {
-	    // If received conferenceInfo is malformed, 
-	    // re-express interest after a timeout.
-	    Interest timeout("/localhost/timeout");
-		timeout.setInterestLifetimeMilliseconds(defaultHeartbeatInterval_);
+        // express heartbeat interest after 2 seconds of sleep
+        faceProcessor_.expressInterest
+          (timeout, bind(&ConferenceDiscovery::dummyOnData, this, _1, _2),
+           bind(&ConferenceDiscovery::expressHeartbeatInterest, this, _1, interest));
+      }
+      else {
+        // If received conferenceInfo is malformed, 
+        // re-express interest after a timeout.
+        Interest timeout("/localhost/timeout");
+        timeout.setInterestLifetimeMilliseconds(defaultHeartbeatInterval_);
 
-		// express heartbeat interest after 2 seconds of sleep
-		faceProcessor_.expressInterest
-		  (timeout, bind(&ConferenceDiscovery::dummyOnData, this, _1, _2),
-		   bind(&ConferenceDiscovery::expressHeartbeatInterest, this, _1, interest));
-	  }
-	}
-	// if the not already discovered conference is already over.
-	else {
-	  std::vector<string>::iterator queriedItem = std::find
+        // express heartbeat interest after 2 seconds of sleep
+        faceProcessor_.expressInterest
+          (timeout, bind(&ConferenceDiscovery::dummyOnData, this, _1, _2),
+           bind(&ConferenceDiscovery::expressHeartbeatInterest, this, _1, interest));
+      }
+    }
+    // if the not already discovered conference is already over.
+    else {
+      std::vector<string>::iterator queriedItem = std::find
         (queriedConferenceList_.begin(), queriedConferenceList_.end(), conferenceName);
       if (queriedItem != queriedConferenceList_.end()) {
-	    queriedConferenceList_.erase(queriedItem);
-	  }
-	}
+        queriedConferenceList_.erase(queriedItem);
+      }
+    }
   }
   // if it's an already discovered conference
   else {
@@ -238,25 +238,25 @@ ConferenceDiscovery::onData
       item->second->resetTimeout();
       
       Interest timeout("/localhost/timeout");
-	  timeout.setInterestLifetimeMilliseconds(defaultHeartbeatInterval_);
+      timeout.setInterestLifetimeMilliseconds(defaultHeartbeatInterval_);
 
-	  // express heartbeat interest after 2 seconds of sleep
-	  faceProcessor_.expressInterest
-		(timeout, bind(&ConferenceDiscovery::dummyOnData, this, _1, _2),
-		 bind(&ConferenceDiscovery::expressHeartbeatInterest, this, _1, interest));
+      // express heartbeat interest after 2 seconds of sleep
+      faceProcessor_.expressInterest
+        (timeout, bind(&ConferenceDiscovery::dummyOnData, this, _1, _2),
+         bind(&ConferenceDiscovery::expressHeartbeatInterest, this, _1, interest));
     }
     else {
       notifyObserver(MessageTypes::REMOVE, conferenceName.c_str(), 0);
       
       if (syncBasedDiscovery_->removeObject(item->first, true) == 0) {
-		cerr << "Did not remove from the discoveredConferenceList_ in syncBasedDiscovery_" << endl;
-	  }
-	  std::vector<string>::iterator queriedItem = std::find
+        cerr << "Did not remove from the discoveredConferenceList_ in syncBasedDiscovery_" << endl;
+      }
+      std::vector<string>::iterator queriedItem = std::find
         (queriedConferenceList_.begin(), queriedConferenceList_.end(), conferenceName);
       if (queriedItem != queriedConferenceList_.end()) {
-	    queriedConferenceList_.erase(queriedItem);
-	  }
-	  discoveredConferenceList_.erase(item);
+        queriedConferenceList_.erase(queriedItem);
+      }
+      discoveredConferenceList_.erase(item);
     }
   }
 }
@@ -279,40 +279,40 @@ ConferenceDiscovery::onTimeout
   std::map<string, ptr_lib::shared_ptr<ConferenceInfo>>::iterator item = discoveredConferenceList_.find
     (conferenceName);
   if (item != discoveredConferenceList_.end()) {
-	if (item->second && item->second->incrementTimeout()) {
-	  notifyObserver(MessageTypes::REMOVE, conferenceName.c_str(), 0);
-	  
-	  // Probably need lock for adding/removing objects in SyncBasedDiscovery class.
-	  if (syncBasedDiscovery_->removeObject(item->first, true) == 0) {
-		cerr << "Did not remove from the discoveredConferenceList_ in syncBasedDiscovery_" << endl;
-	  }
+    if (item->second && item->second->incrementTimeout()) {
+      notifyObserver(MessageTypes::REMOVE, conferenceName.c_str(), 0);
+      
+      // Probably need lock for adding/removing objects in SyncBasedDiscovery class.
+      if (syncBasedDiscovery_->removeObject(item->first, true) == 0) {
+        cerr << "Did not remove from the discoveredConferenceList_ in syncBasedDiscovery_" << endl;
+      }
   
-	  // erase the item after it's removed in removeObject, or removeObject would remove the
-	  // wrong element: iterator is actually representing a position index, and the two vectors
-	  // should be exactly the same: (does it make sense for them to be shared, 
-	  // and mutex-locked correspondingly?)
-	  discoveredConferenceList_.erase(item);
-	  
-	  std::vector<string>::iterator queriedItem = std::find
+      // erase the item after it's removed in removeObject, or removeObject would remove the
+      // wrong element: iterator is actually representing a position index, and the two vectors
+      // should be exactly the same: (does it make sense for them to be shared, 
+      // and mutex-locked correspondingly?)
+      discoveredConferenceList_.erase(item);
+      
+      std::vector<string>::iterator queriedItem = std::find
         (queriedConferenceList_.begin(), queriedConferenceList_.end(), conferenceName);
       if (queriedItem != queriedConferenceList_.end()) {
-	    queriedConferenceList_.erase(queriedItem);
-	  }
-	}
-	else {
-	  Interest timeout("/timeout");
-	  timeout.setInterestLifetimeMilliseconds(defaultTimeoutReexpressInterval_);
+        queriedConferenceList_.erase(queriedItem);
+      }
+    }
+    else {
+      Interest timeout("/timeout");
+      timeout.setInterestLifetimeMilliseconds(defaultTimeoutReexpressInterval_);
       faceProcessor_.expressInterest
-		(timeout, bind(&ConferenceDiscovery::dummyOnData, this, _1, _2),
-		 bind(&ConferenceDiscovery::expressHeartbeatInterest, this, _1, interest));
-	}
+        (timeout, bind(&ConferenceDiscovery::dummyOnData, this, _1, _2),
+         bind(&ConferenceDiscovery::expressHeartbeatInterest, this, _1, interest));
+    }
   }
   else {
     std::vector<string>::iterator queriedItem = std::find
       (queriedConferenceList_.begin(), queriedConferenceList_.end(), conferenceName);
-	if (queriedItem != queriedConferenceList_.end()) {
-	  queriedConferenceList_.erase(queriedItem);
-	} 
+    if (queriedItem != queriedConferenceList_.end()) {
+      queriedConferenceList_.erase(queriedItem);
+    } 
   }
 }
 
@@ -325,28 +325,28 @@ ConferenceDiscovery::expressHeartbeatInterest
     return ;
     
   faceProcessor_.expressInterest
-	(*(conferenceInterest.get()),
-	 bind(&ConferenceDiscovery::onData, this, _1, _2), 
-	 bind(&ConferenceDiscovery::onTimeout, this, _1));
+    (*(conferenceInterest.get()),
+     bind(&ConferenceDiscovery::onData, this, _1, _2), 
+     bind(&ConferenceDiscovery::onTimeout, this, _1));
 }
 
 void 
 ConferenceDiscovery::notifyObserver(MessageTypes type, const char *msg, double timestamp)
 {
   if (observer_) {
-	observer_->onStateChanged(type, msg, timestamp);
+    observer_->onStateChanged(type, msg, timestamp);
   }
   else {
-	string state = "";
-	switch (type) {
-	  case MessageTypes::ADD: 		state = "Add"; break;
-	  case MessageTypes::REMOVE:	state = "Remove"; break;
-	  case MessageTypes::SET:		state = "Set"; break;
-	  case MessageTypes::START:		state = "Start"; break;
-	  case MessageTypes::STOP:		state = "Stop"; break;
-	  default:						state = "Unknown"; break;
-	}
-	cout << state << " " << timestamp << "\t" << msg << endl;
+    string state = "";
+    switch (type) {
+      case MessageTypes::ADD:         state = "Add"; break;
+      case MessageTypes::REMOVE:    state = "Remove"; break;
+      case MessageTypes::SET:        state = "Set"; break;
+      case MessageTypes::START:        state = "Start"; break;
+      case MessageTypes::STOP:        state = "Stop"; break;
+      default:                        state = "Unknown"; break;
+    }
+    cout << state << " " << timestamp << "\t" << msg << endl;
   }
 }
 
@@ -355,12 +355,12 @@ ConferenceDiscovery::conferencesToString()
 {
   std::string result;
   for(std::map<string, ptr_lib::shared_ptr<ConferenceInfo>>::iterator it = discoveredConferenceList_.begin(); it != discoveredConferenceList_.end(); ++it) {
-	result += it->first;
-	result += "\n";
+    result += it->first;
+    result += "\n";
   }
   for(std::map<string, ptr_lib::shared_ptr<ConferenceInfo>>::iterator it = hostedConferenceList_.begin(); it != hostedConferenceList_.end(); ++it) {
-	result += (" * " + it->first);
-	result += "\n";
+    result += (" * " + it->first);
+    result += "\n";
   }
   return result;
 }

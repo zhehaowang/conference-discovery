@@ -32,8 +32,8 @@
 namespace conference_discovery
 {
   typedef ndn::func_lib::function<void
-	(const std::vector<std::string>& syncData)>
-	  OnReceivedSyncData;
+    (const std::vector<std::string>& syncData)>
+      OnReceivedSyncData;
 
   static ndn::MillisecondsSince1970 
   ndn_getNowMilliseconds()
@@ -162,12 +162,12 @@ namespace conference_discovery
      * contentCacheAdd copied from ChronoSync2013 implementation
      * Double check its logic
      *
-	 * Add the data packet to the contentCache_. Remove timed-out entries
-	 * from pendingInterestTable_. If the data packet satisfies any pending
-	 * interest, then send the data packet to the pending interest's transport
-	 * and remove from the pendingInterestTable_.
-	 * @param data
-	 */
+     * Add the data packet to the contentCache_. Remove timed-out entries
+     * from pendingInterestTable_. If the data packet satisfies any pending
+     * interest, then send the data packet to the pending interest's transport
+     * and remove from the pendingInterestTable_.
+     * @param data
+     */
     void contentCacheAdd(const ndn::Data& data);
     
     /**
@@ -188,10 +188,10 @@ namespace conference_discovery
     void stringHash();
     void recomputeDigest();
     
-	const std::string newComerDigest_;
-	const ndn::Milliseconds defaultDataFreshnessPeriod_;
-	const ndn::Milliseconds defaultInterestLifetime_;
-	
+    const std::string newComerDigest_;
+    const ndn::Milliseconds defaultDataFreshnessPeriod_;
+    const ndn::Milliseconds defaultInterestLifetime_;
+    
     /**
      * These functions should be replaced, once we replace objects with something more
      * generic
@@ -260,56 +260,56 @@ namespace conference_discovery
      */
     
     /**
-	 * PendingInterest class copied from ChronoSync2013 cpp implementation
-	 *
-	 * A PendingInterest holds an interest which onInterest received but could
-	 * not satisfy. When we add a new data packet to the contentCache_, we will
-	 * also check if it satisfies a pending interest.
-	 */
-	class PendingInterest {
-	public:
-	  /**
-	   * Create a new PendingInterest and set the timeoutTime_ based on the current time and the interest lifetime.
-	   * @param interest A shared_ptr for the interest.
-	   * @param transport The transport from the onInterest callback. If the
-	   * interest is satisfied later by a new data packet, we will send the data
-	   * packet to the transport.
-	   */
-	  PendingInterest
-		(const ndn::ptr_lib::shared_ptr<const ndn::Interest>& interest,
-		 ndn::Transport& transport);
+     * PendingInterest class copied from ChronoSync2013 cpp implementation
+     *
+     * A PendingInterest holds an interest which onInterest received but could
+     * not satisfy. When we add a new data packet to the contentCache_, we will
+     * also check if it satisfies a pending interest.
+     */
+    class PendingInterest {
+    public:
+      /**
+       * Create a new PendingInterest and set the timeoutTime_ based on the current time and the interest lifetime.
+       * @param interest A shared_ptr for the interest.
+       * @param transport The transport from the onInterest callback. If the
+       * interest is satisfied later by a new data packet, we will send the data
+       * packet to the transport.
+       */
+      PendingInterest
+        (const ndn::ptr_lib::shared_ptr<const ndn::Interest>& interest,
+         ndn::Transport& transport);
 
-	  /**
-	   * Return the interest given to the constructor.
-	   */
-	  const ndn::ptr_lib::shared_ptr<const ndn::Interest>&
-	  getInterest() { return interest_; }
+      /**
+       * Return the interest given to the constructor.
+       */
+      const ndn::ptr_lib::shared_ptr<const ndn::Interest>&
+      getInterest() { return interest_; }
 
-	  /**
-	   * Return the transport given to the constructor.
-	   */
-	  ndn::Transport&
-	  getTransport() { return transport_; }
+      /**
+       * Return the transport given to the constructor.
+       */
+      ndn::Transport&
+      getTransport() { return transport_; }
 
-	  /**
-	   * Check if this interest is timed out.
-	   * @param nowMilliseconds The current time in milliseconds from ndn_getNowMilliseconds.
-	   * @return true if this interest timed out, otherwise false.
-	   */
-	  bool
-	  isTimedOut(ndn::MillisecondsSince1970 nowMilliseconds)
-	  {
-		return timeoutTimeMilliseconds_ >= 0.0 && nowMilliseconds >= timeoutTimeMilliseconds_;
-	  }
+      /**
+       * Check if this interest is timed out.
+       * @param nowMilliseconds The current time in milliseconds from ndn_getNowMilliseconds.
+       * @return true if this interest timed out, otherwise false.
+       */
+      bool
+      isTimedOut(ndn::MillisecondsSince1970 nowMilliseconds)
+      {
+        return timeoutTimeMilliseconds_ >= 0.0 && nowMilliseconds >= timeoutTimeMilliseconds_;
+      }
 
-	private:
-	  ndn::ptr_lib::shared_ptr<const ndn::Interest> interest_;
-	  ndn::Transport& transport_;
-	  ndn::MillisecondsSince1970 timeoutTimeMilliseconds_; /**< The time when the
-		* interest times out in milliseconds according to ndn_getNowMilliseconds,
-		* or -1 for no timeout. */
-	};
-	
+    private:
+      ndn::ptr_lib::shared_ptr<const ndn::Interest> interest_;
+      ndn::Transport& transport_;
+      ndn::MillisecondsSince1970 timeoutTimeMilliseconds_; /**< The time when the
+        * interest times out in milliseconds according to ndn_getNowMilliseconds,
+        * or -1 for no timeout. */
+    };
+    
   private:
     ndn::Name broadcastPrefix_;
     ndn::Name certificateName_;
