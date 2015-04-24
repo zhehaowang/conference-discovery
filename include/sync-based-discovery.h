@@ -37,17 +37,6 @@ namespace conference_discovery
   }
   
   /**
-   * Class interface for the discover object
-   */
-  class DiscoveryObject
-  {
-  public:
-    
-  private:
-    
-  };
-  
-  /**
    * This class, upon instantiation, will register a broadcast prefix and 
    * handle all that's going on in the broadcast namespace,
    * Namely periodical broadcast of sync digest, maintenance of outstanding interest, etc
