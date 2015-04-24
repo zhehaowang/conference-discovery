@@ -168,9 +168,15 @@ int main()
         cout << "Using default prefix: " << hubPrefix.toUri() << endl;
         
         ConferenceDescription thisConference;
-        thisConference.setDescription("conference: " + msgString);
+        size_t space = msgString.find(" ", string("-start ").size());
+        if (space != std::string::npos) {
+          thisConference.setDescription("description: " + msgString.substr(space + 1));
+        } else {
+          thisConference.setDescription("description: blank");
+        }
+        
         discovery->publishConference
-          (msgString.substr(string("-start ").size()), hubPrefix, ptr_lib::make_shared<ConferenceDescription>(thisConference));
+          (msgString.substr(string("-start ").size(), space - string("-start ").size()), hubPrefix, ptr_lib::make_shared<ConferenceDescription>(thisConference));
         continue;
       }
       if (msgString.find("-show ") != std::string::npos) {
