@@ -1,4 +1,4 @@
-AC_PREREQ([2.61])
+AC_PREREQ([2.59])
 AC_INIT([ndnrtc-addon], [1.0], [wangzhehao410305@gmail.com], [ndn-entity-discovery])
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_MACRO_DIR([m4])
