@@ -4,13 +4,13 @@
 #include <stdio.h>
 
 using namespace chrono_chat;
-using namespace conference_discovery;
+using namespace entity_discovery;
 using namespace std;
 
 using namespace test;
 
 ptr_lib::shared_ptr<Chat> chat;
-ptr_lib::shared_ptr<ConferenceDiscovery> discovery;
+ptr_lib::shared_ptr<EntityDiscovery> discovery;
 
 static const char *WHITESPACE_CHARS = " \n\r\t";
 
@@ -135,12 +135,11 @@ int main()
          hubPrefix, NULL, face, keyChain, certificateName));
       chat->start();
       
-      ConferenceDescription cd;
-      ConferenceInfoFactory factory(ptr_lib::make_shared<ConferenceDescription>(cd));
+      ptr_lib::shared_ptr<ConferenceDescriptionSerializer> serializer(new ConferenceDescriptionSerializer());
 
       discovery.reset
-        (new ConferenceDiscovery(conferenceDiscoveryBdcastPrefix, 
-         NULL, ptr_lib::make_shared<ConferenceInfoFactory>(factory), 
+        (new EntityDiscovery(conferenceDiscoveryBdcastPrefix, 
+         NULL, serializer, 
          face, keyChain, certificateName));
       discovery->start();
   }
@@ -161,7 +160,7 @@ int main()
       }
       if (msgString.find("-stop ") != std::string::npos) {
         cout << "Using default prefix: " << hubPrefix.toUri() << endl;
-        discovery->stopPublishingConference(msgString.substr(string("-stop ").size()), hubPrefix);
+        discovery->stopPublishingEntity(msgString.substr(string("-stop ").size()), hubPrefix);
         continue;
       }
       if (msgString.find("-start ") != std::string::npos) {
@@ -175,14 +174,14 @@ int main()
           thisConference.setDescription("description: blank");
         }
         
-        discovery->publishConference
+        discovery->publishEntity
           (msgString.substr(string("-start ").size(), space - string("-start ").size()), hubPrefix, ptr_lib::make_shared<ConferenceDescription>(thisConference));
         continue;
       }
       if (msgString.find("-show ") != std::string::npos) {
         ptr_lib::shared_ptr<ConferenceDescription> description = 
           ptr_lib::dynamic_pointer_cast<ConferenceDescription>
-            (discovery->getConference(msgString.substr(string("-show ").size())));
+            (discovery->getEntity(msgString.substr(string("-show ").size())));
         
         if (description) {
           cout << description->getDescription() << endl;

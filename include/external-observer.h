@@ -22,7 +22,7 @@ namespace chrono_chat
   };
 }
 
-namespace conference_discovery
+namespace entity_discovery
 {
   // enum class won't compile with C++03
   enum class MessageTypes
@@ -34,7 +34,7 @@ namespace conference_discovery
     STOP        // Received when hosted conference stops
   };
   
-  class ConferenceDiscoveryObserver
+  class IDiscoveryObserver
   {
   public:
     /**
