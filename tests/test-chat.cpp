@@ -6,7 +6,7 @@
 #include <stdio.h>
 
 using namespace chrono_chat;
-using namespace conference_discovery;
+using namespace entity_discovery;
 using namespace std;
 using namespace ndn;
 

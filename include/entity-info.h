@@ -4,34 +4,21 @@
 #include <ndn-cpp/util/blob.hpp>
 #include <ndn-cpp/ndn-cpp-config.h>
 
-namespace conference_discovery
+namespace entity_discovery
 {
   // (TIMEOUTCOUNT + 1) timeouts in a row signifies conference dropped
   const int TIMEOUTCOUNT = 4;
   
-  class ConferenceInfo
+  class EntityInfoBase
   {
   public:
-    ConferenceInfo()
+    EntityInfoBase()
     {
       timeoutCount_ = 0;
       prefixId_ = -1;
       beingRemoved_ = false;
     }
-    
-    virtual ndn::Blob serialize(const ndn::ptr_lib::shared_ptr<ConferenceInfo> &info) = 0;
-    virtual ndn::ptr_lib::shared_ptr<ConferenceInfo> deserialize(ndn::Blob srcBlob) = 0;
-    
-    /**
-     * This part with aliases as names needs to be better designed...
-     */
-    virtual ndn::Blob 
-    serializeName()
-    { return ndn::Blob(); }
-    
-    virtual ndn::ptr_lib::shared_ptr<ConferenceInfo> 
-    deserializeName()
-    { return ndn::ptr_lib::shared_ptr<ConferenceInfo>(); }
+    virtual ~EntityInfoBase(){}
     
     bool incrementTimeout()
     {
@@ -46,9 +33,6 @@ namespace conference_discovery
     void resetTimeout() { timeoutCount_ = 0; }
     int getTimeoutCount() { return timeoutCount_; }
     
-    std::string getConferenceName() { return conferenceName_; }
-    void setConferenceName(std::string conferenceName) { conferenceName_ = conferenceName; }
-    
     uint64_t getRegisteredPrefixId() { return prefixId_; }
     void setRegisteredPrefixId(uint64_t prefixId) { prefixId_ = prefixId; }
     
@@ -57,7 +41,6 @@ namespace conference_discovery
   protected:
     int timeoutCount_;
     uint64_t prefixId_;
-    std::string conferenceName_;
     bool beingRemoved_;
   };
 }

@@ -1,5 +1,5 @@
 AC_PREREQ([2.61])
-AC_INIT([ndnrtc-addon], [1.0], [wangzhehao410305@gmail.com], [ndn-conference-discovery])
+AC_INIT([ndnrtc-addon], [1.0], [wangzhehao410305@gmail.com], [ndn-entity-discovery])
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_SRCDIR(src)
@@ -75,7 +75,6 @@ AC_CANONICAL_HOST
 AC_PROG_CC
 AC_PROG_CXX
 AM_PROG_CC_C_O
-AM_PROG_AR
 AC_PROG_LIBTOOL
 AC_LANG([C++])
 LT_PREREQ([2.2])

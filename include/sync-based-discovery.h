@@ -21,7 +21,7 @@
 
 #include "external-observer.h"
 
-namespace conference_discovery
+namespace entity_discovery
 {
   typedef ndn::func_lib::function<void
     (const std::vector<std::string>& syncData)>
