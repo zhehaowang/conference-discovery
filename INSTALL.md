@@ -7,13 +7,14 @@ Prerequisites
 * Required: ndn-cpp built with boost shared pointers.
 * Required: libprotobuf
 * Required: libcrypto
-* Tested with OSX 10.9.5
+* Tested with OSX 10.9.5 and OSX 10.10
 
 Build
 =====
 To build in a terminal, change directory to the NdnRtc-Addon root.  Enter:
 
     ./configure
+    make .proto
     make
 
 Files
@@ -40,5 +41,10 @@ To build again, follow the instructions above (./configure, make, etc.)
 
 Working with ndn-cpp-0.7 and NDNRTC
 ===========
-May want to use this configure command:
-./configure NDNCPPDIR=~/projects/ndn/ndn-clones/ndn-cpp-0.7/include/ NDNCPPLIB=~/projects/ndn/ndn-clones/ndn-cpp-0.7/.libs/ PROTOBUFDIR=~/projects/others/protobuf-libstdc++/include/ PROTOBUFLIB=~/projects/others/protobuf-libstdc++/lib/
+To use this with ndnrtc, may want to use this configure command (as NDNRTC is compiled with libstdc++):
+<pre>
+./configure NDNCPPDIR=<include path of ndn-cpp compiled with libstdc++> NDNCPPLIB=<lib path of ndn-cpp compiled with libstdc++> PROTOBUFDIR=<include path of protobuf compiled with libstdc++> PROTOBUFLIB=<lib path of ndn-cpp compiled with libstdc++> CXXFLAGS="-stdlib=libstdc++"
+</pre>
+Per onInterest deprecation in ndn-cpp-0.7, onInterest function signatures were changed to onInterestCallback
+
+If symbol not found appeared during linking stage, the most likely cause is that some of the dependencies are compiled with libstdc++, while others with libc++; the ones with libstdc++ usually have __1 in their function signature.
