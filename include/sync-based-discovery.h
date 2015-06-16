@@ -80,7 +80,7 @@ namespace entity_discovery
       
       contentCache_.registerPrefix
         (broadcastPrefix_, bind(&SyncBasedDiscovery::onRegisterFailed, shared_from_this(), _1), 
-         bind(&SyncBasedDiscovery::onInterest, shared_from_this(), _1, _2, _3, _4));
+         (const ndn::OnInterestCallback&)bind(&SyncBasedDiscovery::onInterestCallback, shared_from_this(), _1, _2, _3, _4, _5));
       ndn::Interest interest(broadcastPrefix_);
       interest.getName().append(newComerDigest_);
       interest.setInterestLifetimeMilliseconds(defaultInterestLifetime_);
@@ -131,10 +131,10 @@ namespace entity_discovery
     void expressBroadcastInterest
       (const ndn::ptr_lib::shared_ptr<const ndn::Interest>& interest);
     
-    void onInterest
+    void onInterestCallback
       (const ndn::ptr_lib::shared_ptr<const ndn::Name>& prefix,
-       const ndn::ptr_lib::shared_ptr<const ndn::Interest>& interest, ndn::Transport& transport,
-       uint64_t registerPrefixId);
+       const ndn::ptr_lib::shared_ptr<const ndn::Interest>& interest, ndn::Face& face,
+       uint64_t registeredPrefixId, const ndn::ptr_lib::shared_ptr<const ndn::InterestFilter>& filter);
     
     void onRegisterFailed
       (const ndn::ptr_lib::shared_ptr<const ndn::Name>& prefix);
@@ -258,7 +258,7 @@ namespace entity_discovery
        */
       PendingInterest
         (const ndn::ptr_lib::shared_ptr<const ndn::Interest>& interest,
-         ndn::Transport& transport);
+         ndn::Face& face);
 
       /**
        * Return the interest given to the constructor.
@@ -269,8 +269,8 @@ namespace entity_discovery
       /**
        * Return the transport given to the constructor.
        */
-      ndn::Transport&
-      getTransport() { return transport_; }
+      ndn::Face&
+      getFace() { return face_; }
 
       /**
        * Check if this interest is timed out.
@@ -285,7 +285,7 @@ namespace entity_discovery
 
     private:
       ndn::ptr_lib::shared_ptr<const ndn::Interest> interest_;
-      ndn::Transport& transport_;
+      ndn::Face& face_;
       ndn::MillisecondsSince1970 timeoutTimeMilliseconds_; /**< The time when the
         * interest times out in milliseconds according to ndn_getNowMilliseconds,
         * or -1 for no timeout. */

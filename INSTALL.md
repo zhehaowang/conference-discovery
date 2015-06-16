@@ -37,3 +37,8 @@ After updating, change directory to the NDN-CPP root and enter the following to 
     ./autogen.sh
 
 To build again, follow the instructions above (./configure, make, etc.)
+
+Working with ndn-cpp-0.7 and NDNRTC
+===========
+May want to use this configure command:
+./configure NDNCPPDIR=~/projects/ndn/ndn-clones/ndn-cpp-0.7/include/ NDNCPPLIB=~/projects/ndn/ndn-clones/ndn-cpp-0.7/.libs/ PROTOBUFDIR=~/projects/others/protobuf-libstdc++/include/ PROTOBUFLIB=~/projects/others/protobuf-libstdc++/lib/

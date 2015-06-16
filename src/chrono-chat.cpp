@@ -114,10 +114,10 @@ Chat::sendInterest
 }
 
 void
-Chat::onInterest
-  (const ptr_lib::shared_ptr<const Name>& prefix,
-   const ptr_lib::shared_ptr<const Interest>& inst, Transport& transport,
-   uint64_t registeredPrefixId)
+Chat::onInterestCallback
+  (const ndn::ptr_lib::shared_ptr<const ndn::Name>& prefix,
+   const ndn::ptr_lib::shared_ptr<const ndn::Interest>& inst, ndn::Face& face,
+   uint64_t registeredPrefixId, const ndn::ptr_lib::shared_ptr<const ndn::InterestFilter>& filter)
 {
   if (!enabled_)
     return ;
@@ -149,7 +149,8 @@ Chat::onInterest
     co.setContent(Blob(array, false));
     keyChain_.sign(co, certificateName_);
     try {
-      transport.send(*co.wireEncode());
+      //transport.send(*co.wireEncode());
+      face.putData(co);
     }
     catch (std::exception& e) {
       // should probably notify with error

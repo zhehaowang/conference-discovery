@@ -160,11 +160,11 @@ namespace entity_discovery
      * When receiving interest about the entity hosted locally, 
      * respond with a string that tells the interest issuer that this entity is ongoing
      */
-    void
-    onInterest
-     (const ndn::ptr_lib::shared_ptr<const ndn::Name>& prefix,
-      const ndn::ptr_lib::shared_ptr<const ndn::Interest>& interest, ndn::Transport& transport,
-      uint64_t registerPrefixId);
+    void 
+    onInterestCallback
+      (const ndn::ptr_lib::shared_ptr<const ndn::Name>& prefix,
+       const ndn::ptr_lib::shared_ptr<const ndn::Interest>& interest, ndn::Face& face,
+       uint64_t registeredPrefixId, const ndn::ptr_lib::shared_ptr<const ndn::InterestFilter>& filter);
     
     /**
      * Handles the ondata event for entity querying interest

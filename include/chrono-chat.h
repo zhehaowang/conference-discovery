@@ -113,8 +113,8 @@ namespace chrono_chat
          certificateName_, sync_lifetime_, onRegisterFailed));
       
       registeredPrefixId_ = faceProcessor_.registerPrefix
-        (chat_prefix_, bind(&Chat::onInterest, shared_from_this(), _1, _2, _3, _4),
-         onRegisterFailed);   
+        (chat_prefix_, (const ndn::OnInterestCallback&)ndn::func_lib::bind(&Chat::onInterestCallback, shared_from_this(), _1, _2, _3, _4, _5),
+         onRegisterFailed);
     }
     
     /**
@@ -176,10 +176,10 @@ namespace chrono_chat
 
     // Send back Chat Data Packet which contains the user's message.
     void
-    onInterest
+    onInterestCallback
       (const ndn::ptr_lib::shared_ptr<const ndn::Name>& prefix,
-       const ndn::ptr_lib::shared_ptr<const ndn::Interest>& inst, ndn::Transport& transport,
-       uint64_t registeredPrefixId);
+       const ndn::ptr_lib::shared_ptr<const ndn::Interest>& inst, ndn::Face& face,
+       uint64_t registeredPrefixId, const ndn::ptr_lib::shared_ptr<const ndn::InterestFilter>& filter);
 
     // Processing the incoming Chat data.
     void

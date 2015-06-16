@@ -28,3 +28,6 @@ bin_test_chat_SOURCES = tests/test-chat.cpp
 bin_test_chat_CPPFLAGS = -I$(top_srcdir)/include -I@BOOSTDIR@ -I@PROTOBUFDIR@ -I@NDNCPPDIR@ -I@CRYPTODIR@ 
 bin_test_chat_LDFLAGS = -L@PROTOBUFLIB@ -L@NDNCPPLIB@ -L@CRYPTOLIB@ -lndn-cpp -lprotobuf -lcrypto
 bin_test_chat_LDADD = libs/libchrono-chat2013.la
+
+.proto:
+	protoc src/chatbuf.proto --cpp_out=.

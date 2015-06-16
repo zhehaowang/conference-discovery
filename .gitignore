@@ -42,3 +42,6 @@ config.log
 
 # Log files
 *.log
+
+# Protobuf generated file
+src/chatbuf.pb.h

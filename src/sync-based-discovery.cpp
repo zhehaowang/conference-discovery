@@ -102,10 +102,10 @@ SyncBasedDiscovery::onTimeout
 }
 
 void 
-SyncBasedDiscovery::onInterest
-  (const ptr_lib::shared_ptr<const Name>& prefix,
-   const ptr_lib::shared_ptr<const Interest>& interest, Transport& transport,
-   uint64_t registerPrefixId)
+SyncBasedDiscovery::onInterestCallback
+  (const ndn::ptr_lib::shared_ptr<const ndn::Name>& prefix,
+   const ndn::ptr_lib::shared_ptr<const ndn::Interest>& interest, ndn::Face& face,
+   uint64_t registeredPrefixId, const ndn::ptr_lib::shared_ptr<const ndn::InterestFilter>& filter)
 {
   if (!enabled_)
     return ;
@@ -127,15 +127,13 @@ SyncBasedDiscovery::onInterest
     data.getMetaInfo().setFreshnessPeriod(defaultDataFreshnessPeriod_);
     
     keyChain_.sign(data, certificateName_);
-    Blob encodedData = data.wireEncode();
-
-    transport.send(*encodedData);
+    face.putData(data);
   }
   else if (syncDigest != newComerDigest_) {
     // Store this steady-state (outstanding) interest in application PIT, unless neither the sender
     // nor receiver knows anything
     pendingInterestTable_.push_back(ptr_lib::shared_ptr<PendingInterest>
-      (new PendingInterest(interest, transport)));
+      (new PendingInterest(interest, face)));
   }
 }
 
@@ -240,8 +238,7 @@ SyncBasedDiscovery::contentCacheAdd(const Data& data)
       try {
         // Send to the same transport from the original call to onInterest.
         // wireEncode returns the cached encoding if available.
-        pendingInterestTable_[i]->getTransport().send
-          (*data.wireEncode());
+        pendingInterestTable_[i]->getFace().putData(data);
       }
       catch (std::exception& e) {
         // print the error message and throw again.
@@ -256,8 +253,8 @@ SyncBasedDiscovery::contentCacheAdd(const Data& data)
 }
 
 SyncBasedDiscovery::PendingInterest::PendingInterest
-  (const ptr_lib::shared_ptr<const Interest>& interest, Transport& transport)
-  : interest_(interest), transport_(transport)
+  (const ptr_lib::shared_ptr<const Interest>& interest, Face& face)
+  : interest_(interest), face_(face)
 {
   // Set up timeoutTime_.
   if (interest_->getInterestLifetimeMilliseconds() >= 0.0)

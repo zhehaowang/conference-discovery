@@ -26,7 +26,7 @@ EntityDiscovery::publishEntity
 
     uint64_t registeredPrefixId = faceProcessor_.registerPrefix
       (entityFullName, 
-       bind(&EntityDiscovery::onInterest, this, _1, _2, _3, _4), 
+       (const ndn::OnInterestCallback&)bind(&EntityDiscovery::onInterestCallback, this, _1, _2, _3, _4, _5), 
        bind(&EntityDiscovery::onRegisterFailed, this, _1));
   
     syncBasedDiscovery_->publishObject(entityFullName.toUri());
@@ -133,10 +133,10 @@ EntityDiscovery::onReceivedSyncData
 }
 
 void
-EntityDiscovery::onInterest
-  (const ptr_lib::shared_ptr<const Name>& prefix,
-   const ptr_lib::shared_ptr<const Interest>& interest, Transport& transport,
-   uint64_t registerPrefixId)
+EntityDiscovery::onInterestCallback
+  (const ndn::ptr_lib::shared_ptr<const ndn::Name>& prefix,
+   const ndn::ptr_lib::shared_ptr<const ndn::Interest>& interest, ndn::Face& face,
+   uint64_t registeredPrefixId, const ndn::ptr_lib::shared_ptr<const ndn::InterestFilter>& filter)
 {
   if (!enabled_)
     return ;
@@ -157,9 +157,8 @@ EntityDiscovery::onInterest
     data.getMetaInfo().setFreshnessPeriod(defaultDataFreshnessPeriod_);
 
     keyChain_.sign(data, certificateName_);
-    Blob encodedData = data.wireEncode();
 
-    transport.send(*encodedData);
+    face.putData(data);
   }
   else {
     cerr << "Received interest about entity not hosted by this instance." << endl;
