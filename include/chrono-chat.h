@@ -153,6 +153,11 @@ namespace chrono_chat
       faceProcessor_.removeRegisteredPrefix(registeredPrefixId_);
     }
 
+    std::vector<std::string>
+    getRoster()
+    {
+      return roster_;
+    }
   private:
     /**
      * Use gettimeofday to return the current time in milliseconds.
