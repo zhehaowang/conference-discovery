@@ -67,6 +67,8 @@ namespace chrono_chat
      * @param face The face for broadcast sync and multicast chat interests.
      * @param keyChain The keychain to sign things with.
      * @param certificateName The name to locate the certificate.
+     * @param heartbeatInterval The interval between two heartbeat data publishings
+     * @param checkAliveWaitPeriod The wait period between onData, and checking if one participant has left
      *
      * Constructor registers prefixes for both chat and broadcast namespaces.
      * This should be put into critical section, if the face is accessed by different threads
