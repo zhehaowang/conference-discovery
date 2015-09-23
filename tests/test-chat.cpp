@@ -176,7 +176,7 @@ int main()
            hubPrefix, observers[i],
            face, keyChain, certificateName));
 
-        observers[i]->chat->start();
+      observers[i]->chat->start();
       usleep(500000);
     }
   }
@@ -195,6 +195,27 @@ int main()
         cout << "Chat deleted." << endl;
         observers[0]->chat->shutdown();
         observers[0]->chat.reset();
+        continue;
+      }
+      if (msgString == "-join") {
+        std::stringstream ss;
+        ss << chatroom << 0;
+
+        observers[0]->chat.reset
+          (new Chat(chatBroadcastPrefix, screenName, ss.str(),
+             hubPrefix, observers[0],
+             face, keyChain, certificateName));
+
+        observers[0]->chat->start();
+        std::cout << "Chat started." << endl;
+
+        continue;
+      }
+      if (msgString == "-roster") {
+        std::vector<std::string> roster = observers[0]->chat->getRoster();
+        for(std::vector<std::string>::iterator it = roster.begin(); it != roster.end(); ++it) {
+          std::cout << *it << std::endl;
+        }
         continue;
       }
       if (msgString == "-leave" || msgString == "-exit") {

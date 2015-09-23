@@ -26,9 +26,9 @@ Chat::initial()
     
   // Set the heartbeat timeout using the Interest timeout mechanism. The
   // heartbeat() function will call itself again after a timeout.
-  // TODO: Are we sure using a "/timeout" interest is the best future call approach?
+  // TODO: Heartbeat interval setup
   Interest timeout("/timeout");
-  timeout.setInterestLifetimeMilliseconds(60000);
+  timeout.setInterestLifetimeMilliseconds(10000);
   faceProcessor_.expressInterest(timeout, dummyOnData, bind(&Chat::heartbeat, shared_from_this(), _1));
 
   if (find(roster_.begin(), roster_.end(), usrname_) == roster_.end()) {
@@ -145,12 +145,16 @@ Chat::onInterestCallback
   if (content.from().size() != 0) {
     ptr_lib::shared_ptr<vector<uint8_t> > array(new vector<uint8_t>(content.ByteSize()));
     content.SerializeToArray(&array->front(), array->size());
-    Data co(inst->getName());
-    co.setContent(Blob(array, false));
-    keyChain_.sign(co, certificateName_);
+    Data data(inst->getName());
+    
+    // TODO: arbitrary freshnessperiod 5s for now.
+    data.getMetaInfo().setFreshnessPeriod(5000);
+    
+    data.setContent(Blob(array, false));
+    keyChain_.sign(data, certificateName_);
     try {
       //transport.send(*co.wireEncode());
-      face.putData(co);
+      face.putData(data);
     }
     catch (std::exception& e) {
       // should probably notify with error
@@ -166,63 +170,72 @@ Chat::onData
 {
   if (!enabled_)
     return ;
-    
+  
   SyncDemo::ChatMessage content;
   content.ParseFromArray(co->getContent().buf(), co->getContent().size());
-  if (getNowMilliseconds() - content.timestamp() * 1000.0 < 120000.0) {
-    string name = content.from();
-    string prefix = co->getName().getPrefix(inst->getName().size() - prefixFromInstEnd_ + 2).toUri();
-    int session = ::atoi(co->getName().get(inst->getName().size() - prefixFromInstEnd_ + 2).toEscapedString().c_str());
-    int seqno = ::atoi(co->getName().get(inst->getName().size() - prefixFromInstEnd_ + 3).toEscapedString().c_str());
-    
-    ostringstream tempStream;
-    tempStream << name << session;
-    string nameAndSession = tempStream.str();
 
-    size_t l = 0;
-    //update roster
-    while (l < roster_.size()) {
-      string name_t2 = roster_[l].substr(0, roster_[l].size() - 10);
-      int session_t = ::atoi(roster_[l].substr(roster_[l].size() - 10, 10).c_str());
-      if (name != name_t2 && content.type() != 2)
-        ++l;
-      else {
-        if (name == name_t2 && session > session_t)
-          roster_[l] = nameAndSession;
-        break;
-      }
-    }
-    if (l == roster_.size()) {
-      roster_.push_back(nameAndSession);
-      notifyObserver(MessageTypes::JOIN, inst->getName().getSubName
-        (0, inst->getName().size() - prefixFromInstEnd_).toUri().c_str(), name.c_str(), "", 0);
-    }
-    
-    // Set the alive timeout using the Interest timeout mechanism.
-    // TODO: Are we sure using a "/timeout" interest is the best future call approach?
-    Interest timeout("/timeout");
-    timeout.setInterestLifetimeMilliseconds(120000);
-    faceProcessor_.expressInterest
-      (timeout, dummyOnData,
-       bind(&Chat::alive, shared_from_this(), _1, seqno, name, session, prefix));
+  string name = content.from();
+  string prefix = co->getName().getPrefix(inst->getName().size() - prefixFromInstEnd_ + 2).toUri();
+  int session = ::atoi(co->getName().get(inst->getName().size() - prefixFromInstEnd_ + 2).toEscapedString().c_str());
+  int seqno = ::atoi(co->getName().get(inst->getName().size() - prefixFromInstEnd_ + 3).toEscapedString().c_str());
+  
+  ostringstream tempStream;
+  tempStream << name << session;
+  string nameAndSession = tempStream.str();
 
-    // isRecoverySyncState_ was set by sendInterest.
-    // TODO: If isRecoverySyncState_ changed, this assumes that we won't get
-    //   data from an interest sent before it changed.
-    
-    if (content.type() == 0 && content.from() != screen_name_) {
-      notifyObserver(MessageTypes::CHAT,  inst->getName().getSubName
-        (0, inst->getName().size() - prefixFromInstEnd_).toUri().c_str(), content.from().c_str(), content.data().c_str(), 0);
+  size_t l = 0;
+
+  //update roster
+  vector<string>::iterator n = find(roster_.begin(), roster_.end(), nameAndSession);
+  
+  if (n == roster_.end()) {
+    roster_.push_back(nameAndSession);
+    notifyObserver(MessageTypes::JOIN, inst->getName().getSubName
+      (0, inst->getName().size() - prefixFromInstEnd_).toUri().c_str(), name.c_str(), "", 0);
+  }
+
+  /*
+  while (l < roster_.size()) {
+    string name_t2 = roster_[l].substr(0, roster_[l].size() - 10);
+    int session_t = ::atoi(roster_[l].substr(roster_[l].size() - 10, 10).c_str());
+    if (name != name_t2 && content.type() != 2)
+      ++l;
+    else {
+      if (name == name_t2 && session > session_t)
+        roster_[l] = nameAndSession;
+      break;
     }
-    else if (content.type() == 2) {
-      // leave message
-      vector<string>::iterator n = find(roster_.begin(), roster_.end(), nameAndSession);
-      if (n != roster_.end() && name != screen_name_) {
-        roster_.erase(n);
-        notifyObserver(MessageTypes::LEAVE, inst->getName().getSubName
-          (0, inst->getName().size() - prefixFromInstEnd_).toUri().c_str(), name.c_str(),
-           "", 0);
-      }
+  }
+  if (l == roster_.size()) {
+    roster_.push_back(nameAndSession);
+    notifyObserver(MessageTypes::JOIN, inst->getName().getSubName
+      (0, inst->getName().size() - prefixFromInstEnd_).toUri().c_str(), name.c_str(), "", 0);
+  }
+  */
+  
+  // Set the alive timeout using the Interest timeout mechanism.
+  // TODO: Adjust checkAlive interval
+  Interest timeout("/timeout");
+  timeout.setInterestLifetimeMilliseconds(20000);
+  faceProcessor_.expressInterest
+    (timeout, dummyOnData,
+     bind(&Chat::alive, shared_from_this(), _1, seqno, name, session, prefix));
+
+  // isRecoverySyncState_ was set by sendInterest.
+  // TODO: If isRecoverySyncState_ changed, this assumes that we won't get
+  //   data from an interest sent before it changed.
+  
+  if (content.type() == 0 && content.from() != screen_name_) {
+    notifyObserver(MessageTypes::CHAT,  inst->getName().getSubName
+      (0, inst->getName().size() - prefixFromInstEnd_).toUri().c_str(), content.from().c_str(), content.data().c_str(), 0);
+  } else if (content.type() == 2) {
+    // leave message
+    vector<string>::iterator n = find(roster_.begin(), roster_.end(), nameAndSession);
+    if (n != roster_.end() && name != screen_name_) {
+      roster_.erase(n);
+      notifyObserver(MessageTypes::LEAVE, inst->getName().getSubName
+        (0, inst->getName().size() - prefixFromInstEnd_).toUri().c_str(), name.c_str(),
+         "", 0);
     }
   }
 }
@@ -252,9 +265,9 @@ Chat::heartbeat(const ptr_lib::shared_ptr<const Interest> &interest)
   messageCacheAppend(SyncDemo::ChatMessage_ChatMessageType_HELLO, "xxx");
 
   // Call again.
-  // TODO: Are we sure using a "/timeout" interest is the best future call approach?
+  // TODO: Adjust heartbeat interval
   Interest timeout("/timeout");
-  timeout.setInterestLifetimeMilliseconds(60000);
+  timeout.setInterestLifetimeMilliseconds(10000);
   faceProcessor_.expressInterest
     (timeout, dummyOnData, bind(&Chat::heartbeat, shared_from_this(), _1));
 }
@@ -297,8 +310,13 @@ Chat::alive
   ostringstream tempStream;
   tempStream << name << session;
   string nameAndSession = tempStream.str();
+
+  //std::cout << "Alive being checked for " << nameAndSession << std::endl;
+
   vector<string>::iterator n = find(roster_.begin(), roster_.end(), nameAndSession);
   if (seq != -1 && n != roster_.end()) {
+    //std::cout << "Found in roster " << nameAndSession << "; old seq " << temp_seq << " new seq " << seq << std::endl;
+
     if (temp_seq == seq){
       roster_.erase(n);
       notifyObserver(MessageTypes::LEAVE, interest->getName().getSubName
