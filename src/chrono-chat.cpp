@@ -26,9 +26,8 @@ Chat::initial()
     
   // Set the heartbeat timeout using the Interest timeout mechanism. The
   // heartbeat() function will call itself again after a timeout.
-  // TODO: Heartbeat interval setup
   Interest timeout("/timeout");
-  timeout.setInterestLifetimeMilliseconds(10000);
+  timeout.setInterestLifetimeMilliseconds(heartbeatInterval_);
   faceProcessor_.expressInterest(timeout, dummyOnData, bind(&Chat::heartbeat, shared_from_this(), _1));
 
   if (find(roster_.begin(), roster_.end(), usrname_) == roster_.end()) {
@@ -146,9 +145,7 @@ Chat::onInterestCallback
     ptr_lib::shared_ptr<vector<uint8_t> > array(new vector<uint8_t>(content.ByteSize()));
     content.SerializeToArray(&array->front(), array->size());
     Data data(inst->getName());
-    
-    // TODO: arbitrary freshnessperiod 5s for now.
-    data.getMetaInfo().setFreshnessPeriod(5000);
+    data.getMetaInfo().setFreshnessPeriod(chatDataFreshnessPeriod_);
     
     data.setContent(Blob(array, false));
     keyChain_.sign(data, certificateName_);
@@ -214,9 +211,8 @@ Chat::onData
   */
   
   // Set the alive timeout using the Interest timeout mechanism.
-  // TODO: Adjust checkAlive interval
   Interest timeout("/timeout");
-  timeout.setInterestLifetimeMilliseconds(20000);
+  timeout.setInterestLifetimeMilliseconds(checkAliveWaitPeriod_);
   faceProcessor_.expressInterest
     (timeout, dummyOnData,
      bind(&Chat::alive, shared_from_this(), _1, seqno, name, session, prefix));
@@ -264,10 +260,8 @@ Chat::heartbeat(const ptr_lib::shared_ptr<const Interest> &interest)
   sync_->publishNextSequenceNo();
   messageCacheAppend(SyncDemo::ChatMessage_ChatMessageType_HELLO, "xxx");
 
-  // Call again.
-  // TODO: Adjust heartbeat interval
   Interest timeout("/timeout");
-  timeout.setInterestLifetimeMilliseconds(10000);
+  timeout.setInterestLifetimeMilliseconds(heartbeatInterval_);
   faceProcessor_.expressInterest
     (timeout, dummyOnData, bind(&Chat::heartbeat, shared_from_this(), _1));
 }

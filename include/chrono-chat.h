@@ -75,11 +75,13 @@ namespace chrono_chat
       (const ndn::Name& broadcastPrefix,
        const std::string& screenName, const std::string& chatRoom,
        const ndn::Name& hubPrefix, ChatObserver *observer, ndn::Face& face, ndn::KeyChain& keyChain,
-       ndn::Name certificateName)
+       ndn::Name certificateName, int heartbeatInterval = 10000, int checkAliveWaitPeriod = 20000)
       : screen_name_(screenName), chatroom_(chatRoom), maxmsgcachelength_(100),
         isRecoverySyncState_(true), sync_lifetime_(5000.0), observer_(observer),
         faceProcessor_(face), keyChain_(keyChain), certificateName_(certificateName),
-        broadcastPrefix_(broadcastPrefix), enabled_(true)
+        broadcastPrefix_(broadcastPrefix), enabled_(true), 
+        heartbeatInterval_(heartbeatInterval), checkAliveWaitPeriod_(checkAliveWaitPeriod), 
+        chatDataFreshnessPeriod_(5000)
     {
       chat_usrname_ = Chat::getRandomString();
       chat_prefix_ = ndn::Name(hubPrefix).append(chatroom_).append(chat_usrname_);
@@ -303,6 +305,10 @@ namespace chrono_chat
     
     const int prefixFromInstEnd_ = 4;
     const int prefixFromChatPrefixEnd_ = 2;
+
+    int heartbeatInterval_;
+    int checkAliveWaitPeriod_;
+    int chatDataFreshnessPeriod_;
   };
 }
 
