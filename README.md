@@ -11,7 +11,7 @@ These functions are going to be used in NdnRtc (https://github.com/remap/ndnrtc)
 
 See the file [INSTALL.md](https://github.com/zhehaowang/ConferenceDiscovery/blob/master/INSTALL.md) for build and install instructions.
 
-Please report bugs to wangzhehao410305@gmail.com
+Zhehao <zhehao@cs.ucla.edu>
 
 -------
 License

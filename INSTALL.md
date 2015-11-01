@@ -39,6 +39,8 @@ After updating, change directory to the NDN-CPP root and enter the following to 
 
 To build again, follow the instructions above (./configure, make, etc.)
 
+For older versions of automake, may also need to run autogen.sh; Try commenting AC\_CHECK\_HEADER\_STDBOOL if reported missing (occured on memoria)
+
 Working with ndn-cpp-0.7 and NDNRTC
 ===========
 To use this with ndnrtc, may want to use this configure command (as NDNRTC is compiled with libstdc++):
@@ -47,4 +49,6 @@ To use this with ndnrtc, may want to use this configure command (as NDNRTC is co
 </pre>
 Per onInterest deprecation in ndn-cpp-0.7, onInterest function signatures were changed to onInterestCallback
 
-If symbol not found appeared during linking stage, the most likely cause is that some of the dependencies are compiled with libstdc++, while others with libc++; the ones with libstdc++ usually have __1 in their function signature.
+_Known Issue_: Double check if configure's doing things correctly, link stage command seems to prefer /usr/local/lib/libndn-cpp.so.0 and does not seem to recognize NDNCPPLIB option, tested on memoria.
+
+If symbol not found appeared during linking stage, the most likely cause is that some of the dependencies are compiled with libstdc++, while others with libc++; the ones with libstdc++ usually have __1 in their function symbol.
