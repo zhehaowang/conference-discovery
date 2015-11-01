@@ -45,7 +45,7 @@ SyncBasedDiscovery::onData
   // Try expressing in a given timeout period: 
   // Why it does not work as expected, without this interval?
   
-  Interest timeout("/localhost/timeout");
+  Interest timeout("/local/timeout");
   timeout.setInterestLifetimeMilliseconds(defaultInterestLifetime_);
   
   face_.expressInterest

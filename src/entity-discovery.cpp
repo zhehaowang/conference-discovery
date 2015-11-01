@@ -83,7 +83,7 @@ EntityDiscovery::stopPublishingEntity
       item->second->setBeingRemoved(true);
       syncBasedDiscovery_->removeObject(entityBeingStopped.toUri(), true);
       
-      Interest timeout("/localhost/timeout");
+      Interest timeout("/local/timeout");
       timeout.setInterestLifetimeMilliseconds(defaultKeepPeriod_);
 
       faceProcessor_.expressInterest
@@ -208,7 +208,7 @@ EntityDiscovery::onData
 
         notifyObserver(MessageTypes::ADD, entityName.c_str(), 0);
 
-        Interest timeout("/localhost/timeout");
+        Interest timeout("/local/timeout");
         timeout.setInterestLifetimeMilliseconds(defaultHeartbeatInterval_);
 
         // express heartbeat interest after 2 seconds of sleep
@@ -219,7 +219,7 @@ EntityDiscovery::onData
       else {
         // If received entityInfo is malformed, 
         // re-express interest after a timeout.
-        Interest timeout("/localhost/timeout");
+        Interest timeout("/local/timeout");
         timeout.setInterestLifetimeMilliseconds(defaultHeartbeatInterval_);
 
         // express heartbeat interest after 2 seconds of sleep
@@ -251,7 +251,7 @@ EntityDiscovery::onData
         notifyObserver(MessageTypes::SET, entityName.c_str(), 0);
       }
       
-      Interest timeout("/localhost/timeout");
+      Interest timeout("/local/timeout");
       timeout.setInterestLifetimeMilliseconds(defaultHeartbeatInterval_);
 
       // express heartbeat interest after 2 seconds of sleep

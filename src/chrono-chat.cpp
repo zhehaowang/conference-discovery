@@ -26,7 +26,7 @@ Chat::initial()
     
   // Set the heartbeat timeout using the Interest timeout mechanism. The
   // heartbeat() function will call itself again after a timeout.
-  Interest timeout("/timeout");
+  Interest timeout("/local/timeout");
   timeout.setInterestLifetimeMilliseconds(heartbeatInterval_);
   faceProcessor_.expressInterest(timeout, dummyOnData, bind(&Chat::heartbeat, shared_from_this(), _1));
 
@@ -211,7 +211,7 @@ Chat::onData
   */
   
   // Set the alive timeout using the Interest timeout mechanism.
-  Interest timeout("/timeout");
+  Interest timeout("/local/timeout");
   timeout.setInterestLifetimeMilliseconds(checkAliveWaitPeriod_);
   faceProcessor_.expressInterest
     (timeout, dummyOnData,
@@ -260,7 +260,7 @@ Chat::heartbeat(const ptr_lib::shared_ptr<const Interest> &interest)
   sync_->publishNextSequenceNo();
   messageCacheAppend(SyncDemo::ChatMessage_ChatMessageType_HELLO, "xxx");
 
-  Interest timeout("/timeout");
+  Interest timeout("/local/timeout");
   timeout.setInterestLifetimeMilliseconds(heartbeatInterval_);
   faceProcessor_.expressInterest
     (timeout, dummyOnData, bind(&Chat::heartbeat, shared_from_this(), _1));

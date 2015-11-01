@@ -224,7 +224,7 @@ int main()
       if (msgString == "-auto") {
         for (int i = 0; i < 30; i++) {
           ostringstream ss;
-          ss << i;
+          ss << i; 
           observers[0]->chat->sendMessage(ss.str());
           for (int j = 0; j < 100; j++) {
                 face.processEvents();
