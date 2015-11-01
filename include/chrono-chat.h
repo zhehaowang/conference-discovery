@@ -83,7 +83,7 @@ namespace chrono_chat
         faceProcessor_(face), keyChain_(keyChain), certificateName_(certificateName),
         broadcastPrefix_(broadcastPrefix), enabled_(true), 
         heartbeatInterval_(heartbeatInterval), checkAliveWaitPeriod_(checkAliveWaitPeriod), 
-        chatDataFreshnessPeriod_(5000)
+        chatDataFreshnessPeriod_(5000), prefixFromInstEnd_(4), prefixFromChatPrefixEnd_(2)
     {
       chat_usrname_ = Chat::getRandomString();
       chat_prefix_ = ndn::Name(hubPrefix).append(chatroom_).append(chat_usrname_);
@@ -305,8 +305,8 @@ namespace chrono_chat
     // Added for not sending interest repeated for one piece of message
     std::map<std::string, int> syncTreeStatus_;
     
-    const int prefixFromInstEnd_ = 4;
-    const int prefixFromChatPrefixEnd_ = 2;
+    const int prefixFromInstEnd_;
+    const int prefixFromChatPrefixEnd_;
 
     int heartbeatInterval_;
     int checkAliveWaitPeriod_;
