@@ -314,7 +314,7 @@ EntityDiscovery::onTimeout
       }
     }
     else {
-      Interest timeout("/timeout");
+      Interest timeout("/local/timeout");
       timeout.setInterestLifetimeMilliseconds(defaultTimeoutReexpressInterval_);
       faceProcessor_.expressInterest
         (timeout, bind(&EntityDiscovery::dummyOnData, this, _1, _2),
