@@ -259,8 +259,9 @@ EntityDiscovery::onData
         (timeout, bind(&EntityDiscovery::dummyOnData, this, _1, _2),
          bind(&EntityDiscovery::expressHeartbeatInterest, this, _1, interest));
     }
+    // If the discovered entity marks itself as "over"; This is updated to use "STOP" instead of "REMOVE", so that the latter's easier to differentiate, and is only caused by a series of interest timeouts
     else {
-      notifyObserver(MessageTypes::REMOVE, entityName.c_str(), 0);
+      notifyObserver(MessageTypes::STOP, entityName.c_str(), 0);
       
       if (syncBasedDiscovery_->removeObject(item->first, true) == 0) {
         cerr << "Did not remove from the discoveredEntityList_ in syncBasedDiscovery_" << endl;
