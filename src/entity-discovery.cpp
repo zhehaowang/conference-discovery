@@ -293,6 +293,8 @@ EntityDiscovery::onTimeout
   std::map<string, ptr_lib::shared_ptr<EntityInfoBase>>::iterator item = discoveredEntityList_.find
     (entityName);
   if (item != discoveredEntityList_.end()) {
+    // TODO: This seems to be the only way of getting REMOVE (manual stop gets you STOP, instead of REMOVE); see how this's called
+    cerr << "** Entity heartbeat interest timeout called, interest: " << interest->getName().toUri() << "; Current timeout count: " << item->second->getTimeoutCount() << endl;
     if (item->second && item->second->incrementTimeout()) {
       notifyObserver(MessageTypes::REMOVE, entityName.c_str(), 0);
       
