@@ -48,7 +48,7 @@ namespace entity_discovery
        ndn::ptr_lib::shared_ptr<IEntitySerializer> serializer, ndn::Face& face, ndn::KeyChain& keyChain, 
        ndn::Name certificateName)
     :  defaultDataFreshnessPeriod_(2000), defaultKeepPeriod_(3000), 
-       defaultHeartbeatInterval_(2000), defaultTimeoutReexpressInterval_(1000), 
+       defaultHeartbeatInterval_(2000), defaultTimeoutReexpressInterval_(300), 
        broadcastPrefix_(broadcastPrefix), observer_(observer), serializer_(serializer), 
        faceProcessor_(face), keyChain_(keyChain), 
        certificateName_(certificateName), hostedEntitiesNum_(0), enabled_(true)
