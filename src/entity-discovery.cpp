@@ -340,9 +340,14 @@ EntityDiscovery::expressHeartbeatInterest
 {
   if (!enabled_)
     return ;
-    
+  
+  Interest newInterest(entityInterest->getName());
+      
+  newInterest.setInterestLifetimeMilliseconds(defaultHeartbeatInterval_);
+  newInterest.setMustBeFresh(true);
+  
   faceProcessor_.expressInterest
-    (*(entityInterest.get()),
+    (newInterest,
      bind(&EntityDiscovery::onData, this, _1, _2), 
      bind(&EntityDiscovery::onTimeout, this, _1));
 }
