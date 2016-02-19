@@ -29,6 +29,9 @@
 // TODO: Moving timeout count and other variables out of EntityInfoBase, so that passing nil entityInfo(from deserialize) to this library
 //   won't cause problems.
 
+// Updates 2016
+// TODO: digest interest length check; the unexpected prefix chrono-chat0.3 of ndncon's and flooding of local nfd issue
+
 namespace entity_discovery
 {
   class EntityDiscovery : public ndn::ptr_lib::enable_shared_from_this<EntityDiscovery>

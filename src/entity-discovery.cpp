@@ -222,7 +222,7 @@ EntityDiscovery::onData
         Interest timeout("/local/timeout");
         timeout.setInterestLifetimeMilliseconds(defaultHeartbeatInterval_);
 
-        // express heartbeat interest after 300ms timer
+        // express heartbeat interest after 2 seconds of sleep
         faceProcessor_.expressInterest
           (timeout, bind(&EntityDiscovery::dummyOnData, this, _1, _2),
            bind(&EntityDiscovery::expressHeartbeatInterest, this, _1, interest));
@@ -342,7 +342,7 @@ EntityDiscovery::expressHeartbeatInterest
     return ;
   
   Interest newInterest(entityInterest->getName());
-      
+  
   newInterest.setInterestLifetimeMilliseconds(defaultHeartbeatInterval_);
   newInterest.setMustBeFresh(true);
   
